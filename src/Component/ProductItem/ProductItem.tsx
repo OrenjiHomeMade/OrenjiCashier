@@ -2,6 +2,7 @@ import { useState } from "react";
 import style from "./ProductInfo.module.css";
 
 export type TProductInfo = {
+	productCode: string;
 	productName: string;
 	productImageUrl: string;
 	productQuantity: number;
@@ -13,7 +14,9 @@ export type TProductInfo = {
 const ProductItem = ({ productName, productImageUrl, productQuantity, variant = "grid", onAdd }: TProductInfo) => {
 	const [imageError, setImageError] = useState(false);
 
-	const isOutOfStock = productQuantity <= 0;
+	// TODO: Add out of stock logic
+	// const isOutOfStock = productQuantity <= 0;
+	const isOutOfStock = false;
 
 	const handleAdd = () => {
 		if (isOutOfStock) return;

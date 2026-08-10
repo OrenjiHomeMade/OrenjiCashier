@@ -1,5 +1,5 @@
 // import { useContext } from "react";
-// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
 
 import "./App.css";
@@ -13,27 +13,29 @@ import TransactionHistory from "./Page/TransactionHistory/TransactionHistory";
 
 function App() {
 	// const { user } = useContext(AuthContext);
-	// const queryClient = new QueryClient();
+	const queryClient = new QueryClient();
 
 	return (
-		<div className="main-container">
-			<ToastContainer
-				position="top-right"
-				autoClose={3000}
-				limit={3}
-				hideProgressBar={false}
-				newestOnTop={false}
-				closeOnClick
-				rtl={false}
-				pauseOnFocusLoss
-				draggable
-				pauseOnHover
-			/>
-			<Header />
-			<div className="main-container__body">
-				<AppRoutes />
+		<QueryClientProvider client={queryClient}>
+			<div className="main-container">
+				<ToastContainer
+					position="top-right"
+					autoClose={3000}
+					limit={3}
+					hideProgressBar={false}
+					newestOnTop={false}
+					closeOnClick
+					rtl={false}
+					pauseOnFocusLoss
+					draggable
+					pauseOnHover
+				/>
+				<Header />
+				<div className="main-container__body">
+					<AppRoutes />
+				</div>
 			</div>
-		</div>
+		</QueryClientProvider>
 	);
 }
 

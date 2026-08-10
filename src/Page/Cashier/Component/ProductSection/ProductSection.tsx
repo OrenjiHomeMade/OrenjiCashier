@@ -3,56 +3,53 @@ import GridIcon from "../../../../Component/MediaComponent/GridIcon";
 import ListIcon from "../../../../Component/MediaComponent/ListIcon";
 import style from "./ProductSection.module.css";
 import ProductItem, { type TProductInfo } from "../../../../Component/ProductItem/ProductItem";
-
-const categoryExample = ["Semua", "Gorengan", "Dimsum", "Orenji-Cookies"];
-
-const productExample: TProductInfo[] = [
-	{
-		productName: "Dimsum Ayam",
-		productImageUrl: "",
-		productQuantity: 20,
-		category: "Dimsum"
-	},
-	{
-		productName: "Dimsum Udang",
-		productImageUrl: "",
-		productQuantity: 15,
-		category: "Dimsum"
-	},
-	{
-		productName: "Bakwan",
-		productImageUrl: "",
-		productQuantity: 30,
-		category: "Gorengan"
-	},
-	{
-		productName: "Cireng",
-		productImageUrl: "",
-		productQuantity: 25,
-		category: "Gorengan"
-	},
-	{
-		productName: "Cookies Coklat",
-		productImageUrl: "",
-		productQuantity: 12,
-		category: "Orenji-Cookies"
-	}
-];
+import { useQuery } from "@tanstack/react-query";
+import { getProducts } from "../../../../Services/supabase/productService";
 
 const ProductSection = () => {
 	const [view, setView] = useState<"grid" | "list">("grid");
 	const [selectedCategory, setSelectedCategory] = useState("Semua");
 	const [searchTerm, setSearchTerm] = useState("");
 
+	const {
+		data: products = []
+		// isLoading,
+		// isError,
+		// error
+	} = useQuery({
+		queryKey: ["products"],
+		queryFn: getProducts
+	});
+
+	/*
+	 * Convert Supabase data into the existing
+	 * ProductItem UI data structure.
+	 */
+	const productInfos = useMemo<TProductInfo[]>(() => {
+		return products.map((product) => ({
+			productCode: product.product_code,
+			productName: product.product_name,
+			productImageUrl: product.product_image ?? "",
+			productQuantity: 0,
+			category: product.product_category
+		}));
+	}, [products]);
+
+	const categories = useMemo(() => {
+		const uniqueCategories = new Set(productInfos.map((product) => product.category));
+
+		return ["Semua", ...uniqueCategories];
+	}, [productInfos]);
+
 	const filteredProducts = useMemo(() => {
-		return productExample.filter((product) => {
+		return productInfos.filter((product) => {
 			const matchesCategory = selectedCategory === "Semua" || product.category === selectedCategory;
 
 			const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase());
 
 			return matchesCategory && matchesSearch;
 		});
-	}, [selectedCategory, searchTerm]);
+	}, [productInfos, selectedCategory, searchTerm]);
 
 	const handleProductClick = (product: TProductInfo) => {
 		console.log("Add to cart:", product.productName);
@@ -98,7 +95,7 @@ const ProductSection = () => {
 			</div>
 
 			<div className={style.productCategoryFilter}>
-				{categoryExample.map((category) => (
+				{categories.map((category) => (
 					<button
 						key={category}
 						type="button"
