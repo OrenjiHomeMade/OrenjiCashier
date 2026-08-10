@@ -1,0 +1,309 @@
+.cartItem {
+	width: 100%;
+	min-width: 0;
+
+	box-sizing: border-box;
+
+	display: flex;
+	align-items: center;
+
+	gap: 12px;
+
+	padding: 8px 12px;
+
+	background-color: var(--white);
+
+	border-bottom: 1px solid var(--border-color, #ded7d1);
+}
+
+/* ==================================================
+   IMAGE
+   ================================================== */
+
+.productImageContainer {
+	flex: 0 0 52px;
+
+	width: 52px;
+	height: 52px;
+
+	overflow: hidden;
+
+	border-radius: var(--radius-md);
+
+	background-color: var(--cream-soft);
+}
+
+.productImage {
+	width: 100%;
+	height: 100%;
+
+	display: block;
+
+	object-fit: cover;
+}
+
+.imageFallback {
+	width: 100%;
+	height: 100%;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	color: var(--text-muted, #756d67);
+
+	font-size: 0.6rem;
+	font-weight: 700;
+}
+
+/* ==================================================
+   PRODUCT INFORMATION
+   ================================================== */
+
+.productInfo {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+
+	gap: 3px;
+}
+
+.productName {
+	overflow: hidden;
+
+	color: var(--text-dark);
+
+	font-size: 0.88rem;
+	font-weight: 600;
+
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.productPrice {
+	color: var(--text-muted, #756d67);
+
+	font-size: 0.7rem;
+}
+
+/* ==================================================
+   CART QUANTITY
+   ================================================== */
+
+.quantityControl {
+	flex-shrink: 0;
+
+	display: flex;
+	align-items: center;
+
+	gap: 4px;
+
+	padding: 3px;
+
+	border: 1px solid var(--border-color, #ded7d1);
+
+	border-radius: var(--radius-md);
+
+	background-color: var(--cream-soft);
+}
+
+.quantityButton {
+	width: 28px;
+	height: 28px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	padding: 0;
+
+	border: none;
+	border-radius: var(--radius-sm);
+
+	background-color: var(--white);
+	color: var(--text-dark);
+
+	font-family: inherit;
+	font-size: 1rem;
+	font-weight: 600;
+
+	cursor: pointer;
+
+	transition:
+		background-color 120ms ease,
+		color 120ms ease,
+		transform 100ms ease;
+}
+
+.quantityButton:hover:not(:disabled) {
+	background-color: var(--orange);
+	color: var(--white);
+}
+
+.quantityButton:active:not(:disabled) {
+	transform: scale(0.9);
+}
+
+.quantityButton:disabled {
+	opacity: 0.5;
+
+	cursor: default;
+}
+
+.quantity {
+	min-width: 28px;
+
+	color: var(--text-dark);
+
+	text-align: center;
+
+	font-size: 0.82rem;
+	font-weight: 600;
+}
+
+/* ==================================================
+   DELETE
+   ================================================== */
+
+.deleteButton {
+	flex-shrink: 0;
+
+	width: 34px;
+	height: 34px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	padding: 0;
+
+	border: none;
+	border-radius: var(--radius-md);
+
+	background-color: transparent;
+	color: var(--text-muted, #756d67);
+
+	cursor: pointer;
+
+	transition:
+		background-color 120ms ease,
+		color 120ms ease,
+		transform 100ms ease;
+}
+
+.deleteButton:hover:not(:disabled) {
+	background-color: rgba(220, 38, 38, 0.08);
+	color: #dc2626;
+}
+
+.deleteButton:active:not(:disabled) {
+	transform: scale(0.9);
+}
+
+.deleteButton:disabled {
+	opacity: 0.5;
+
+	cursor: default;
+}
+
+/* ==================================================
+   HISTORY VARIANT
+   ================================================== */
+
+.historyItem {
+	min-height: 52px;
+
+	padding: 6px 10px;
+
+	border-bottom: none;
+
+	background-color: transparent;
+}
+
+.historyItem .productImageContainer {
+	flex-basis: 42px;
+
+	width: 42px;
+	height: 42px;
+}
+
+.historyItem .productName {
+	font-size: 0.78rem;
+}
+
+.historyQuantity {
+	flex-shrink: 0;
+
+	color: var(--text-muted, #756d67);
+
+	font-size: 0.76rem;
+}
+
+.historySubtotal {
+	flex-shrink: 0;
+
+	min-width: 90px;
+
+	color: var(--text-dark);
+
+	font-size: 0.78rem;
+	font-weight: 600;
+
+	text-align: right;
+}
+
+/* ==================================================
+   PHONE
+   ================================================== */
+
+@media (max-width: 767px) {
+	.cartItem {
+		gap: 8px;
+
+		padding: 7px 10px;
+	}
+
+	.productImageContainer {
+		flex-basis: 46px;
+
+		width: 46px;
+		height: 46px;
+	}
+
+	.productName {
+		font-size: 0.82rem;
+	}
+
+	.quantityButton {
+		width: 26px;
+		height: 26px;
+	}
+
+	.quantity {
+		min-width: 24px;
+	}
+
+	.deleteButton {
+		width: 30px;
+		height: 30px;
+	}
+
+	.historyItem {
+		padding: 6px;
+	}
+
+	.historyItem .productImageContainer {
+		flex-basis: 40px;
+
+		width: 40px;
+		height: 40px;
+	}
+
+	.historySubtotal {
+		min-width: 75px;
+
+		font-size: 0.72rem;
+	}
+}

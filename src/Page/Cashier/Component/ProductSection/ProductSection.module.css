@@ -1,0 +1,282 @@
+.productSection {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+/* =========================
+   Header
+   ========================= */
+
+.productHeader {
+	flex: 0 0 64px;
+
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.searchContainer {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.searchContainer label {
+	flex-shrink: 0;
+
+	color: var(--text-dark);
+
+	font-size: 0.9rem;
+	font-weight: 600;
+}
+
+.searchInput {
+	width: min(420px, 100%);
+	height: 42px;
+
+	padding: 0 14px;
+
+	border: 1px solid var(--border-color, #ded7d1);
+	border-radius: var(--radius-md);
+
+	background-color: var(--white);
+	color: var(--text-dark);
+
+	font-size: 0.9rem;
+
+	outline: none;
+
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+}
+
+.searchInput::placeholder {
+	color: var(--text-muted, #756d67);
+}
+
+.searchInput:focus {
+	border-color: var(--orange-dark);
+
+	box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.1);
+}
+
+/* =========================
+   Grid / List selector
+   ========================= */
+
+.viewSelector {
+	flex-shrink: 0;
+
+	display: flex;
+	gap: 4px;
+
+	padding: 4px;
+
+	border: 1px solid var(--border-color, #ded7d1);
+	border-radius: var(--radius-md);
+
+	background-color: var(--white);
+}
+
+.viewButton {
+	width: 38px;
+	height: 34px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	padding: 0;
+
+	border: none;
+	border-radius: var(--radius-sm);
+
+	background-color: transparent;
+	color: var(--text-muted, #756d67);
+
+	cursor: pointer;
+
+	transition:
+		background-color 150ms ease,
+		color 150ms ease,
+		transform 100ms ease;
+}
+
+.viewButton:hover {
+	color: var(--orange-dark);
+	background-color: var(--cream-soft);
+}
+
+.viewButton:active {
+	transform: scale(0.94);
+}
+
+.viewButtonActive {
+	background-color: var(--orange-dark);
+	color: var(--white);
+}
+
+.viewButtonActive:hover {
+	background-color: var(--orange-dark);
+	color: var(--white);
+}
+
+/* =========================
+   Category filter
+   ========================= */
+
+.productCategoryFilter {
+	flex: 0 0 auto;
+
+	display: flex;
+	gap: 10px;
+
+	overflow-x: auto;
+
+	padding: 2px 2px 8px;
+
+	scrollbar-width: thin;
+}
+
+.productCategoryFilter::-webkit-scrollbar {
+	height: 4px;
+}
+
+.buttonCategory {
+	flex-shrink: 0;
+
+	min-height: 38px;
+
+	padding: 0 16px;
+
+	border: 1px solid var(--border-color, #ded7d1);
+	border-radius: 999px;
+
+	background-color: var(--white);
+	color: var(--text-dark);
+
+	font-size: 0.85rem;
+	font-weight: 500;
+
+	cursor: pointer;
+
+	transition:
+		background-color 150ms ease,
+		color 150ms ease,
+		border-color 150ms ease,
+		transform 100ms ease;
+}
+
+.buttonCategory:hover {
+	border-color: var(--orange);
+	color: var(--orange-dark);
+}
+
+.buttonCategory:active {
+	transform: scale(0.96);
+}
+
+.buttonCategoryActive {
+	border-color: var(--orange-dark);
+	background-color: var(--orange-dark);
+	color: var(--white);
+}
+
+.buttonCategoryActive:hover {
+	border-color: var(--orange-dark);
+	background-color: var(--orange-dark);
+	color: var(--white);
+}
+
+/* =========================
+   Product collection
+   ========================= */
+
+.productCollection {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+
+	overflow-y: auto;
+	overflow-x: hidden;
+
+	padding: 2px;
+
+	align-content: start;
+}
+
+/* Grid */
+
+.productCollectionGrid {
+	display: grid;
+
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+
+	gap: 14px;
+}
+
+/* List */
+
+.productCollectionList {
+	display: flex;
+	flex-direction: column;
+
+	gap: 8px;
+}
+
+/* =========================
+   Phone
+   ========================= */
+
+@media (max-width: 767px) {
+	.productSection {
+		gap: 10px;
+	}
+
+	.productHeader {
+		flex-basis: auto;
+
+		min-height: 54px;
+	}
+
+	.searchContainer {
+		gap: 0;
+	}
+
+	.searchContainer label {
+		display: none;
+	}
+
+	.searchInput {
+		width: 100%;
+		height: 42px;
+	}
+
+	.viewSelector {
+		flex-shrink: 0;
+	}
+
+	.productCategoryFilter {
+		padding-bottom: 6px;
+	}
+
+	.buttonCategory {
+		min-height: 36px;
+		padding: 0 14px;
+	}
+
+	.productCollectionGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 10px;
+	}
+}

@@ -1,0 +1,326 @@
+.productItem {
+	box-sizing: border-box;
+
+	color: var(--text-dark);
+
+	font-family: inherit;
+
+	transition:
+		transform 150ms ease,
+		border-color 150ms ease,
+		box-shadow 150ms ease,
+		background-color 150ms ease;
+}
+
+/* ==================================================
+   GRID ITEM
+   ================================================== */
+
+.gridItem {
+	width: 100%;
+
+	display: flex;
+	flex-direction: column;
+
+	padding: 0;
+
+	overflow: hidden;
+
+	border: 1px solid var(--border-color, #ded7d1);
+	border-radius: var(--radius-lg);
+
+	background-color: var(--white);
+
+	text-align: left;
+
+	cursor: pointer;
+}
+
+/* Image */
+
+.gridImage {
+	position: relative;
+
+	width: 100%;
+	aspect-ratio: 1 / 1;
+
+	overflow: hidden;
+
+	background-color: var(--cream-soft);
+}
+
+.productImage {
+	width: 100%;
+	height: 100%;
+
+	display: block;
+
+	object-fit: cover;
+}
+
+.imageFallback {
+	width: 100%;
+	height: 100%;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+
+	color: var(--text-muted, #756d67);
+
+	background-color: var(--cream-soft);
+
+	font-size: 0.72rem;
+	font-weight: 500;
+}
+
+.fallbackIcon {
+	width: 38px;
+	height: 38px;
+
+	opacity: 0.55;
+}
+
+/* Information */
+
+.gridInfo {
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+
+	padding: 12px;
+}
+
+.productName {
+	display: block;
+
+	overflow: hidden;
+
+	color: var(--text-dark);
+
+	font-size: 0.95rem;
+	font-weight: 600;
+
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.stock {
+	color: var(--text-muted, #756d67);
+
+	font-size: 0.78rem;
+}
+
+/*
+ * Grid interaction
+ *
+ * The border becomes brighter and the card gets
+ * a subtle orange glow when selected/pressed.
+ */
+
+.gridItem:hover {
+	border-color: var(--orange);
+
+	box-shadow:
+		0 0 0 2px rgba(249, 115, 22, 0.14),
+		0 6px 18px rgba(0, 0, 0, 0.08);
+
+	transform: translateY(-2px);
+}
+
+.gridItem:active {
+	border-color: var(--orange-dark);
+
+	background-color: var(--cream-soft);
+
+	box-shadow:
+		0 0 0 3px rgba(249, 115, 22, 0.28),
+		0 0 18px rgba(249, 115, 22, 0.18);
+
+	transform: scale(0.97);
+}
+
+/* ==================================================
+   LIST ITEM
+   ================================================== */
+
+.listItem {
+	min-height: 72px;
+
+	display: flex;
+	align-items: center;
+
+	gap: 12px;
+
+	padding: 8px 10px;
+
+	border: 1px solid var(--border-color, #ded7d1);
+	border-radius: var(--radius-md);
+
+	background-color: var(--white);
+}
+
+/* List image */
+
+.listImage {
+	flex: 0 0 56px;
+
+	width: 56px;
+	height: 56px;
+
+	overflow: hidden;
+
+	border-radius: var(--radius-md);
+
+	background-color: var(--cream-soft);
+}
+
+.listImage .imageFallback {
+	gap: 2px;
+
+	font-size: 0.55rem;
+}
+
+.listImage .fallbackIcon {
+	width: 25px;
+	height: 25px;
+}
+
+/* List information */
+
+.listInfo {
+	min-width: 0;
+	flex: 1;
+
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+/* Add button */
+
+.addButton {
+	flex-shrink: 0;
+
+	min-width: 76px;
+	height: 38px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+
+	padding: 0 12px;
+
+	border: 1px solid var(--orange-dark);
+	border-radius: var(--radius-md);
+
+	background-color: var(--orange-dark);
+	color: var(--white);
+
+	font-family: inherit;
+	font-size: 0.82rem;
+	font-weight: 600;
+
+	cursor: pointer;
+
+	transition:
+		background-color 120ms ease,
+		border-color 120ms ease,
+		transform 100ms ease,
+		box-shadow 120ms ease;
+}
+
+.addButton span {
+	font-size: 1.1rem;
+	line-height: 1;
+}
+
+.addButton:hover {
+	background-color: var(--orange);
+	border-color: var(--orange);
+
+	box-shadow: 0 4px 10px rgba(249, 115, 22, 0.22);
+}
+
+.addButton:active {
+	transform: scale(0.93);
+
+	box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+}
+
+/* ==================================================
+   OUT OF STOCK
+   ================================================== */
+
+.outOfStock {
+	opacity: 0.55;
+}
+
+.gridItem.outOfStock {
+	cursor: not-allowed;
+}
+
+.gridItem.outOfStock:hover {
+	border-color: var(--border-color, #ded7d1);
+
+	box-shadow: none;
+
+	transform: none;
+}
+
+.addButton:disabled {
+	border-color: var(--border-color, #ded7d1);
+	background-color: var(--border-color, #ded7d1);
+	color: var(--text-muted, #756d67);
+
+	cursor: not-allowed;
+
+	box-shadow: none;
+}
+
+/* ==================================================
+   PHONE
+   ================================================== */
+
+@media (max-width: 767px) {
+	.gridInfo {
+		padding: 10px;
+	}
+
+	.productName {
+		font-size: 0.85rem;
+	}
+
+	.stock {
+		font-size: 0.72rem;
+	}
+
+	.listItem {
+		min-height: 68px;
+
+		gap: 10px;
+
+		padding: 7px 8px;
+	}
+
+	.listImage {
+		flex-basis: 52px;
+
+		width: 52px;
+		height: 52px;
+	}
+
+	.addButton {
+		min-width: 68px;
+		height: 36px;
+
+		padding: 0 10px;
+
+		font-size: 0.78rem;
+	}
+}
