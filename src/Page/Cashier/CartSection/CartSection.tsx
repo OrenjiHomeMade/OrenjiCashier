@@ -43,7 +43,7 @@ const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: 
 			transaction_code: generateTransactionCode(cashierName, transactionTime),
 			transaction_time: getLocalTimestamp(transactionTime),
 			payment_method: paymentMethod,
-			transaction_amount: paymentAmount - cartTotal,
+			transaction_amount: paymentMethod === "cash" ? paymentAmount - cartTotal : cartTotal,
 			cashier: cashierName,
 			items: cartItems.map((item) => ({
 				product_id: item.id,

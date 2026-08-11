@@ -1,0 +1,139 @@
+.transactionDetailItem {
+	min-height: 43px;
+
+	display: grid;
+
+	grid-template-columns:
+		minmax(0, 1fr)
+		minmax(90px, 0.35fr)
+		minmax(100px, 0.4fr);
+
+	align-items: center;
+
+	gap: 12px;
+
+	padding: 6px 10px;
+
+	border-bottom: 1px solid #f3ebe5;
+
+	font-size: 0.7rem;
+}
+
+.transactionDetailItem:last-child {
+	border-bottom: none;
+}
+
+/* ==================================================
+   PRODUCT
+   ================================================== */
+
+.productInfo {
+	min-width: 0;
+
+	display: flex;
+	align-items: center;
+
+	gap: 9px;
+}
+
+.productName {
+	min-width: 0;
+
+	overflow: hidden;
+
+	color: #55483f;
+
+	font-weight: 650;
+
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.productQuantity {
+	flex-shrink: 0;
+
+	padding: 3px 6px;
+
+	border-radius: 999px;
+
+	background-color: #fff4ec;
+
+	color: #b65324;
+
+	font-size: 0.59rem;
+	font-weight: 700;
+}
+
+/* ==================================================
+   UNIT PRICE
+   ================================================== */
+
+.unitPrice {
+	color: #8e7e72;
+
+	text-align: right;
+
+	white-space: nowrap;
+}
+
+/* ==================================================
+   SUBTOTAL
+   ================================================== */
+
+.subtotal {
+	color: #c2410c;
+
+	text-align: right;
+
+	font-weight: 750;
+
+	white-space: nowrap;
+}
+
+/* ==================================================
+   PHONE
+   ================================================== */
+
+@media (max-width: 767px) {
+	.transactionDetailItem {
+		grid-template-columns:
+			minmax(0, 1fr)
+			auto;
+
+		grid-template-areas:
+			"product subtotal"
+			"price subtotal";
+
+		gap: 1px 8px;
+
+		padding: 7px 8px;
+	}
+
+	.productInfo {
+		grid-area: product;
+	}
+
+	.unitPrice {
+		grid-area: price;
+
+		text-align: left;
+
+		font-size: 0.62rem;
+	}
+
+	.subtotal {
+		grid-area: subtotal;
+
+		align-self: center;
+
+		font-size: 0.69rem;
+	}
+
+	.productName {
+		font-size: 0.67rem;
+	}
+
+	.productQuantity {
+		font-size: 0.56rem;
+	}
+}

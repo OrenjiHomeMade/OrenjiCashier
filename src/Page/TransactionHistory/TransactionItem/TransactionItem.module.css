@@ -1,0 +1,474 @@
+/* ==================================================
+   TRANSACTION CONTAINER
+   ================================================== */
+
+.transactionItemContainer {
+	border-bottom: 1px solid #f0e7e0;
+
+	background-color: #fff;
+
+	transition:
+		background-color 150ms ease,
+		box-shadow 150ms ease;
+}
+
+.transactionItemContainer:hover {
+	background-color: #fffdfb;
+}
+
+.transactionItemOpen {
+	background: linear-gradient(90deg, #fffaf6 0%, #fff 100%);
+
+	box-shadow: inset 3px 0 0 var(--orange, #f97316);
+}
+
+/* ==================================================
+   TRANSACTION ROW
+   ================================================== */
+
+.transactionRow {
+	min-height: 58px;
+
+	display: grid;
+
+	grid-template-columns:
+		34px
+		minmax(135px, 1.35fr)
+		minmax(125px, 1fr)
+		minmax(120px, 1fr)
+		70px
+		82px
+		minmax(110px, 0.9fr)
+		76px;
+
+	align-items: center;
+
+	gap: 8px;
+
+	padding: 0 12px;
+
+	color: var(--text-dark);
+
+	font-size: 0.74rem;
+}
+
+.cell {
+	min-width: 0;
+}
+
+/* ==================================================
+   EXPAND
+   ================================================== */
+
+.expandButton {
+	width: 28px;
+	height: 28px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	padding: 0;
+
+	border: none;
+	border-radius: 8px;
+
+	background-color: transparent;
+
+	color: #a28f82;
+
+	cursor: pointer;
+
+	transition:
+		background-color 120ms ease,
+		color 120ms ease;
+}
+
+.expandButton:hover {
+	background-color: #fff0e5;
+
+	color: var(--orange-dark, #c2410c);
+}
+
+.transactionItemOpen .expandButton {
+	background-color: #fff0e5;
+
+	color: var(--orange-dark, #c2410c);
+}
+
+/* ==================================================
+   TRANSACTION ID
+   ================================================== */
+
+.transactionId {
+	overflow: hidden;
+
+	color: #4c4038;
+
+	font-weight: 700;
+
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* ==================================================
+   DATE
+   ================================================== */
+
+.date {
+	color: #756960;
+
+	white-space: nowrap;
+}
+
+/* ==================================================
+   CASHIER
+   ================================================== */
+
+.cashier {
+	overflow: hidden;
+
+	color: #63564e;
+
+	font-weight: 550;
+
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* ==================================================
+   ITEM COUNT
+   ================================================== */
+
+.itemsCount {
+	display: flex;
+	align-items: center;
+}
+
+.itemsCountBadge {
+	min-width: 25px;
+
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	padding: 3px 7px;
+
+	border-radius: 999px;
+
+	background-color: #fff1e7;
+
+	color: #c2410c;
+
+	font-size: 0.66rem;
+	font-weight: 750;
+}
+
+/* ==================================================
+   PAYMENT
+   ================================================== */
+
+.payment {
+	display: flex;
+	align-items: center;
+}
+
+.paymentBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	min-width: 50px;
+
+	padding: 4px 7px;
+
+	border-radius: 999px;
+
+	font-size: 0.62rem;
+	font-weight: 750;
+	letter-spacing: 0.01em;
+}
+
+.qris {
+	background-color: #ffeadc;
+
+	color: #c2410c;
+}
+
+.cash {
+	background-color: #f2eee9;
+
+	color: #66584e;
+}
+
+/* ==================================================
+   AMOUNT
+   ================================================== */
+
+.amount {
+	text-align: right;
+
+	color: #b63b0c;
+
+	font-weight: 750;
+
+	white-space: nowrap;
+}
+
+/* ==================================================
+   ACTIONS
+   ================================================== */
+
+.actions {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	gap: 4px;
+}
+
+.actionButton {
+	width: 30px;
+	height: 30px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	padding: 0;
+
+	border: 1px solid transparent;
+	border-radius: 8px;
+
+	background-color: #fff8f3;
+
+	color: #8d7768;
+
+	cursor: pointer;
+
+	transition:
+		background-color 120ms ease,
+		border-color 120ms ease,
+		color 120ms ease,
+		transform 100ms ease;
+}
+
+.actionButton:hover {
+	border-color: #f0d8c6;
+
+	background-color: #fff0e5;
+
+	color: var(--orange-dark, #c2410c);
+}
+
+.actionButton:active {
+	transform: scale(0.9);
+}
+
+.deleteButton:hover {
+	border-color: rgba(220, 38, 38, 0.15);
+
+	background-color: rgba(220, 38, 38, 0.06);
+
+	color: #dc2626;
+}
+
+/* ==================================================
+   DETAILS
+   ================================================== */
+
+.transactionDetails {
+	margin: 0 12px 12px 46px;
+
+	padding: 9px;
+
+	border: 1px solid #f0e1d5;
+	border-radius: 10px;
+
+	background: linear-gradient(135deg, #fff9f4, #fffdfb);
+}
+
+/* ==================================================
+   DETAILS HEADER
+   ================================================== */
+
+.detailsHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+
+	gap: 12px;
+
+	padding: 2px 7px 8px;
+
+	color: #6c5a4e;
+
+	font-size: 0.7rem;
+}
+
+.detailsHeader > div {
+	display: flex;
+	align-items: baseline;
+
+	gap: 7px;
+}
+
+.detailsHeader span {
+	font-weight: 750;
+}
+
+.detailsHeader small {
+	color: #a39286;
+
+	font-size: 0.62rem;
+}
+
+.detailsHeader strong {
+	color: #c2410c;
+
+	font-size: 0.75rem;
+	font-weight: 750;
+}
+
+/* ==================================================
+   DETAILS LIST
+   ================================================== */
+
+.detailsList {
+	display: flex;
+	flex-direction: column;
+
+	overflow: hidden;
+
+	border: 1px solid #f0e7e0;
+	border-radius: 8px;
+
+	background-color: #fff;
+}
+
+/* ==================================================
+   TABLET
+   ================================================== */
+
+@media (max-width: 1100px) {
+	.transactionRow {
+		grid-template-columns:
+			32px
+			minmax(120px, 1.3fr)
+			minmax(115px, 1fr)
+			minmax(110px, 1fr)
+			60px
+			78px
+			minmax(105px, 0.9fr)
+			70px;
+
+		gap: 6px;
+
+		padding: 0 10px;
+	}
+
+	.transactionDetails {
+		margin-left: 42px;
+		margin-right: 10px;
+	}
+}
+
+/* ==================================================
+   PHONE
+   ================================================== */
+
+@media (max-width: 767px) {
+	.transactionItemContainer {
+		padding: 8px 9px;
+	}
+
+	.transactionRow {
+		min-height: auto;
+
+		grid-template-columns: 28px 1fr auto;
+
+		grid-template-areas:
+			"expand id actions"
+			"expand date amount"
+			"expand cashier amount"
+			"expand items payment";
+
+		gap: 3px 8px;
+
+		padding: 0;
+	}
+
+	.expandButton {
+		grid-area: expand;
+
+		align-self: center;
+	}
+
+	.transactionId {
+		grid-area: id;
+
+		font-size: 0.76rem;
+	}
+
+	.date {
+		grid-area: date;
+
+		color: #8f8178;
+
+		font-size: 0.67rem;
+	}
+
+	.cashier {
+		grid-area: cashier;
+
+		font-size: 0.67rem;
+	}
+
+	.itemsCount {
+		grid-area: items;
+
+		color: #8f8178;
+
+		font-size: 0.67rem;
+	}
+
+	.payment {
+		grid-area: payment;
+
+		justify-content: flex-end;
+	}
+
+	.amount {
+		grid-area: amount;
+
+		align-self: center;
+
+		font-size: 0.76rem;
+	}
+
+	.actions {
+		grid-area: actions;
+
+		justify-content: flex-end;
+	}
+
+	.actionButton {
+		width: 27px;
+		height: 27px;
+	}
+
+	.transactionDetails {
+		margin: 9px 0 0 36px;
+
+		padding: 7px;
+	}
+
+	.detailsHeader {
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+
+	.detailsList {
+		border-radius: 7px;
+	}
+}

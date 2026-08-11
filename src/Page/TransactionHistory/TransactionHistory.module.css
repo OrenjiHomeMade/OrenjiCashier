@@ -1,3 +1,7 @@
+/* ==================================================
+   TRANSACTION HISTORY LAYOUT
+   ================================================== */
+
 .transactionHistoryLayout {
 	width: 100%;
 	height: 100%;
@@ -7,7 +11,9 @@
 	display: flex;
 	flex-direction: column;
 
-	gap: 16px;
+	gap: 14px;
+
+	overflow: hidden;
 }
 
 /* ==================================================
@@ -20,15 +26,13 @@
 	display: flex;
 	flex-direction: column;
 
-	gap: 16px;
-
-	padding: 4px 0;
+	gap: 10px;
 }
 
 .headerTitle {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 3px;
 }
 
 .headerTitle h1 {
@@ -36,123 +40,168 @@
 
 	color: var(--text-dark);
 
-	font-size: 1.4rem;
-	font-weight: 700;
+	font-size: 1.35rem;
+	font-weight: 750;
+	line-height: 1.2;
 }
 
 .headerTitle span {
 	color: var(--text-muted, #756d67);
 
-	font-size: 0.85rem;
+	font-size: 0.78rem;
 }
 
 /* ==================================================
-   FILTERS
+   FILTER PANEL
    ================================================== */
 
-.filterContainer {
-	display: flex;
-	align-items: flex-end;
-	justify-content: space-between;
+.filterPanel {
+	display: grid;
 
-	gap: 16px;
+	grid-template-columns:
+		minmax(240px, 2fr)
+		repeat(6, minmax(105px, 1fr))
+		auto;
+
+	gap: 8px;
+
+	padding: 10px;
+
+	border: 1px solid rgba(194, 65, 12, 0.12);
+	border-radius: var(--radius-md, 10px);
+
+	background: linear-gradient(135deg, #fffaf5 0%, #fff 100%);
+
+	box-shadow: 0 2px 10px rgba(93, 54, 27, 0.04);
 }
 
-.searchContainer {
-	flex: 1;
-	min-width: 240px;
+.filterFieldSearch,
+.filterField {
+	min-width: 0;
 
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+
+	gap: 4px;
 }
 
-.searchContainer label,
-.dateInputGroup label {
-	color: var(--text-dark);
+.filterFieldSearch label,
+.filterField label {
+	color: #7c6a5d;
 
-	font-size: 0.78rem;
-	font-weight: 600;
+	font-size: 0.66rem;
+	font-weight: 700;
+	letter-spacing: 0.01em;
 }
 
-.searchInput,
-.dateInputGroup input {
+.filterInput {
+	width: 100%;
+	height: 36px;
+
 	box-sizing: border-box;
 
-	height: 42px;
+	padding: 0 9px;
 
-	border: 1px solid var(--border-color, #ded7d1);
-	border-radius: var(--radius-md);
+	border: 1px solid #e7ddd5;
+	border-radius: 8px;
 
-	background-color: var(--white);
+	background-color: #fff;
 	color: var(--text-dark);
 
 	outline: none;
 
 	font-family: inherit;
+	font-size: 0.74rem;
 
 	transition:
 		border-color 150ms ease,
-		box-shadow 150ms ease;
+		box-shadow 150ms ease,
+		background-color 150ms ease;
 }
 
-.searchInput {
-	width: 100%;
-
-	padding: 0 14px;
+.filterInput::placeholder {
+	color: #b1a69e;
 }
 
-.dateInputGroup input {
-	/* width: 145px; */
-	padding: 0 10px;
+.filterInput:hover {
+	border-color: #d7c5b8;
 }
 
-.searchInput:focus,
-.dateInputGroup input:focus {
-	border-color: var(--orange-dark);
+.filterInput:focus {
+	border-color: var(--orange-dark, #c2410c);
 
-	box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.1);
+	box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.09);
 }
 
-.timeFilterContainer {
+/* Search */
+
+.filterFieldSearch {
+	grid-column: span 2;
+}
+
+/* Buttons */
+
+.filterActions {
 	display: flex;
 	align-items: flex-end;
 
-	gap: 10px;
-}
-
-.dateInputGroup {
-	display: flex;
-	flex-direction: column;
 	gap: 6px;
+
+	padding-bottom: 0;
 }
 
+.resetButton,
 .filterButton {
-	height: 42px;
+	height: 36px;
 
-	padding: 0 18px;
+	padding: 0 12px;
 
-	border: none;
-	border-radius: var(--radius-md);
-
-	background-color: var(--orange-dark);
-	color: var(--white);
+	border-radius: 8px;
 
 	font-family: inherit;
-	font-size: 0.85rem;
-	font-weight: 600;
+	font-size: 0.72rem;
+	font-weight: 700;
 
 	cursor: pointer;
 
+	white-space: nowrap;
+
 	transition:
-		background-color 150ms ease,
+		background-color 120ms ease,
+		border-color 120ms ease,
 		transform 100ms ease;
 }
 
-.filterButton:hover {
-	background-color: var(--orange);
+.resetButton {
+	border: 1px solid #e2d6cc;
+
+	background-color: #fff;
+
+	color: #796c63;
 }
 
+.resetButton:hover {
+	border-color: #d1bfb1;
+
+	background-color: #fff8f2;
+
+	color: var(--orange-dark, #c2410c);
+}
+
+.filterButton {
+	border: 1px solid var(--orange-dark, #c2410c);
+
+	background-color: var(--orange-dark, #c2410c);
+
+	color: white;
+}
+
+.filterButton:hover {
+	background-color: var(--orange, #f97316);
+	border-color: var(--orange, #f97316);
+}
+
+.resetButton:active,
 .filterButton:active {
 	transform: scale(0.97);
 }
@@ -163,6 +212,8 @@
 
 .transactionTable {
 	flex: 1;
+
+	width: 100%;
 	min-width: 0;
 	min-height: 0;
 
@@ -171,70 +222,138 @@
 
 	overflow: hidden;
 
-	background-color: var(--white);
+	border: 1px solid #eadfd7;
+
+	background-color: #fff;
+
+	box-shadow: 0 4px 18px rgba(87, 52, 31, 0.06);
 }
 
-/* Header */
+/* ==================================================
+   TABLE HEADER
+   ================================================== */
 
 .transactionTableHeader {
 	flex-shrink: 0;
 
-	min-height: 48px;
+	min-height: 44px;
 
 	display: grid;
 
 	grid-template-columns:
-		42px
-		minmax(160px, 1.4fr)
-		minmax(150px, 1fr)
+		34px
+		minmax(135px, 1.35fr)
+		minmax(125px, 1fr)
+		minmax(120px, 1fr)
 		70px
-		100px
-		120px
-		90px;
+		82px
+		minmax(110px, 0.9fr)
+		76px;
 
 	align-items: center;
 
-	gap: 10px;
+	gap: 8px;
 
-	padding: 0 14px;
+	padding: 0 12px;
 
-	border-bottom: 1px solid var(--border-color, #ded7d1);
+	border-bottom: 1px solid #eadfd7;
 
-	background-color: var(--cream-soft);
+	background: linear-gradient(90deg, #fff7f0 0%, #fffaf7 100%);
 
-	color: var(--text-muted, #756d67);
+	color: #8c7667;
 
-	font-size: 0.75rem;
-	font-weight: 700;
+	font-size: 0.68rem;
+	font-weight: 750;
+	letter-spacing: 0.01em;
 }
 
 .expandColumn {
-	width: 42px;
+	width: 34px;
+}
+
+.amountHeader {
+	text-align: right;
 }
 
 .actionColumn {
 	text-align: center;
 }
 
-/* Body */
+/* ==================================================
+   TABLE BODY
+   ================================================== */
 
 .transactionTableBody {
 	flex: 1;
+
 	min-height: 0;
 
 	overflow-y: auto;
+	overflow-x: hidden;
+
+	scrollbar-width: thin;
+	scrollbar-color: #dfc9b9 transparent;
 }
 
+.transactionTableBody::-webkit-scrollbar {
+	width: 6px;
+}
+
+.transactionTableBody::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.transactionTableBody::-webkit-scrollbar-thumb {
+	background-color: #dfc9b9;
+	border-radius: 999px;
+}
+
+.transactionTableBody::-webkit-scrollbar-thumb:hover {
+	background-color: #cda991;
+}
+
+/* ==================================================
+   EMPTY STATE
+   ================================================== */
+
 .emptyState {
-	height: 100%;
+	min-height: 220px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+
+	gap: 4px;
+
+	color: #9a8b80;
+
+	font-size: 0.78rem;
+}
+
+.emptyState strong {
+	color: #6e5e53;
+
+	font-size: 0.82rem;
+}
+
+.emptyIcon {
+	width: 34px;
+	height: 34px;
 
 	display: flex;
 	align-items: center;
 	justify-content: center;
 
-	color: var(--text-muted, #756d67);
+	margin-bottom: 4px;
 
-	font-size: 0.9rem;
+	border-radius: 50%;
+
+	background-color: #fff1e7;
+
+	color: var(--orange-dark, #c2410c);
+
+	font-size: 1.1rem;
 }
 
 /* ==================================================
@@ -244,35 +363,37 @@
 .transactionTableFooter {
 	flex-shrink: 0;
 
-	min-height: 58px;
+	min-height: 52px;
 
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 
-	padding: 0 14px;
+	gap: 12px;
 
-	border-top: 1px solid var(--border-color, #ded7d1);
+	padding: 0 12px;
 
-	background-color: var(--white);
+	border-top: 1px solid #eadfd7;
+
+	background-color: #fff;
 }
 
 .paginationInfo {
-	color: var(--text-muted, #756d67);
+	color: #9a8b80;
 
-	font-size: 0.78rem;
+	font-size: 0.7rem;
 }
 
 .paginationControls {
 	display: flex;
 	align-items: center;
 
-	gap: 6px;
+	gap: 5px;
 }
 
 .paginationControls button {
-	width: 34px;
-	height: 34px;
+	width: 30px;
+	height: 30px;
 
 	display: flex;
 	align-items: center;
@@ -280,11 +401,12 @@
 
 	padding: 0;
 
-	border: 1px solid var(--border-color, #ded7d1);
-	border-radius: var(--radius-md);
+	border: 1px solid #eadfd7;
+	border-radius: 8px;
 
-	background-color: var(--white);
-	color: var(--text-dark);
+	background-color: #fff;
+
+	color: #6f6259;
 
 	cursor: pointer;
 
@@ -295,55 +417,63 @@
 }
 
 .paginationControls button:hover:not(:disabled) {
-	border-color: var(--orange);
-	background-color: var(--cream-soft);
-	color: var(--orange-dark);
+	border-color: #e4a678;
+
+	background-color: #fff5ed;
+
+	color: var(--orange-dark, #c2410c);
 }
 
 .paginationControls button:disabled {
-	opacity: 0.35;
+	opacity: 0.3;
 
 	cursor: not-allowed;
 }
 
 .currentPage {
-	min-width: 60px;
+	min-width: 52px;
 
 	text-align: center;
 
-	color: var(--text-dark);
+	color: #604e42;
 
-	font-size: 0.8rem;
-	font-weight: 600;
+	font-size: 0.72rem;
+	font-weight: 700;
 }
 
 /* ==================================================
    TABLET
+   Wife's tablet: approximately 1078 x 505
    ================================================== */
 
-@media (max-width: 1000px) {
-	.filterContainer {
-		align-items: stretch;
-		flex-direction: column;
+@media (max-width: 1100px) {
+	.filterPanel {
+		grid-template-columns:
+			minmax(200px, 2fr)
+			repeat(4, minmax(100px, 1fr))
+			auto;
 	}
 
-	.searchContainer {
-		min-width: 0;
-	}
-
-	.timeFilterContainer {
-		justify-content: flex-end;
+	.filterFieldSearch {
+		grid-column: span 2;
 	}
 
 	.transactionTableHeader {
 		grid-template-columns:
-			38px
-			minmax(130px, 1.4fr)
-			minmax(130px, 1fr)
+			32px
+			minmax(120px, 1.3fr)
+			minmax(115px, 1fr)
+			minmax(110px, 1fr)
 			60px
-			90px
-			110px
+			78px
+			minmax(105px, 0.9fr)
 			70px;
+
+		gap: 6px;
+
+		padding: 0 10px;
+
+		font-size: 0.65rem;
 	}
 }
 
@@ -353,57 +483,72 @@
 
 @media (max-width: 767px) {
 	.transactionHistoryLayout {
-		gap: 12px;
-	}
-
-	.headerTitle h1 {
-		font-size: 1.2rem;
-	}
-
-	.filterContainer {
 		gap: 10px;
 	}
 
-	.timeFilterContainer {
-		display: flex;
-
-		grid-template-columns: 1fr 1fr auto;
-
-		gap: 8px;
+	.headerTitle h1 {
+		font-size: 1.15rem;
 	}
 
-	.dateInputGroup {
-		min-width: 130px;
-	}
-
-	.dateInputGroup input {
-		width: 100%;
-	}
-
-	.dateInputGroup label {
-		display: none;
-	}
-
-	.filterButton {
-		padding: 0 14px;
+	.headerTitle span {
+		font-size: 0.72rem;
 	}
 
 	/*
-     * Hide desktop table header.
-     * TransactionItem becomes its own card/list row.
-     */
+	 * Two-column filter layout.
+	 *
+	 * Search takes the entire first row.
+	 */
+	.filterPanel {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 
+		gap: 7px;
+
+		padding: 8px;
+	}
+
+	.filterFieldSearch {
+		grid-column: 1 / -1;
+	}
+
+	.filterActions {
+		grid-column: 1 / -1;
+
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.resetButton,
+	.filterButton {
+		width: 100%;
+	}
+
+	/*
+	 * Hide desktop table header.
+	 * TransactionItem becomes a mobile transaction card.
+	 */
 	.transactionTableHeader {
 		display: none;
 	}
 
 	.transactionTableFooter {
-		min-height: 54px;
+		min-height: 48px;
 
-		padding: 0 10px;
+		padding: 0 9px;
 	}
 
 	.paginationInfo {
-		font-size: 0.7rem;
+		font-size: 0.64rem;
+	}
+
+	.currentPage {
+		min-width: 46px;
+
+		font-size: 0.68rem;
+	}
+
+	.paginationControls button {
+		width: 28px;
+		height: 28px;
 	}
 }
