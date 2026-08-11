@@ -13,6 +13,7 @@ export type TProduct = {
 
 export const getProducts = async (): Promise<TProduct[]> => {
 	try {
+		console.log("Fetching Product");
 		const { data, error } = await supabase
 			.from("products")
 			.select(
@@ -32,6 +33,8 @@ export const getProducts = async (): Promise<TProduct[]> => {
 		if (error) {
 			throw error;
 		}
+
+		console.log(data);
 
 		return data;
 	} catch (e) {

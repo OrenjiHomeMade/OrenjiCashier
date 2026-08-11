@@ -1,26 +1,33 @@
-import { useState } from "react";
+// IMPORT STYLES
 import style from "./ProductInfo.module.css";
+// IMPORT TYPES
+import type { TProduct } from "../../Types/product";
+// IMPORT HOOKS
+import { useState } from "react";
+// IMPORT COMPONENTS
+import EmptyImage from "../MediaComponent/EmptyImage";
+import { rupiahFormater } from "../../Utilities/NumberFormater";
 
-export type TProductInfo = {
-	productCode: string;
-	productName: string;
-	productImageUrl: string;
-	productQuantity: number;
-	category: string;
+export interface TProductInfo extends TProduct {
+	availableStock: number;
 	variant?: "grid" | "list";
 	onAdd?: () => void;
-};
+}
 
-const ProductItem = ({ productName, productImageUrl, productQuantity, variant = "grid", onAdd }: TProductInfo) => {
+const ProductItem = ({
+	productName,
+	price,
+	productImageUrl,
+	availableStock,
+	variant = "grid",
+	onAdd
+}: TProductInfo) => {
 	const [imageError, setImageError] = useState(false);
 
-	// TODO: Add out of stock logic
-	// const isOutOfStock = productQuantity <= 0;
-	const isOutOfStock = false;
+	const isOutOfStock = availableStock <= 0;
 
 	const handleAdd = () => {
 		if (isOutOfStock) return;
-
 		onAdd?.();
 	};
 
@@ -34,24 +41,7 @@ const ProductItem = ({ productName, productImageUrl, productQuantity, variant = 
 			/>
 		) : (
 			<div className={style.imageFallback}>
-				<svg viewBox="0 0 48 48" aria-hidden="true" className={style.fallbackIcon}>
-					<path
-						d="M9 12.5A3.5 3.5 0 0 1 12.5 9h23a3.5 3.5 0 0 1 3.5 3.5v23a3.5 3.5 0 0 1-3.5 3.5h-23A3.5 3.5 0 0 1 9 35.5v-23Z"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2.5"
-					/>
-					<circle cx="17" cy="17" r="3" fill="currentColor" />
-					<path
-						d="m12 34 8.5-9 6 6 4-4L38 34"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2.5"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-					/>
-				</svg>
-
+				<EmptyImage className={style.fallbackIcon} />
 				<span>No Image</span>
 			</div>
 		);
@@ -64,9 +54,11 @@ const ProductItem = ({ productName, productImageUrl, productQuantity, variant = 
 				<div className={style.listInfo}>
 					<span className={style.productName}>{productName}</span>
 
-					<span className={style.stock}>Stock: {productQuantity}</span>
+					<span className={style.stock}>Stock: {availableStock}</span>
 				</div>
-
+				<div className={style.priceInfo}>
+					<strong className={style.price}>{rupiahFormater(price)}</strong>
+				</div>
 				<button type="button" className={style.addButton} disabled={isOutOfStock} onClick={handleAdd}>
 					<span>+</span>
 					Add
@@ -86,8 +78,8 @@ const ProductItem = ({ productName, productImageUrl, productQuantity, variant = 
 
 			<div className={style.gridInfo}>
 				<span className={style.productName}>{productName}</span>
-
-				<span className={style.stock}>Stock: {productQuantity}</span>
+				<strong className={style.price}>{rupiahFormater(price)}</strong>
+				<span className={style.stock}>Stock: {availableStock}</span>
 			</div>
 		</button>
 	);

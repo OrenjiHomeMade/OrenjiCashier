@@ -1,26 +1,24 @@
-import TrashIcon from "../../Component/MediaComponent/TrashIcon";
+// IMPORT STYLES
 import style from "./CartItem.module.css";
+// IMPORT TYPES
+import type { Item } from "react-use-cart";
+// IMPORT COMPONENTS
+import TrashIcon from "../../Component/MediaComponent/TrashIcon";
+import { rupiahFormater } from "../../Utilities/NumberFormater";
 
-export type TCartItem = {
-	productId: string;
-	productName: string;
-	productImageUrl?: string;
-	quantity: number;
-	price: number;
-
+export interface TCartItem extends Item {
 	variant?: "cart" | "history";
-
 	onIncrease?: () => void;
 	onDecrease?: () => void;
 	onDelete?: () => void;
-};
+}
 
 const CartItem = ({
-	// productId,
-	productName,
-	productImageUrl,
+	id,
+	name,
 	quantity,
 	price,
+	productImageUrl,
 	variant = "cart",
 	onIncrease,
 	onDecrease,
@@ -28,14 +26,14 @@ const CartItem = ({
 }: TCartItem) => {
 	const isHistory = variant === "history";
 
-	const subtotal = quantity * price;
+	const subtotal = (quantity ?? 0) * price;
 
 	return (
-		<div className={`${style.cartItem} ${isHistory ? style.historyItem : style.cartVariant}`}>
+		<div id={id} className={`${style.cartItem} ${isHistory ? style.historyItem : style.cartVariant}`}>
 			{/* Product image */}
 			<div className={style.productImageContainer}>
 				{productImageUrl ? (
-					<img src={productImageUrl} alt={productName} className={style.productImage} />
+					<img src={productImageUrl} alt={name} className={style.productImage} />
 				) : (
 					<div className={style.imageFallback} aria-label="No product image">
 						<span>IMG</span>
@@ -45,9 +43,9 @@ const CartItem = ({
 
 			{/* Product information */}
 			<div className={style.productInfo}>
-				<span className={style.productName}>{productName}</span>
+				<span className={style.productName}>{name}</span>
 
-				{isHistory && <span className={style.productPrice}>Rp {price.toLocaleString("id-ID")}</span>}
+				<span className={style.productPrice}>{rupiahFormater(subtotal)}</span>
 			</div>
 
 			{isHistory ? (
@@ -67,7 +65,7 @@ const CartItem = ({
 							className={style.quantityButton}
 							onClick={onDecrease}
 							disabled={!onDecrease}
-							aria-label={`Decrease ${productName}`}
+							aria-label={`Decrease ${name}`}
 						>
 							−
 						</button>
@@ -79,7 +77,7 @@ const CartItem = ({
 							className={style.quantityButton}
 							onClick={onIncrease}
 							disabled={!onIncrease}
-							aria-label={`Increase ${productName}`}
+							aria-label={`Increase ${name}`}
 						>
 							+
 						</button>
@@ -91,7 +89,7 @@ const CartItem = ({
 						className={style.deleteButton}
 						onClick={onDelete}
 						disabled={!onDelete}
-						aria-label={`Remove ${productName}`}
+						aria-label={`Remove ${name}`}
 					>
 						<TrashIcon />
 					</button>

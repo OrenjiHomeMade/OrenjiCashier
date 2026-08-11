@@ -1,22 +1,25 @@
-import { useMemo, useState } from "react";
-import GridIcon from "../../../../Component/MediaComponent/GridIcon";
-import ListIcon from "../../../../Component/MediaComponent/ListIcon";
+// IMPORT STYLES
 import style from "./ProductSection.module.css";
-import ProductItem, { type TProductInfo } from "../../../../Component/ProductItem/ProductItem";
+// IMPORT TYPES
+import { type TProductInfo } from "../ProductItem/ProductItem";
+// IMPORT HOOKS
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts } from "../../../../Services/supabase/productService";
+import { useCart } from "react-use-cart";
+// IMPORT COMPONENTS
+import GridIcon from "../MediaComponent/GridIcon";
+import ListIcon from "../MediaComponent/ListIcon";
+import ProductItem from "../ProductItem/ProductItem";
+// IMPORT SERVICES
+import { getProducts } from "../../Services/supabase/productService";
 
 const ProductSection = () => {
+	const { addItem } = useCart();
 	const [view, setView] = useState<"grid" | "list">("grid");
 	const [selectedCategory, setSelectedCategory] = useState("Semua");
 	const [searchTerm, setSearchTerm] = useState("");
 
-	const {
-		data: products = []
-		// isLoading,
-		// isError,
-		// error
-	} = useQuery({
+	const { data: products = [] } = useQuery({
 		queryKey: ["products"],
 		queryFn: getProducts
 	});
@@ -27,11 +30,14 @@ const ProductSection = () => {
 	 */
 	const productInfos = useMemo<TProductInfo[]>(() => {
 		return products.map((product) => ({
-			productCode: product.product_code,
+			id: product.product_id,
+			price: product.product_price,
+			quantity: 0,
 			productName: product.product_name,
 			productImageUrl: product.product_image ?? "",
-			productQuantity: 0,
-			category: product.product_category
+			category: product.product_category,
+			description: product.description ?? "",
+			availableStock: 100
 		}));
 	}, [products]);
 
@@ -50,10 +56,6 @@ const ProductSection = () => {
 			return matchesCategory && matchesSearch;
 		});
 	}, [productInfos, selectedCategory, searchTerm]);
-
-	const handleProductClick = (product: TProductInfo) => {
-		console.log("Add to cart:", product.productName);
-	};
 
 	return (
 		<section className={style.productSection}>
@@ -114,14 +116,26 @@ const ProductSection = () => {
 					view === "list" ? style.productCollectionList : style.productCollectionGrid
 				}`}
 			>
-				{filteredProducts.map((product) => (
-					<ProductItem
-						key={product.productName}
-						{...product}
-						variant={view}
-						onAdd={() => handleProductClick(product)}
-					/>
-				))}
+				{filteredProducts.map((product) => {
+					return (
+						<ProductItem
+							key={product.id}
+							variant={view}
+							onAdd={() => {
+								const item = {
+									id: product.id,
+									price: product.price,
+									quantity: product.quantity,
+									name: product.productName,
+									productImageUrl: product.productImageUrl
+								};
+								console.log(item);
+								addItem(item, 1);
+							}}
+							{...product}
+						/>
+					);
+				})}
 			</div>
 		</section>
 	);
