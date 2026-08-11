@@ -18,7 +18,7 @@ import LoadingModal from "../../Component/LoadingModal/LoadingModal";
 
 type PaymentMethod = "CASH" | "QRIS";
 
-const CASHIERS = ["Admin GL POS", "Siti", "Budi", "SYSTEM"];
+const CASHIERS = ["Bubu", "Nuha", "Syifa", "Mujahid", "SYSTEM"];
 
 const PAYMENT_METHODS: PaymentMethod[] = ["CASH", "QRIS"];
 

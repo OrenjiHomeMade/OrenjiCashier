@@ -29,16 +29,18 @@ const ProductSection = () => {
 	 * ProductItem UI data structure.
 	 */
 	const productInfos = useMemo<TProductInfo[]>(() => {
-		return products.map((product) => ({
-			id: product.product_id,
-			price: product.product_price,
-			quantity: 0,
-			productName: product.product_name,
-			productImageUrl: product.product_image ?? "",
-			category: product.product_category,
-			description: product.description ?? "",
-			availableStock: 100
-		}));
+		return products
+			? products.map((product) => ({
+					id: product.product_id,
+					price: product.product_price,
+					quantity: 0,
+					productName: product.product_name,
+					productImageUrl: product.product_image ?? "",
+					category: product.product_category,
+					description: product.description ?? "",
+					availableStock: 100
+				}))
+			: [];
 	}, [products]);
 
 	const categories = useMemo(() => {

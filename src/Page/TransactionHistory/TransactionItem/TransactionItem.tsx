@@ -8,6 +8,7 @@ import EditIcon from "../../../Component/MediaComponent/EditIcon";
 import ChevronIcon from "../../../Component/MediaComponent/ChevronIcon";
 
 import TransactionDetailItem, { type TTransactionDetailItem } from "../TransactionDetailItem/TransactionDetailItem";
+import { toast } from "react-toastify";
 
 export type TTransaction = {
 	transactionId: number;
@@ -94,7 +95,14 @@ const TransactionItem = ({
 				<div className={`${style.amount} ${style.cell}`}>{rupiahFormater(transactionAmount)}</div>
 
 				<div className={style.actions}>
-					<button type="button" className={style.actionButton} aria-label="Edit transaction">
+					<button
+						type="button"
+						className={style.actionButton}
+						aria-label="Edit transaction"
+						onClick={() => {
+							toast("Fungsi ini belum tersedia");
+						}}
+					>
 						<EditIcon />
 					</button>
 
