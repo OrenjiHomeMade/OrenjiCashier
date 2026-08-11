@@ -1,10 +1,9 @@
 // IMPORT STYLES
 import style from "./CartSection.module.css";
-// IMPORT TYPES
 
 // IMPORT HOOKS
 import { useCart } from "react-use-cart";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 // IMPORT COMPONENT
 import CartIcon from "../../../Component/MediaComponent/CartIcon";
@@ -12,38 +11,56 @@ import TrashIcon from "../../../Component/MediaComponent/TrashIcon";
 import BankNoteDownIcon from "../../../Component/MediaComponent/BankNoteDownIcon";
 import CartItem from "../../../Component/CartItem/CartItem";
 
-const CartSection = () => {
-	const [isOpen, setIsOpen] = useState(false);
-	const startY = useRef(0);
-	const { items: cartItems, isEmpty, updateItemQuantity, removeItem, emptyCart } = useCart();
+// IMPORT UTILITIES
+import { generateTransactionCode, getLocalTimestamp, rupiahFormater } from "../../../Utilities/NumberFormater";
+import type { TCreateTransactionInput } from "../../../Services/supabase/transactionService";
 
-	const handlePointerDown = (event: React.PointerEvent) => {
-		console.log("Pointer down", event.clientY);
-		startY.current = event.clientY;
-	};
+export type CartProps = {
+	onExecutePayment: (entry: TCreateTransactionInput) => void;
+	onCartHeaderClick: () => void;
+	cartHeaderIsOpen: boolean;
+};
 
-	const handlePointerUp = (event: React.PointerEvent) => {
-		console.log("Pointer up", event.clientY);
-		const deltaY = event.clientY - startY.current;
+const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: CartProps) => {
+	// const [isOpen, setIsOpen] = useState(false);
 
-		console.log("Swipe distance:", deltaY);
+	const [paymentMethod, setPaymentMethod] = useState<"qris" | "cash">("qris");
+	const [paymentAmount, setPaymentAmount] = useState<number>(0);
 
-		if (deltaY < -30) {
-			setIsOpen(true);
-		} else if (deltaY > 30) {
-			setIsOpen(false);
+	const { items: cartItems, isEmpty, cartTotal, totalItems, updateItemQuantity, removeItem, emptyCart } = useCart();
+
+	const handleProcessPayment = () => {
+		console.log("process");
+		if (!isPaymentValid) {
+			console.log("out");
+			return;
 		}
+
+		const cashierName = "SYSTEM";
+		const transactionTime = new Date();
+
+		const transaction = {
+			transaction_code: generateTransactionCode(cashierName, transactionTime),
+			transaction_time: getLocalTimestamp(transactionTime),
+			payment_method: paymentMethod,
+			transaction_amount: paymentAmount - cartTotal,
+			cashier: cashierName,
+			items: cartItems.map((item) => ({
+				product_id: item.id,
+				quantity: item.quantity ?? 0,
+				unit_price: item.price,
+				subtotal: item.itemTotal ?? 0
+			}))
+		};
+
+		onExecutePayment(transaction);
 	};
 
-	const handleHeaderClick = () => {
-		if (isOpen) {
-			setIsOpen(false);
-		} else {
-			setIsOpen(true);
-		}
-	};
+	const actualPayment = paymentMethod === "qris" ? cartTotal : paymentAmount;
 
-	console.log("cartItems: ", cartItems);
+	const change = Math.max(actualPayment - cartTotal, 0);
+
+	const isPaymentValid = actualPayment >= cartTotal;
 
 	let cartContent;
 
@@ -61,7 +78,7 @@ const CartSection = () => {
 					{cartItems.map((item) => {
 						return (
 							<CartItem
-								key={item.productName}
+								key={item.id}
 								onIncrease={() => updateItemQuantity(item.id, (item.quantity ?? 0) + 1)}
 								onDecrease={() => updateItemQuantity(item.id, (item.quantity ?? 0) - 1)}
 								onDelete={() => removeItem(item.id)}
@@ -73,19 +90,58 @@ const CartSection = () => {
 				<div className={style.cartSummary}>
 					<div className={style.totalRow}>
 						<span>Total Tagihan</span>
-						<strong>Rp. 1.000.000,-</strong>
+						<strong>{rupiahFormater(cartTotal)}</strong>
 					</div>
 
 					<div className={style.paymentRow}>
-						<select className={style.paymentSelect} defaultValue="qris">
+						<select
+							className={style.paymentSelect}
+							value={paymentMethod}
+							onChange={(event) => {
+								if (event.target.value === "cash") {
+									setPaymentAmount(0);
+									setPaymentMethod("cash");
+								} else {
+									setPaymentAmount(cartTotal);
+									setPaymentMethod("qris");
+								}
+							}}
+						>
 							<option value="qris">QRIS</option>
 							<option value="cash">CASH</option>
 						</select>
-
-						<input className={style.paymentInput} type="text" placeholder="Nominal pembayaran" />
+						<input
+							className={`${style.paymentInput} ${isPaymentValid ? "" : style.paymentInputInvalid}`}
+							type="text"
+							inputMode="numeric"
+							placeholder="Nominal pembayaran"
+							value={
+								paymentMethod === "qris"
+									? rupiahFormater(cartTotal)
+									: paymentAmount === 0
+										? ""
+										: rupiahFormater(paymentAmount)
+							}
+							disabled={paymentMethod === "qris"}
+							onChange={(event) => {
+								const numericValue = event.target.value.replace(/\D/g, "");
+								setPaymentAmount(numericValue === "" ? 0 : Number(numericValue));
+							}}
+						/>
 					</div>
+					{paymentMethod === "cash" && (
+						<div className={style.changeRow}>
+							<span>Kembalian</span>
+							<span>{rupiahFormater(change)}</span>
+						</div>
+					)}
 
-					<button type="button" className={style.processButton}>
+					<button
+						type="button"
+						className={style.processButton}
+						disabled={!isPaymentValid}
+						onClick={handleProcessPayment}
+					>
 						<BankNoteDownIcon />
 						<span>Proses Pembayaran</span>
 					</button>
@@ -99,23 +155,23 @@ const CartSection = () => {
 		);
 	}
 	return (
-		<section className={`${style.cartSection} ${isOpen ? style.open : ""}`}>
-			<div
-				className={style.cartHeader}
-				onPointerUp={handlePointerUp}
-				onPointerDown={handlePointerDown}
-				onClick={handleHeaderClick}
-			>
+		<section className={`${style.cartSection} ${cartHeaderIsOpen ? style.open : ""}`}>
+			<div className={style.cartHeader} onClick={() => onCartHeaderClick()}>
 				<div className={style.cartTitle}>
 					<CartIcon />
 					<h1>Keranjang</h1>
 				</div>
 
-				<select className={style.cartSelect} defaultValue="default">
+				{/* <select className={style.cartSelect} defaultValue="default">
 					<option value="default">Pilih Pelanggan</option>
 					<option value="customer-1">Pelanggan 1</option>
 					<option value="customer-2">Pelanggan 2</option>
-				</select>
+				</select> */}
+				{!isEmpty && (
+					<div className={style.totalItem}>
+						<strong>{totalItems} Items</strong>
+					</div>
+				)}
 			</div>
 			{cartContent}
 		</section>

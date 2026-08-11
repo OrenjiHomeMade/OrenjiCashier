@@ -11,13 +11,12 @@ export type TProduct = {
 	description: string | null;
 };
 
-export const getProducts = async (): Promise<TProduct[]> => {
-	try {
-		console.log("Fetching Product");
-		const { data, error } = await supabase
-			.from("products")
-			.select(
-				`
+export const getProducts = async (): Promise<TProduct[] | null> => {
+	console.log("Fetching Product");
+	const { data, error } = await supabase
+		.from("products")
+		.select(
+			`
                 product_id,
                 product_code,
                 product_name,
@@ -26,21 +25,15 @@ export const getProducts = async (): Promise<TProduct[]> => {
                 product_category,
                 description
                 `
-			)
-			.eq("is_active", true)
-			.is("deleted_at", null);
+		)
+		.eq("is_active", true)
+		.is("deleted_at", null);
 
-		if (error) {
-			throw error;
-		}
-
-		console.log(data);
-
-		return data;
-	} catch (e) {
-		const error = e as Error;
-		toast.error(error.message);
+	if (error) {
+		toast.error(`Failed Loading products ${error.message}`);
 		console.log(error.message);
-		return [];
+		return null;
 	}
+	// console.log(data);
+	return data;
 };
