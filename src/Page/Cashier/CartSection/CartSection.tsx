@@ -3,7 +3,7 @@ import style from "./CartSection.module.css";
 
 // IMPORT HOOKS
 import { useCart } from "react-use-cart";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 // IMPORT COMPONENT
 import CartIcon from "../../../Component/MediaComponent/CartIcon";
@@ -14,6 +14,7 @@ import CartItem from "../../../Component/CartItem/CartItem";
 // IMPORT UTILITIES
 import { generateTransactionCode, getLocalTimestamp, rupiahFormater } from "../../../Utilities/NumberFormater";
 import type { TCreateTransactionInput } from "../../../Services/supabase/transactionService";
+import AuthContext from "../../../Component/Context/AuthProvider";
 
 export type CartProps = {
 	onExecutePayment: (entry: TCreateTransactionInput) => void;
@@ -28,6 +29,7 @@ const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: 
 	const [paymentAmount, setPaymentAmount] = useState<number>(0);
 
 	const { items: cartItems, isEmpty, cartTotal, totalItems, updateItemQuantity, removeItem, emptyCart } = useCart();
+	const { user } = useContext(AuthContext);
 
 	const handleProcessPayment = () => {
 		console.log("process");
@@ -36,7 +38,7 @@ const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: 
 			return;
 		}
 
-		const cashierName = "SYSTEM";
+		const cashierName = user?.username || "SYSTEM";
 		const transactionTime = new Date();
 
 		const transaction = {

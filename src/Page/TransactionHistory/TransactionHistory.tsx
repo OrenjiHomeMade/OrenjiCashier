@@ -400,6 +400,9 @@ const TransactionHistory = () => {
 										{name}
 									</option>
 								))}
+							<option key={"SYSTEM"} value={"SYSTEM"}>
+								SYSTEM
+							</option>
 						</select>
 					</div>
 
