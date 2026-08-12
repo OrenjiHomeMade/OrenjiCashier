@@ -9,22 +9,27 @@ export type TProduct = {
 	product_price: number;
 	product_category: string;
 	description: string | null;
+	stock_quantity: number;
 };
 
-export const getProducts = async (): Promise<TProduct[] | null> => {
+export const getProducts = async (): Promise<TProduct[]> => {
 	console.log("Fetching Product");
+
 	const { data, error } = await supabase
 		.from("products")
 		.select(
 			`
-                product_id,
-                product_code,
-                product_name,
-                product_image,
-                product_price,
-                product_category,
-                description
-                `
+			product_id,
+			product_code,
+			product_name,
+			product_image,
+			product_price,
+			product_category,
+			description,
+			product_stock (
+				stock_quantity
+			)
+		`
 		)
 		.eq("is_active", true)
 		.is("deleted_at", null);
@@ -32,10 +37,13 @@ export const getProducts = async (): Promise<TProduct[] | null> => {
 	if (error) {
 		toast.error(`Failed Loading products ${error.message}`);
 		console.log(error.message);
-		return null;
+		return [];
 	}
-	// console.log(data);
-	return data;
+
+	return data.map((product) => ({
+		...product,
+		stock_quantity: product.product_stock?.[0]?.stock_quantity ?? 0
+	}));
 };
 
 export const getProductImageUrl = (product_code: string) => {

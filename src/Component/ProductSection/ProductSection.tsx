@@ -24,24 +24,16 @@ const ProductSection = () => {
 		queryFn: getProducts
 	});
 
-	/*
-	 * Convert Supabase data into the existing
-	 * ProductItem UI data structure.
-	 */
-	const productInfos = useMemo<TProductInfo[]>(() => {
-		return products
-			? products.map((product) => ({
-					id: product.product_id,
-					price: product.product_price,
-					quantity: 0,
-					productName: product.product_name,
-					productImageUrl: getProductImageUrl(product.product_code),
-					category: product.product_category,
-					description: product.description ?? "",
-					availableStock: 100
-				}))
-			: [];
-	}, [products]);
+	const productInfos: TProductInfo[] = products.map((product) => ({
+		id: product.product_id,
+		price: product.product_price,
+		quantity: 0,
+		productName: product.product_name,
+		productImageUrl: getProductImageUrl(product.product_code),
+		category: product.product_category,
+		description: product.description ?? "",
+		availableStock: product.stock_quantity
+	}));
 
 	const categories = useMemo(() => {
 		const uniqueCategories = new Set(productInfos.map((product) => product.category));
