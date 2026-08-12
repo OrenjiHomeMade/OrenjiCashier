@@ -37,3 +37,11 @@ export const getProducts = async (): Promise<TProduct[] | null> => {
 	// console.log(data);
 	return data;
 };
+
+export const getProductImageUrl = (product_code: string) => {
+	const imagePath = `${product_code}.webp`;
+
+	const { data } = supabase.storage.from("product-images").getPublicUrl(imagePath);
+
+	return data.publicUrl;
+};

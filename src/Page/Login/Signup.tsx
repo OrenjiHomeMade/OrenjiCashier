@@ -6,7 +6,7 @@ import styles from "./Login.module.css";
 
 import { signUp } from "../../Services/supabase/userService";
 
-import CheerfulLogo from "../../assets/OrenjiSquareLogo.svg";
+import OrenjiLogo from "../../assets/Stiker Orenji.svg";
 
 function Signup() {
 	const navigate = useNavigate();
@@ -64,7 +64,7 @@ function Signup() {
 	return (
 		<main className={styles["auth-page"]}>
 			<section className={styles["auth-card"]}>
-				<img src={CheerfulLogo} alt="Orenji" className={styles["logo"]} />
+				<img src={OrenjiLogo} alt="Orenji" className={styles["logo"]} />
 
 				<div className={styles["heading"]}>
 					<h1>Create account</h1>

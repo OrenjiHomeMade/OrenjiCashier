@@ -11,14 +11,13 @@ import TransactionItem, { type TTransaction } from "./TransactionItem/Transactio
 
 import {
 	deleteTransaction,
+	getCashierOperators,
 	getTransactions,
 	type TTransaction as TDatabaseTransaction
 } from "../../Services/supabase/transactionService";
 import LoadingModal from "../../Component/LoadingModal/LoadingModal";
 
 type PaymentMethod = "CASH" | "QRIS";
-
-const CASHIERS = ["Bubu", "Nuha", "Syifa", "Mujahid", "SYSTEM"];
 
 const PAYMENT_METHODS: PaymentMethod[] = ["CASH", "QRIS"];
 
@@ -52,26 +51,16 @@ const getItemsPerPage = () => {
 const mapTransactionToUI = (transaction: TDatabaseTransaction): TTransaction => {
 	return {
 		transactionId: transaction.transaction_id,
-
 		transactionCode: transaction.transaction_code,
-
 		transactionDate: new Date(transaction.transaction_time),
-
 		cashier: transaction.cashier,
-
 		transactionAmount: Number(transaction.transaction_amount),
-
 		paymentMethod: transaction.payment_method as PaymentMethod,
-
 		transactionItems: transaction.items.map((item) => ({
 			id: String(item.transaction_item_id),
-
 			productName: item.product_name ?? `Product #${item.product_id}`,
-
 			quantity: item.quantity,
-
 			unitPrice: Number(item.unit_price),
-
 			subtotal: Number(item.subtotal)
 		}))
 	};
@@ -83,6 +72,7 @@ const mapTransactionToUI = (transaction: TDatabaseTransaction): TTransaction => 
 
 const TransactionHistory = () => {
 	const queryClient = useQueryClient();
+	const { data: CASHIERS } = useQuery({ queryKey: ["cashiers"], queryFn: () => getCashierOperators() });
 	/* =====================================================
 	   FILTER INPUT STATE
 
@@ -91,23 +81,16 @@ const TransactionHistory = () => {
 	   ===================================================== */
 
 	const [searchTerm, setSearchTerm] = useState("");
-
 	const [startDate, setStartDate] = useState(() => {
 		const date = new Date();
-
 		date.setDate(date.getDate() - 7);
-
 		return dateStringInputFormat(date);
 	});
 
 	const [endDate, setEndDate] = useState(() => dateStringInputFormat(new Date()));
-
 	const [cashier, setCashier] = useState("");
-
 	const [paymentMethod, setPaymentMethod] = useState("");
-
 	const [minAmount, setMinAmount] = useState("");
-
 	const [maxAmount, setMaxAmount] = useState("");
 
 	/* =====================================================
@@ -134,7 +117,6 @@ const TransactionHistory = () => {
 	   ===================================================== */
 
 	const [currentPage, setCurrentPage] = useState(1);
-
 	const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage);
 
 	/* =====================================================
@@ -149,20 +131,16 @@ const TransactionHistory = () => {
 	useEffect(() => {
 		const handleResize = () => {
 			const newItemsPerPage = getItemsPerPage();
-
 			setItemsPerPage((previous) => {
 				if (previous !== newItemsPerPage) {
 					// Changing page size can make the
 					// current page invalid.
 					setCurrentPage(1);
 				}
-
 				return newItemsPerPage;
 			});
 		};
-
 		window.addEventListener("resize", handleResize);
-
 		return () => {
 			window.removeEventListener("resize", handleResize);
 		};
@@ -175,17 +153,11 @@ const TransactionHistory = () => {
 	const handleFilter = () => {
 		setAppliedFilters({
 			searchTerm: searchTerm.trim(),
-
 			startDate,
-
 			endDate,
-
 			cashier,
-
 			paymentMethod,
-
 			minAmount,
-
 			maxAmount
 		});
 
@@ -206,37 +178,22 @@ const TransactionHistory = () => {
 		})();
 
 		const defaultEndDate = dateStringInputFormat(new Date());
-
 		setSearchTerm("");
-
 		setStartDate(defaultStartDate);
-
 		setEndDate(defaultEndDate);
-
 		setCashier("");
-
 		setPaymentMethod("");
-
 		setMinAmount("");
-
 		setMaxAmount("");
-
 		setAppliedFilters({
 			searchTerm: "",
-
 			startDate: defaultStartDate,
-
 			endDate: defaultEndDate,
-
 			cashier: "",
-
 			paymentMethod: "",
-
 			minAmount: "",
-
 			maxAmount: ""
 		});
-
 		setCurrentPage(1);
 	};
 
@@ -322,9 +279,7 @@ const TransactionHistory = () => {
 	   ===================================================== */
 
 	const transactions: TTransaction[] = transactionResult?.data.map(mapTransactionToUI) ?? [];
-
 	const totalCount = transactionResult?.totalCount ?? 0;
-
 	const totalPages = transactionResult?.totalPages ?? 1;
 
 	/*
@@ -439,11 +394,12 @@ const TransactionHistory = () => {
 						>
 							<option value="">All cashiers</option>
 
-							{CASHIERS.map((name) => (
-								<option key={name} value={name}>
-									{name}
-								</option>
-							))}
+							{CASHIERS &&
+								CASHIERS.map(({ username: name }) => (
+									<option key={name} value={name}>
+										{name}
+									</option>
+								))}
 						</select>
 					</div>
 
@@ -551,7 +507,6 @@ const TransactionHistory = () => {
 					) : isError ? (
 						<div className={style.emptyState}>
 							<strong>Failed to load transactions</strong>
-
 							<span>Please try again.</span>
 						</div>
 					) : transactions.length > 0 ? (
@@ -569,9 +524,7 @@ const TransactionHistory = () => {
 					) : (
 						<div className={style.emptyState}>
 							<div className={style.emptyIcon}>⌕</div>
-
 							<strong>No transactions found</strong>
-
 							<span>Try changing your search or filters.</span>
 						</div>
 					)}

@@ -11,7 +11,7 @@ import GridIcon from "../MediaComponent/GridIcon";
 import ListIcon from "../MediaComponent/ListIcon";
 import ProductItem from "../ProductItem/ProductItem";
 // IMPORT SERVICES
-import { getProducts } from "../../Services/supabase/productService";
+import { getProductImageUrl, getProducts } from "../../Services/supabase/productService";
 
 const ProductSection = () => {
 	const { addItem } = useCart();
@@ -35,7 +35,7 @@ const ProductSection = () => {
 					price: product.product_price,
 					quantity: 0,
 					productName: product.product_name,
-					productImageUrl: product.product_image ?? "",
+					productImageUrl: getProductImageUrl(product.product_code),
 					category: product.product_category,
 					description: product.description ?? "",
 					availableStock: 100

@@ -8,27 +8,20 @@ import AuthContext from "../../Component/Context/AuthProvider";
 
 import { signIn } from "../../Services/supabase/userService";
 
-import CheerfulLogo from "../../assets/OrenjiSquareLogo.svg";
+import OrenjiLogo from "../../assets/Stiker Orenji.svg";
 
 function Login() {
 	const navigate = useNavigate();
 	const location = useLocation();
-
 	const { refreshUser } = useContext(AuthContext);
-
 	const [username, setUsername] = useState("");
-
 	const [password, setPassword] = useState("");
-
 	const [loading, setLoading] = useState(false);
-
 	const [error, setError] = useState<string | null>(null);
-
 	const signupSuccess = location.state?.signupSuccess === true;
 
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-
 		setError(null);
 		setLoading(true);
 
@@ -59,7 +52,7 @@ function Login() {
 			<section className={styles["auth-card"]}>
 				{/* Logo */}
 
-				<img src={CheerfulLogo} alt="Orenji" className={styles["logo"]} />
+				<img src={OrenjiLogo} alt="Orenji" className={styles["logo"]} />
 
 				<div className={styles["heading"]}>
 					<h1>Welcome back</h1>

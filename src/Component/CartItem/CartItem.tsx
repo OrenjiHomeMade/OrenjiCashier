@@ -2,6 +2,7 @@
 import style from "./CartItem.module.css";
 // IMPORT TYPES
 import type { Item } from "react-use-cart";
+import { useState } from "react";
 // IMPORT COMPONENTS
 import TrashIcon from "../../Component/MediaComponent/TrashIcon";
 import { rupiahFormater } from "../../Utilities/NumberFormater";
@@ -27,13 +28,19 @@ const CartItem = ({
 	const isHistory = variant === "history";
 
 	const subtotal = (quantity ?? 0) * price;
+	const [imageError, setImageError] = useState(false);
 
 	return (
 		<div id={id} className={`${style.cartItem} ${isHistory ? style.historyItem : style.cartVariant}`}>
 			{/* Product image */}
 			<div className={style.productImageContainer}>
-				{productImageUrl ? (
-					<img src={productImageUrl} alt={name} className={style.productImage} />
+				{productImageUrl && !imageError ? (
+					<img
+						src={productImageUrl}
+						alt={name}
+						className={style.productImage}
+						onError={() => setImageError(true)}
+					/>
 				) : (
 					<div className={style.imageFallback} aria-label="No product image">
 						<span>IMG</span>

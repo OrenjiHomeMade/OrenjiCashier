@@ -208,3 +208,15 @@ export const deleteTransaction = async (transactionId: number): Promise<boolean>
 
 	return true;
 };
+
+export async function getCashierOperators() {
+	const { data, error } = await supabase.from("app_users").select("user_id, username").order("username", {
+		ascending: true
+	});
+
+	if (error) {
+		throw error;
+	}
+
+	return data;
+}

@@ -71,7 +71,7 @@ const TransactionItem = ({
 				</button>
 
 				<div className={`${style.transactionId} ${style.cell}`} title={transactionId.toString()}>
-					{transactionId}
+					{transactionCode}
 				</div>
 
 				<div className={`${style.date} ${style.cell}`}>{formattedDate}</div>
