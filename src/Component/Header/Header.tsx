@@ -1,11 +1,18 @@
-import { NavLink } from "react-router-dom";
+import { useContext } from "react";
+
+import { NavLink, useNavigate } from "react-router-dom";
+
 import styles from "./Header.module.css";
+
 import CashierIcon from "../MediaComponent/CashierIcon";
 import TransactionIcon from "../MediaComponent/TransactionIcon";
 import CatalogIcon from "../MediaComponent/CatalogIcon";
-// import CheerfulLogo from "../../assets/orenji_cheerful_logo_transparent.png";
+
 import CheerfulLogo from "../../assets/OrenjiSquareLogo.svg";
 import CircleUser from "../../assets/circle-user.svg";
+
+import AuthContext from "../Context/AuthProvider";
+import LogoutIcon from "../MediaComponent/LogoutIcon";
 
 const menuList = [
 	{
@@ -26,17 +33,40 @@ const menuList = [
 ];
 
 const Header = () => {
+	const navigate = useNavigate();
+
+	const { user, logout } = useContext(AuthContext);
+
+	async function handleLogout() {
+		try {
+			await logout();
+
+			navigate("/login", {
+				replace: true
+			});
+		} catch (error) {
+			console.error("Failed to logout:", error);
+		}
+	}
+
 	return (
 		<header className={styles["header-section"]}>
-			{/* Logo */}
+			{/* =================================================
+                LOGO
+            ================================================= */}
+
 			<NavLink to="/" className={styles["logo-link"]}>
 				<img src={CheerfulLogo} alt="Orenji" className={styles["orenji-logo-home"]} />
 			</NavLink>
 
-			{/* Navigation */}
+			{/* =================================================
+                NAVIGATION
+            ================================================= */}
+
 			<nav className={styles["header-menu-section"]}>
 				{menuList.map((menu) => {
 					const Icon = menu.icon;
+
 					return (
 						<NavLink
 							key={menu.path}
@@ -55,11 +85,20 @@ const Header = () => {
 				})}
 			</nav>
 
-			{/* User */}
+			{/* =================================================
+                USER
+            ================================================= */}
+
 			<div className={styles["user-box"]}>
-				<h3 className={styles["user-name"]}>User Name</h3>
+				<div className={styles["user-info"]}>
+					<h3 className={styles["user-name"]}>{user?.username ?? "User"}</h3>
+				</div>
 
 				<img src={CircleUser} alt="User" className={styles["user-icon"]} />
+
+				<button type="button" onClick={handleLogout} className={styles["logout-button"]}>
+					<LogoutIcon />
+				</button>
 			</div>
 		</header>
 	);
