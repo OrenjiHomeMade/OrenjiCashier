@@ -24,6 +24,8 @@ const ProductSection = () => {
 		queryFn: getProducts
 	});
 
+	// console.log("PROD", products);
+
 	const productInfos: TProductInfo[] = products.map((product) => ({
 		id: product.product_id,
 		price: product.product_price,

@@ -12,6 +12,12 @@ export type TProduct = {
 	stock_quantity: number;
 };
 
+type TProductQuery = Omit<TProduct, "stock_quantity"> & {
+	product_stock: {
+		stock_quantity: number;
+	} | null;
+};
+
 export const getProducts = async (): Promise<TProduct[]> => {
 	console.log("Fetching Product");
 
@@ -26,7 +32,7 @@ export const getProducts = async (): Promise<TProduct[]> => {
 			product_price,
 			product_category,
 			description,
-			product_stock (
+			product_stock!product_stock_product_id_fkey (
 				stock_quantity
 			)
 		`
@@ -40,12 +46,26 @@ export const getProducts = async (): Promise<TProduct[]> => {
 		return [];
 	}
 
-	return data.map((product) => ({
-		...product,
-		stock_quantity: product.product_stock?.[0]?.stock_quantity ?? 0
-	}));
-};
+	// console.log("SUPABASE DATA:", data);
+	// console.log("SUPABASE ERROR:", error);
 
+	const products = data as unknown as TProductQuery[];
+
+	const result: TProduct[] = products.map((product) => ({
+		product_id: product.product_id,
+		product_code: product.product_code,
+		product_name: product.product_name,
+		product_image: product.product_image,
+		product_price: product.product_price,
+		product_category: product.product_category,
+		description: product.description,
+		stock_quantity: product.product_stock?.stock_quantity ?? 0
+	}));
+
+	// console.log("GET PRODUCTS RESULT:", result);
+
+	return result;
+};
 export const getProductImageUrl = (product_code: string) => {
 	const imagePath = `${product_code}.webp`;
 
