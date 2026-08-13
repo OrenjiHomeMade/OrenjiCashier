@@ -12,13 +12,6 @@
 		background-color 150ms ease;
 }
 
-.productDetails {
-	display: flex;
-	flex-direction: row;
-	align-items: top;
-	justify-content: space-between;
-}
-
 /* ==================================================
    GRID ITEM
    ================================================== */
@@ -39,11 +32,22 @@
 	background-color: var(--white);
 
 	text-align: left;
+	cursor: default;
 
-	cursor: pointer;
+	position: relative;
 }
 
-/* Image */
+.gridClick {
+	cursor: pointer !important;
+}
+
+.gridClick.outOfStock {
+	cursor: not-allowed !important;
+}
+
+/* ==================================================
+   IMAGE
+   ================================================== */
 
 .gridImage {
 	position: relative;
@@ -90,16 +94,18 @@
 	opacity: 0.55;
 }
 
-/* Information */
+/* ==================================================
+   GRID INFORMATION
+   ================================================== */
 
 .gridInfo {
 	min-width: 0;
 
 	display: flex;
 	flex-direction: column;
-	gap: 2.5px;
+	gap: 2px;
 
-	padding: 4px 12px 12px 10px;
+	padding: 5px 10px 10px;
 }
 
 .productName {
@@ -126,14 +132,37 @@
 	font-size: 0.78rem;
 }
 
+.stock strong {
+	color: var(--brown);
+
+	font-weight: 700;
+}
+
 /*
- * Grid interaction
+ * Stock + adjustment button.
  *
- * The border becomes brighter and the card gets
- * a subtle orange glow when selected/pressed.
+ * This keeps the adjustment control on the same
+ * horizontal line as the stock quantity without
+ * affecting the product name or price layout.
  */
 
-.gridItem:hover {
+.stockRow {
+	min-width: 0;
+
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+
+	gap: 6px;
+
+	margin-top: 1px;
+}
+
+/* ==================================================
+   GRID INTERACTION — CASHIER
+   ================================================== */
+
+.gridClick:hover {
 	border-color: var(--orange);
 
 	box-shadow:
@@ -143,7 +172,7 @@
 	transform: translateY(-2px);
 }
 
-.gridItem:active {
+.gridClick:active {
 	border-color: var(--orange-dark);
 
 	background-color: var(--cream-soft);
@@ -153,6 +182,44 @@
 		0 0 18px rgba(249, 115, 22, 0.18);
 
 	transform: scale(0.97);
+}
+
+/* ==================================================
+   FLOATING EDIT BUTTON
+   ================================================== */
+
+.gridImage .editButton {
+	position: absolute;
+
+	top: 8px;
+	right: 8px;
+
+	opacity: 0;
+
+	pointer-events: none;
+
+	transform: translateY(-4px);
+
+	transition:
+		opacity 150ms ease,
+		transform 150ms ease,
+		background-color 120ms ease,
+		border-color 120ms ease,
+		box-shadow 120ms ease;
+}
+
+/*
+ * Only catalog grid items have this button.
+ * Cashier grid has no edit button at all.
+ */
+
+.gridItem:hover .editButton,
+.gridItem:focus-within .editButton {
+	opacity: 1;
+
+	pointer-events: auto;
+
+	transform: translateY(0);
 }
 
 /* ==================================================
@@ -175,7 +242,9 @@
 	background-color: var(--white);
 }
 
-/* List image */
+/* ==================================================
+   LIST IMAGE
+   ================================================== */
 
 .listImage {
 	flex: 0 0 56px;
@@ -201,7 +270,9 @@
 	height: 25px;
 }
 
-/* List information */
+/* ==================================================
+   LIST INFORMATION
+   ================================================== */
 
 .listInfo {
 	min-width: 0;
@@ -212,7 +283,30 @@
 	gap: 5px;
 }
 
-/* Add button */
+.priceInfo {
+	flex-shrink: 0;
+
+	margin-left: auto;
+
+	text-align: right;
+
+	display: flex;
+	flex-direction: column;
+}
+
+.actionButtons {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+
+	flex-shrink: 0;
+
+	margin-left: 4px;
+}
+
+/* ==================================================
+   ADD BUTTON — CASHIER
+   ================================================== */
 
 .addButton {
 	flex-shrink: 0;
@@ -265,6 +359,115 @@
 }
 
 /* ==================================================
+   ADJUST BUTTON
+   ================================================== */
+
+.adjustButton {
+	flex-shrink: 0;
+
+	width: 38px;
+	height: 32px;
+
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+
+	padding: 0;
+
+	border: 1px solid var(--sage);
+	border-radius: var(--radius-md);
+
+	background-color: var(--sage);
+	color: var(--white);
+
+	font-family: inherit;
+	font-size: 0.78rem;
+	font-weight: 600;
+
+	cursor: pointer;
+
+	transition:
+		background-color 120ms ease,
+		border-color 120ms ease,
+		transform 100ms ease,
+		box-shadow 120ms ease;
+}
+
+.adjustButton:hover {
+	background-color: var(--sage-light);
+	border-color: var(--sage-light);
+
+	color: var(--brown);
+
+	box-shadow: 0 4px 10px rgba(121, 163, 84, 0.22);
+}
+
+.adjustButton:active {
+	transform: scale(0.93);
+
+	box-shadow: 0 0 0 4px rgba(121, 163, 84, 0.15);
+}
+
+.actionIcon {
+	width: 17px;
+	height: 17px;
+
+	flex-shrink: 0;
+}
+
+.actionText {
+	white-space: nowrap;
+}
+
+/* ==================================================
+   EDIT BUTTON
+   ================================================== */
+
+.editButton {
+	width: 38px;
+	height: 38px;
+
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	padding: 0;
+
+	border: 1px solid var(--blue);
+	border-radius: var(--radius-md);
+
+	background-color: var(--blue-light);
+	color: var(--brown);
+
+	cursor: pointer;
+
+	transition:
+		background-color 120ms ease,
+		border-color 120ms ease,
+		transform 100ms ease,
+		box-shadow 120ms ease;
+}
+
+.editButton:hover {
+	background-color: var(--blue);
+	border-color: var(--blue);
+
+	color: var(--white);
+
+	box-shadow: 0 4px 10px rgba(142, 151, 202, 0.25);
+}
+
+.editButton:active {
+	transform: scale(0.93);
+}
+
+.editButton svg {
+	width: 17px;
+	height: 17px;
+}
+
+/* ==================================================
    OUT OF STOCK
    ================================================== */
 
@@ -295,12 +498,39 @@
 }
 
 /* ==================================================
+   TABLET
+   ================================================== */
+
+@media (max-width: 900px) {
+	/*
+	 * Keep the grid adjustment icon-only.
+	 * The stock quantity remains visible.
+	 */
+
+	.gridInfo {
+		padding-left: 9px;
+		padding-right: 9px;
+	}
+
+	.adjustButton {
+		width: 36px;
+		height: 32px;
+
+		padding: 0;
+	}
+
+	.actionText {
+		display: none;
+	}
+}
+
+/* ==================================================
    PHONE
    ================================================== */
 
 @media (max-width: 767px) {
 	.gridInfo {
-		padding: 2px 10px 10px 10px;
+		padding: 4px 9px 9px;
 	}
 
 	.productName {
@@ -309,6 +539,16 @@
 
 	.stock {
 		font-size: 0.72rem;
+	}
+
+	.adjustButton {
+		width: 34px;
+		height: 30px;
+	}
+
+	.actionIcon {
+		width: 16px;
+		height: 16px;
 	}
 
 	.listItem {
@@ -333,5 +573,11 @@
 		padding: 0 10px;
 
 		font-size: 0.78rem;
+	}
+
+	.listItem .adjustButton,
+	.listItem .editButton {
+		width: 36px;
+		height: 36px;
 	}
 }

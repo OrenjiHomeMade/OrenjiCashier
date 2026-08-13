@@ -3,7 +3,7 @@ import style from "./Cashier.module.css";
 
 // IMPORT HOOKS
 import { CartProvider, useCart } from "react-use-cart";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 // IMPORT COMPONENT
@@ -15,9 +15,9 @@ import LoadingModal from "../../Component/LoadingModal/LoadingModal";
 import { createTransaction } from "../../Services/supabase/transactionService";
 
 const CashierContent = () => {
-	const { emptyCart } = useCart();
+	const { emptyCart, addItem } = useCart();
 	const [cartIsOpenOnPhone, setCartIsOpenOnPhone] = useState(false);
-
+	const queryClient = useQueryClient();
 	const handleCartHeaderClick = () => {
 		if (cartIsOpenOnPhone) {
 			setCartIsOpenOnPhone(false);
@@ -31,11 +31,27 @@ const CashierContent = () => {
 		onSuccess: () => {
 			emptyCart();
 			setCartIsOpenOnPhone(false);
+			queryClient.invalidateQueries({
+				queryKey: ["products"]
+			});
 		}
 	});
+
 	return (
 		<>
-			<ProductSection />
+			<ProductSection
+				mode="Cashier"
+				onItemAdd={(product) => {
+					const item = {
+						id: product.id,
+						price: product.price,
+						quantity: product.quantity,
+						name: product.productName,
+						productImageUrl: product.productImageUrl
+					};
+					addItem(item, 1);
+				}}
+			/>
 			<CartSection
 				onExecutePayment={(transaction) => createTransactionMutation.mutate(transaction)}
 				onCartHeaderClick={handleCartHeaderClick}

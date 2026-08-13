@@ -16,10 +16,10 @@ import Login from "./Page/Login/Login";
 import Signup from "./Page/Login/Signup";
 
 import NotFound from "./Page/NotFound/NotFound";
-
 import Cashier from "./Page/Cashier/Cashier";
 import TransactionHistory from "./Page/TransactionHistory/TransactionHistory";
 import ProductCatalog from "./Page/ProductCatalog/ProductCatalog";
+import Development from "./Development/Development";
 
 // =========================================================
 // QUERY CLIENT
@@ -74,39 +74,35 @@ function AppRoutes() {
 			{/* =================================================
                 PUBLIC AUTHENTICATION
             ================================================= */}
-
 			<Route path="/login" element={isAuthenticated ? <Navigate replace to="/cashier" /> : <Login />} />
-
 			<Route path="/signup" element={isAuthenticated ? <Navigate replace to="/cashier" /> : <Signup />} />
 
 			{/* =================================================
                 ROOT
             ================================================= */}
-
 			<Route path="/" element={<Navigate replace to={isAuthenticated ? "/cashier" : "/login"} />} />
 
 			{/* =================================================
                 HOME
             ================================================= */}
-
 			<Route path="/home" element={<Navigate replace to={isAuthenticated ? "/cashier" : "/login"} />} />
 
 			{/* =================================================
                 PROTECTED APPLICATION
             ================================================= */}
-
 			<Route element={isAuthenticated ? <ProtectedLayout /> : <Navigate replace to="/login" />}>
 				<Route path="/cashier" element={<Cashier />} />
-
 				<Route path="/transactions" element={<TransactionHistory />} />
-
 				<Route path="/products" element={<ProductCatalog />} />
+				{/* =================================================
+                DEVELOPMENT ONLY
+            	================================================= */}
+				<Route path="/dev" element={<Development />} />
 			</Route>
 
 			{/* =================================================
                 NOT FOUND
             ================================================= */}
-
 			<Route path="*" element={<NotFound />} />
 		</Routes>
 	);

@@ -1,20 +1,29 @@
 // IMPORT STYLES
 import style from "./ProductSection.module.css";
+
 // IMPORT TYPES
 import { type TProductInfo } from "../ProductItem/ProductItem";
+
 // IMPORT HOOKS
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useCart } from "react-use-cart";
+
 // IMPORT COMPONENTS
 import GridIcon from "../MediaComponent/GridIcon";
 import ListIcon from "../MediaComponent/ListIcon";
 import ProductItem from "../ProductItem/ProductItem";
+
 // IMPORT SERVICES
 import { getProductImageUrl, getProducts } from "../../Services/supabase/productService";
 
-const ProductSection = () => {
-	const { addItem } = useCart();
+export type TProductSectionProps = {
+	mode: "Cashier" | "Catalog";
+	onItemAdjusted?: (prod: TProductInfo) => void;
+	onItemEdit?: (prod: TProductInfo) => void;
+	onItemAdd?: (prod: TProductInfo) => void;
+};
+
+const ProductSection = ({ mode, onItemAdd, onItemEdit, onItemAdjusted }: TProductSectionProps) => {
 	const [view, setView] = useState<"grid" | "list">("grid");
 	const [selectedCategory, setSelectedCategory] = useState("Semua");
 	const [searchTerm, setSearchTerm] = useState("");
@@ -23,8 +32,6 @@ const ProductSection = () => {
 		queryKey: ["products"],
 		queryFn: getProducts
 	});
-
-	// console.log("PROD", products);
 
 	const productInfos: TProductInfo[] = products.map((product) => ({
 		id: product.product_id,
@@ -46,7 +53,6 @@ const ProductSection = () => {
 	const filteredProducts = useMemo(() => {
 		return productInfos.filter((product) => {
 			const matchesCategory = selectedCategory === "Semua" || product.category === selectedCategory;
-
 			const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase());
 
 			return matchesCategory && matchesSearch;
@@ -117,16 +123,15 @@ const ProductSection = () => {
 						<ProductItem
 							key={product.id}
 							variant={view}
+							mode={mode}
 							onAdd={() => {
-								const item = {
-									id: product.id,
-									price: product.price,
-									quantity: product.quantity,
-									name: product.productName,
-									productImageUrl: product.productImageUrl
-								};
-								console.log(item);
-								addItem(item, 1);
+								onItemAdd?.(product);
+							}}
+							onAdjustStock={() => {
+								onItemAdjusted?.(product);
+							}}
+							onEdit={() => {
+								onItemEdit?.(product);
 							}}
 							{...product}
 						/>

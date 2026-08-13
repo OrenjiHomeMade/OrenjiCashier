@@ -16,6 +16,7 @@ import { generateTransactionCode, getLocalTimestamp, rupiahFormater } from "../.
 import type { TCreateTransactionInput } from "../../../Services/supabase/transactionService";
 import AuthContext from "../../../Component/Context/AuthProvider";
 
+// PROPERTY DEFINITION
 export type CartProps = {
 	onExecutePayment: (entry: TCreateTransactionInput) => void;
 	onCartHeaderClick: () => void;
@@ -23,8 +24,6 @@ export type CartProps = {
 };
 
 const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: CartProps) => {
-	// const [isOpen, setIsOpen] = useState(false);
-
 	const [paymentMethod, setPaymentMethod] = useState<"qris" | "cash">("qris");
 	const [paymentAmount, setPaymentAmount] = useState<number>(0);
 
