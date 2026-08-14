@@ -26,6 +26,7 @@ export type CartProps = {
 const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: CartProps) => {
 	const [paymentMethod, setPaymentMethod] = useState<"qris" | "cash">("qris");
 	const [paymentAmount, setPaymentAmount] = useState<number>(0);
+	const [isEditingPayment, setIsEditingPayment] = useState(false);
 
 	const { items: cartItems, isEmpty, cartTotal, totalItems, updateItemQuantity, removeItem, emptyCart } = useCart();
 	const { user } = useContext(AuthContext);
@@ -56,6 +57,9 @@ const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: 
 
 		onExecutePayment(transaction);
 	};
+
+	const paymentAmountInRupiah = paymentAmount === 0 ? "" : rupiahFormater(paymentAmount);
+	const cartTotalInRupiah = rupiahFormater(cartTotal);
 
 	const actualPayment = paymentMethod === "qris" ? cartTotal : paymentAmount;
 
@@ -118,12 +122,22 @@ const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: 
 							placeholder="Nominal pembayaran"
 							value={
 								paymentMethod === "qris"
-									? rupiahFormater(cartTotal)
-									: paymentAmount === 0
-										? ""
-										: rupiahFormater(paymentAmount)
+									? cartTotalInRupiah
+									: isEditingPayment
+										? paymentAmount === 0
+											? ""
+											: paymentAmount.toString()
+										: paymentAmount === 0
+											? ""
+											: paymentAmountInRupiah
 							}
 							disabled={paymentMethod === "qris"}
+							onFocus={() => {
+								setIsEditingPayment(true);
+							}}
+							onBlur={() => {
+								setIsEditingPayment(false);
+							}}
 							onChange={(event) => {
 								const numericValue = event.target.value.replace(/\D/g, "");
 								setPaymentAmount(numericValue === "" ? 0 : Number(numericValue));

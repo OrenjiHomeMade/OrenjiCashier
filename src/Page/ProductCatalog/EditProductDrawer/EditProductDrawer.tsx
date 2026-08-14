@@ -22,6 +22,7 @@ export default function EditProductDrawer({
 	const [selectedImage, setSelectedImage] = useState<File | null>(null);
 	const [saving, setSaving] = useState(false);
 	const [imageError, setImageError] = useState(false);
+	const [isEditingPayment, setIsEditingPayment] = useState(false);
 
 	const canSave = newProductName.trim() !== "" && newPriceValue >= 0 && !saving;
 
@@ -137,7 +138,21 @@ export default function EditProductDrawer({
 							id="product-price"
 							type="text"
 							inputMode="numeric"
-							value={rupiahFormater(newPriceValue)}
+							value={
+								isEditingPayment
+									? newPriceValue === 0
+										? ""
+										: newPriceValue.toString()
+									: newPriceValue === 0
+										? ""
+										: rupiahFormater(newPriceValue)
+							}
+							onFocus={() => {
+								setIsEditingPayment(true);
+							}}
+							onBlur={() => {
+								setIsEditingPayment(false);
+							}}
 							onChange={(event) => {
 								const numericValue = event.target.value.replace(/\D/g, "");
 
