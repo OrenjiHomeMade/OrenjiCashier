@@ -43,3 +43,41 @@ export const getLocalTimestamp = (date: Date): string => {
 
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
+
+export const getDateFromUrl = (): string => {
+	const hash = window.location.hash;
+
+	// HashRouter URL:
+	// #/report?date=2026-08-16
+	const queryString = hash.includes("?") ? hash.split("?")[1] : "";
+
+	const params = new URLSearchParams(queryString);
+	const date = params.get("date");
+
+	if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+		return date;
+	}
+
+	// Fallback to local date, NOT UTC date
+	const today = new Date();
+
+	const year = today.getFullYear();
+	const month = String(today.getMonth() + 1).padStart(2, "0");
+	const day = String(today.getDate()).padStart(2, "0");
+
+	return `${year}-${month}-${day}`;
+};
+
+export const formatDate = (date: string): string => {
+	// Parse manually so timezone conversion cannot change the date.
+	const [year, month, day] = date.split("-").map(Number);
+
+	const localDate = new Date(year, month - 1, day);
+
+	return new Intl.DateTimeFormat("id-ID", {
+		weekday: "long",
+		day: "numeric",
+		month: "long",
+		year: "numeric"
+	}).format(localDate);
+};

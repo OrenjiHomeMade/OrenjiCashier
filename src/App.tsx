@@ -20,6 +20,7 @@ import Cashier from "./Page/Cashier/Cashier";
 import TransactionHistory from "./Page/TransactionHistory/TransactionHistory";
 import ProductCatalog from "./Page/ProductCatalog/ProductCatalog";
 import Development from "./Development/Development";
+import Report from "./Page/Report/Report";
 
 // =========================================================
 // QUERY CLIENT
@@ -103,6 +104,8 @@ function AppRoutes() {
 			{/* =================================================
                 NOT FOUND
             ================================================= */}
+			<Route path="/report" element={<Report />} />
+
 			<Route path="*" element={<NotFound />} />
 		</Routes>
 	);

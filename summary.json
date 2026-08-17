@@ -1,0 +1,23 @@
+{
+	"date": "2026-08-16",
+	"payments": [
+		{ "amount": 628000, "payment_method": "qris" },
+		{ "amount": 240000, "payment_method": "cash" }
+	],
+	"products": [
+		{ "sold": 24, "damaged": 0, "remaining": 76, "product_id": 20, "product_name": "Chibay" },
+		{ "sold": 19, "damaged": 0, "remaining": 47, "product_id": 15, "product_name": "Risol Smoky Mayo" },
+		{ "sold": 16, "damaged": 0, "remaining": 24, "product_id": 21, "product_name": "Miemam" },
+		{ "sold": 16, "damaged": 0, "remaining": 44, "product_id": 17, "product_name": "Risol Choco Cheese" },
+		{ "sold": 14, "damaged": 0, "remaining": 7, "product_id": 18, "product_name": "Risol Matcha" },
+		{ "sold": 10, "damaged": 0, "remaining": 90, "product_id": 19, "product_name": "Dimsum Mentai" },
+		{ "sold": 10, "damaged": 0, "remaining": 47, "product_id": 25, "product_name": "Karipap Carbonara" },
+		{ "sold": 8, "damaged": 0, "remaining": 80, "product_id": 23, "product_name": "Karipap Ayam" },
+		{ "sold": 8, "damaged": 0, "remaining": 28, "product_id": 22, "product_name": "Karipap Ube" },
+		{ "sold": 7, "damaged": 0, "remaining": 67, "product_id": 16, "product_name": "Risol Ragout Mentai" }
+	],
+	"total_sales": 868000,
+	"total_damaged": 0,
+	"total_items_sold": 132,
+	"total_transactions": 38
+}
