@@ -218,7 +218,8 @@ function insertProductToSupabase(products, type = "staging") {
 		headers: {
 			apikey: SUPABASE_SERVICE_ROLE_KEY,
 			Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-			Prefer: "return=representation"
+			Prefer: "return=representation",
+      "Content-Profile": "staging"
 		},
 		payload: JSON.stringify(payload),
 		muteHttpExceptions: true

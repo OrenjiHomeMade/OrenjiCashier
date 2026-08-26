@@ -234,6 +234,41 @@
 	gap: 8px;
 }
 
+.addProductButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+
+	padding: 10px 16px;
+
+	border: none;
+	border-radius: 8px;
+
+	background-color: #f97316;
+	color: white;
+
+	font-size: 14px;
+	font-weight: 600;
+
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.addProductButton:hover {
+	background-color: #ea580c;
+}
+
+.addProductButton:active {
+	transform: translateY(1px);
+}
+
+.addProductIcon {
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+}
+
 /* =========================
    Phone
    ========================= */

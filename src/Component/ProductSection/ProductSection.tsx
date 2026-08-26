@@ -15,6 +15,7 @@ import ProductItem from "../ProductItem/ProductItem";
 
 // IMPORT SERVICES
 import { getProductImageUrl, getProducts } from "../../Services/supabase/productService";
+import AddProductIcon from "../MediaComponent/AddProductIcon";
 
 export type TProductSectionProps = {
 	mode: "Cashier" | "Catalog";
@@ -96,6 +97,12 @@ const ProductSection = ({ mode, onItemAdd, onItemEdit, onItemAdjusted }: TProduc
 						<ListIcon />
 					</button>
 				</div>
+				{mode === "Catalog" && (
+					<button className={style.addProductButton}>
+						<AddProductIcon className={style.addProductIcon} />
+						<span>Add Product</span>
+					</button>
+				)}
 			</div>
 
 			<div className={style.productCategoryFilter}>
