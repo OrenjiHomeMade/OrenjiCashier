@@ -1,3 +1,4 @@
+// IMPORT TYPES
 import type { SVGProps } from "react";
 
 interface ChevronProps extends SVGProps<SVGSVGElement> {

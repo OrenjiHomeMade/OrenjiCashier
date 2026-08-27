@@ -1,19 +1,21 @@
+// IMPORT STYLES
+import style from "./ProductCatalog.module.css";
+// IMPORT TYPES
+import type { ProductInfoProps } from "../../Component/ProductItem/ProductItem";
+// IMPORT HOOKS
 import { useState } from "react";
-
+import { adjustQuantity /*saveProduct*/ } from "../../Services/supabase/productService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+// IMPORT COMPONENTS
 import ProductSection from "../../Component/ProductSection/ProductSection";
 import StockAdjustmentDrawer from "./StockAdjustmentDrawer/StockAdjustmentDrawer";
 import EditProductDrawer from "./EditProductDrawer/EditProductDrawer";
 
-import style from "./ProductCatalog.module.css";
-
-import type { TProductInfo } from "../../Component/ProductItem/ProductItem";
-import { adjustQuantity } from "../../Services/supabase/productService";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 
 type TProductDrawer =
-	| { type: "stock"; product: TProductInfo }
-	| { type: "edit"; product: TProductInfo }
+	| { type: "stock"; product: ProductInfoProps }
+	| { type: "edit"; product: ProductInfoProps }
 	| { type: "add" }
 	| null;
 
@@ -22,16 +24,23 @@ const ProductCatalog = () => {
 
 	const queryClient = useQueryClient();
 
+	const onQuerySuccess = () => {
+		setDrawer(null);
+
+		queryClient.invalidateQueries({
+			queryKey: ["products"]
+		});
+	};
+
 	const adjustProductQuantityMutation = useMutation({
 		mutationFn: adjustQuantity,
-		onSuccess: () => {
-			setDrawer(null);
-
-			queryClient.invalidateQueries({
-				queryKey: ["products"]
-			});
-		}
+		onSuccess: onQuerySuccess
 	});
+
+	// const saveProductInformation = useMutation({
+	// 	mutationFn: saveProduct,
+	// 	onSuccess: () => onQuerySuccess
+	// });
 
 	return (
 		<div className={`page ${style.productCatalog}`}>
@@ -44,13 +53,13 @@ const ProductCatalog = () => {
 							product
 						});
 					}}
-					onItemEdit={(product) => {
+					onEditProduct={(product) => {
 						setDrawer({
 							type: "edit",
 							product
 						});
 					}}
-					onItemAdd={() => {
+					onAddProduct={() => {
 						setDrawer({
 							type: "add"
 						});
@@ -61,14 +70,19 @@ const ProductCatalog = () => {
 			{drawer?.type === "edit" && (
 				<EditProductDrawer
 					key={drawer.product.id}
-					productId={Number(drawer.product.id)}
-					productName={drawer.product.productName}
-					productPrice={drawer.product.price}
-					productImageUrl={drawer.product.productImageUrl ?? ""}
+					mode="edit"
+					product={{
+						productId: Number(drawer.product.id),
+						productName: drawer.product.productName,
+						productPrice: drawer.product.price,
+						productImageUrl: drawer.product.productImageUrl ?? ""
+					}}
 					onClose={() => setDrawer(null)}
 					onSave={(product) => {
 						console.log(product);
-						toast("This function is not yet available!");
+						// saveProduct(product.productId);
+						// saveProductInformation.mutate(product.productId);
+						// toast("This function is not yet available!");
 					}}
 				/>
 			)}
@@ -83,6 +97,17 @@ const ProductCatalog = () => {
 					onClose={() => setDrawer(null)}
 					onSave={(qtyAdjustment) => {
 						adjustProductQuantityMutation.mutate(qtyAdjustment);
+					}}
+				/>
+			)}
+
+			{drawer?.type === "add" && (
+				<EditProductDrawer
+					mode="add"
+					onClose={() => setDrawer(null)}
+					onSave={(product) => {
+						console.log(product);
+						// toast("This function is not yet available!");
 					}}
 				/>
 			)}

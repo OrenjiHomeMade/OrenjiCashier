@@ -1,12 +1,14 @@
-import { useState } from "react";
+// TODO TRANSACTION TYPES
+// IMPORT STYLES
 import style from "./TransactionItem.module.css";
-
+// IMPORT HOOKS
+import { useState } from "react";
+// IMPORT UTILITIES
 import { rupiahFormater } from "../../../Utilities/NumberFormater";
-
+// IMPORT COMPONENTS
 import TrashIcon from "../../../Component/MediaComponent/TrashIcon";
 import EditIcon from "../../../Component/MediaComponent/EditIcon";
 import ChevronIcon from "../../../Component/MediaComponent/ChevronIcon";
-
 import TransactionDetailItem, { type TTransactionDetailItem } from "../TransactionDetailItem/TransactionDetailItem";
 import { toast } from "react-toastify";
 

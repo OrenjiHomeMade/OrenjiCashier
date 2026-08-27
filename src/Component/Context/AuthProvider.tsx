@@ -1,11 +1,11 @@
-import { createContext, useEffect, useState } from "react";
-
+// IMPORT TYPES
 import type { ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-
-import { getCurrentAppUser, getSession, onAuthStateChange, signOut } from "../../Services/supabase/userService";
-
 import type { TAppUser } from "../../Services/supabase/userService";
+// IMPORT HOOKS
+import { createContext, useEffect, useState } from "react";
+// IMPORT SERVICES
+import { getCurrentAppUser, getSession, onAuthStateChange, signOut } from "../../Services/supabase/userService";
 
 export type TAuthContext = {
 	authUser: User | null;

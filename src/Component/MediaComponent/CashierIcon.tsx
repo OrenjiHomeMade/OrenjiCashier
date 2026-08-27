@@ -1,3 +1,4 @@
+// IMPORT TYPES
 import type { SVGProps } from "react";
 
 const CashierIcon = (props: SVGProps<SVGSVGElement>) => {

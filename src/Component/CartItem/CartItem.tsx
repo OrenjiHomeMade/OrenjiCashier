@@ -2,12 +2,13 @@
 import style from "./CartItem.module.css";
 // IMPORT TYPES
 import type { Item } from "react-use-cart";
+// IMPORT HOOKS
 import { useState } from "react";
 // IMPORT COMPONENTS
 import TrashIcon from "../../Component/MediaComponent/TrashIcon";
 import { rupiahFormater } from "../../Utilities/NumberFormater";
 
-export interface TCartItem extends Item {
+export interface CartItemProps extends Item {
 	variant?: "cart" | "history";
 	onIncrease?: () => void;
 	onDecrease?: () => void;
@@ -24,7 +25,7 @@ const CartItem = ({
 	onIncrease,
 	onDecrease,
 	onDelete
-}: TCartItem) => {
+}: CartItemProps) => {
 	const isHistory = variant === "history";
 
 	const subtotal = (quantity ?? 0) * price;

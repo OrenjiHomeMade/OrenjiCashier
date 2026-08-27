@@ -1,13 +1,16 @@
-import { type FormEvent, useContext, useState } from "react";
-
-import { Link, useLocation, useNavigate } from "react-router-dom";
-
+// IMPORT STYLES
 import styles from "./Login.module.css";
 
+// IMPORT TYPES
+import { type SubmitEvent } from "react";
+
+// IMPORT HOOKS
+import { useContext, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
+// IMPORT COMPONENTS
 import AuthContext from "../../Component/Context/AuthProvider";
-
 import { signIn } from "../../Services/supabase/userService";
-
 import OrenjiLogo from "../../assets/Stiker Orenji.svg";
 
 function Login() {
@@ -20,7 +23,7 @@ function Login() {
 	const [error, setError] = useState<string | null>(null);
 	const signupSuccess = location.state?.signupSuccess === true;
 
-	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+	async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
 		setError(null);
 		setLoading(true);

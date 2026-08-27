@@ -1,45 +1,7 @@
+import type { DTTransaction } from "../../Types/database";
+import type { TCreateTransactionInput, TTransactionResult } from "../../Types/transaction";
 import { supabase } from "./client";
 import { toast } from "react-toastify";
-
-export type TTransactionItemInput = {
-	product_id: string;
-	quantity: number;
-	unit_price: number;
-	subtotal: number;
-};
-
-export type TCreateTransactionInput = {
-	transaction_code: string;
-	transaction_time: string;
-	payment_method: string;
-	transaction_amount: number;
-	cashier: string;
-	items: TTransactionItemInput[];
-};
-
-export type TTransactionItem = {
-	transaction_item_id: number;
-	transaction_id: number;
-	product_id: number;
-	product_name: string | null;
-	quantity: number;
-	unit_price: number;
-	subtotal: number;
-	created_at: string;
-	updated_at: string;
-};
-
-export type TTransaction = {
-	transaction_id: number;
-	transaction_code: string;
-	transaction_time: string;
-	payment_method: string;
-	transaction_amount: number;
-	created_at: string;
-	updated_at: string;
-	cashier: string;
-	items: TTransactionItem[];
-};
 
 export type TTransactionFilter = {
 	page?: number;
@@ -57,20 +19,12 @@ export type TTransactionFilter = {
 	maxAmount?: number;
 };
 
-export type TTransactionResult = {
-	data: TTransaction[];
-	totalCount: number;
-	totalPages: number;
-	page: number;
-	pageSize: number;
-};
-
 export const createTransaction = async (transaction: TCreateTransactionInput): Promise<string | null> => {
 	const { data, error } = await supabase.rpc("create_transaction", {
-		p_transaction_code: transaction.transaction_code,
-		p_transaction_time: transaction.transaction_time,
-		p_payment_method: transaction.payment_method,
-		p_transaction_amount: transaction.transaction_amount,
+		p_transaction_code: transaction.transactionCode,
+		p_transaction_time: transaction.transactionTime,
+		p_payment_method: transaction.paymentMethod,
+		p_transaction_amount: transaction.transactionAmount,
 		p_cashier: transaction.cashier,
 		p_items: transaction.items
 	});
@@ -162,7 +116,7 @@ export const getTransactions = async (filter: TTransactionFilter = {}): Promise<
 
 	const rows = data ?? [];
 
-	const transactions: TTransaction[] = rows.map((row: TTransaction) => ({
+	const transactions: DTTransaction[] = rows.map((row: DTTransaction) => ({
 		transaction_id: row.transaction_id,
 		transaction_code: row.transaction_code,
 		transaction_time: row.transaction_time,

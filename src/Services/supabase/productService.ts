@@ -1,24 +1,11 @@
+// IMPORT TYPES
+import type { DTProduct, DTProductQuery, DTProductWithQty } from "../../Types/database";
+import type { TProductImage, TProductQuantityMovement } from "../../Types/product";
+// IMPORT LIBRARY
 import { supabase } from "./client";
 import { toast } from "react-toastify";
 
-export type TProductWithQty = {
-	product_id: string;
-	product_code: string;
-	product_name: string;
-	product_image: string | null;
-	product_price: number;
-	product_category: string;
-	description: string | null;
-	stock_quantity: number;
-};
-
-type TProductQuery = Omit<TProductWithQty, "stock_quantity"> & {
-	product_stock: {
-		stock_quantity: number;
-	} | null;
-};
-
-export const getProducts = async (): Promise<TProductWithQty[]> => {
+export const getProducts = async (): Promise<Omit<DTProductWithQty, "is_active">[]> => {
 	console.log("Fetching Product");
 
 	const { data, error } = await supabase
@@ -46,12 +33,9 @@ export const getProducts = async (): Promise<TProductWithQty[]> => {
 		return [];
 	}
 
-	// console.log("SUPABASE DATA:", data);
-	// console.log("SUPABASE ERROR:", error);
+	const products = data as unknown as DTProductQuery[];
 
-	const products = data as unknown as TProductQuery[];
-
-	const result: TProductWithQty[] = products.map((product) => ({
+	const result: Omit<DTProductWithQty, "is_active">[] = products.map((product) => ({
 		product_id: product.product_id,
 		product_code: product.product_code,
 		product_name: product.product_name,
@@ -62,8 +46,6 @@ export const getProducts = async (): Promise<TProductWithQty[]> => {
 		stock_quantity: product.product_stock?.stock_quantity ?? 0
 	}));
 
-	// console.log("GET PRODUCTS RESULT:", result);
-
 	return result;
 };
 
@@ -73,13 +55,6 @@ export const getProductImageUrl = (product_code: string) => {
 	const { data } = supabase.storage.from("product-images").getPublicUrl(imagePath);
 
 	return data.publicUrl;
-};
-
-export type TProductQuantityMovement = {
-	productId: number;
-	adjustmentQty: number;
-	adjustmentType: string;
-	note: string;
 };
 
 export const adjustQuantity = async ({ productId, adjustmentQty, adjustmentType, note }: TProductQuantityMovement) => {
@@ -101,16 +76,8 @@ export const adjustQuantity = async ({ productId, adjustmentQty, adjustmentType,
 	return data;
 };
 
-export type TProductProfile = {
-	productId: number;
-	productName: string;
-	productImageUrl: string;
-	productPrice: number;
-};
-
 export async function convertToWebP(file: File): Promise<Blob> {
 	const image = new Image();
-
 	const objectUrl = URL.createObjectURL(file);
 
 	try {
@@ -118,7 +85,7 @@ export async function convertToWebP(file: File): Promise<Blob> {
 
 		await new Promise<void>((resolve, reject) => {
 			image.onload = () => resolve();
-			image.onerror = reject;
+			image.onerror = () => reject(new Error("Failed to load image"));
 		});
 
 		const canvas = document.createElement("canvas");
@@ -148,13 +115,9 @@ export async function convertToWebP(file: File): Promise<Blob> {
 	}
 }
 
-export type TProductImage = {
-	productCode: string;
-	file: File;
-};
+export async function uploadProductImage({ productCode, file }: TProductImage): Promise<string> {
+	const image = file.name.toLowerCase().endsWith(".webp") ? file : await convertToWebP(file);
 
-export async function uploadProductImage({ productCode, file }: TProductImage) {
-	const image = convertToWebP(file);
 	const path = `products/${productCode}.webp`;
 
 	const { error } = await supabase.storage.from("product-images").upload(path, image, {
@@ -168,3 +131,110 @@ export async function uploadProductImage({ productCode, file }: TProductImage) {
 
 	return path;
 }
+
+export async function deleteProductImage(productCode: string): Promise<void> {
+	const path = `products/${productCode}.webp`;
+
+	const { error } = await supabase.storage.from("product-images").remove([path]);
+
+	if (error) {
+		throw error;
+	}
+}
+
+export type TProductSchema = {
+	productId: number;
+	productCode: string;
+	productName: string;
+	productPrice: number;
+	productCategory: string | null;
+	description: string | null;
+	isActive: boolean;
+	createdAt: string;
+	updatedAt: string;
+	deletedAt: string | null;
+};
+
+export async function createProduct(product: DTProduct): Promise<TProductSchema> {
+	const { data, error } = await supabase.from("products").insert(product).select().single();
+
+	if (error) {
+		throw error;
+	}
+
+	return {
+		productId: data.product_id,
+		productCode: data.product_code,
+		productName: data.product_name,
+		productPrice: Number(data.product_price),
+		productCategory: data.product_category,
+		description: data.description,
+		isActive: data.is_active,
+		createdAt: data.created_at,
+		updatedAt: data.updated_at,
+		deletedAt: data.deleted_at
+	};
+}
+
+// export async function updateProduct(productId: number, product: TProductInput): Promise<TProductSchema> {
+// 	const { data, error } = await supabase
+// 		.from("products")
+// 		.update(productToDb(product))
+// 		.eq("product_id", productId)
+// 		.select()
+// 		.single();
+
+// 	if (error) {
+// 		throw error;
+// 	}
+
+// 	return {
+// 		productId: data.product_id,
+// 		productCode: data.product_code,
+// 		productName: data.product_name,
+// 		productPrice: Number(data.product_price),
+// 		productCategory: data.product_category,
+// 		description: data.description,
+// 		isActive: data.is_active,
+// 		createdAt: data.created_at,
+// 		updatedAt: data.updated_at,
+// 		deletedAt: data.deleted_at
+// 	};
+// }
+
+// export type TSaveProductParams = {
+// 	productId?: number;
+// 	previousProductCode?: string;
+// 	product: TProductInput;
+// 	image?: File | null;
+// };
+
+// export async function saveProduct({
+// 	productId,
+// 	previousProductCode,
+// 	product,
+// 	image
+// }: TSaveProductParams): Promise<TProductSchema> {
+// 	const isEdit = productId !== undefined;
+
+// 	let savedProduct: TProductSchema;
+
+// 	if (isEdit) {
+// 		savedProduct = await updateProduct(productId, product);
+// 	} else {
+// 		savedProduct = await createProduct(product);
+// 	}
+
+// 	if (image) {
+// 		if (isEdit && previousProductCode && previousProductCode !== product.productCode) {
+// 			await deleteProductImage(previousProductCode);
+// 		}
+
+// 		await uploadProductImage({
+// 			productCode: product.productCode,
+// 			file: image
+// 		});
+// 	}
+
+// 	return savedProduct;
+// }

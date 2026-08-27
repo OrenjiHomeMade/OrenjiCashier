@@ -1,7 +1,13 @@
-import { useMemo, useState } from "react";
-import styles from "./StockAdjustmentDrawer.module.css";
-import EmptyImage from "../../../Component/MediaComponent/EmptyImage";
+// IMPORT TYPES
 import type { TProductQuantityMovement } from "../../../Services/supabase/productService";
+// IMPORT STYLES
+import styles from "./StockAdjustmentDrawer.module.css";
+import drawerStyles from "../../../Component/Drawer/Drawer.module.css";
+// IMPORT HOOKS
+import { useMemo, useState } from "react";
+// IMPORT COMPONENTS
+import Drawer from "../../../Component/Drawer/Drawer";
+import EmptyImage from "../../../Component/MediaComponent/EmptyImage";
 
 export type StockAdjustmentType = "RESTOCK" | "DAMAGE" | "STOCK_COUNT" | "CORRECTION";
 
@@ -20,22 +26,10 @@ const REASONS: {
 	value: StockAdjustmentType;
 	label: string;
 }[] = [
-	{
-		value: "RESTOCK",
-		label: "Produksi Baru"
-	},
-	{
-		value: "DAMAGE",
-		label: "Rusak/Cacat"
-	},
-	{
-		value: "STOCK_COUNT",
-		label: "Hitung Ulang"
-	},
-	{
-		value: "CORRECTION",
-		label: "Koreksi Hitung"
-	}
+	{ value: "RESTOCK", label: "Produksi Baru" },
+	{ value: "DAMAGE", label: "Rusak/Cacat" },
+	{ value: "STOCK_COUNT", label: "Hitung Ulang" },
+	{ value: "CORRECTION", label: "Koreksi Hitung" }
 ];
 
 export default function StockAdjustmentDrawer({
@@ -68,7 +62,6 @@ export default function StockAdjustmentDrawer({
 	}, [inputValue, mode, currentStock]);
 
 	const newStock = currentStock + quantity;
-
 	const canSave = quantity !== 0 && newStock >= 0 && !saving;
 
 	const handleSave = async () => {
@@ -85,7 +78,6 @@ export default function StockAdjustmentDrawer({
 				adjustmentType: adjustmentType,
 				note: note.trim()
 			});
-			// onClose();
 		} finally {
 			setSaving(false);
 		}
@@ -104,213 +96,177 @@ export default function StockAdjustmentDrawer({
 	};
 
 	return (
-		<div
-			className={styles.overlay}
-			onMouseDown={(event) => {
-				if (event.target === event.currentTarget) {
-					onClose();
-				}
-			}}
-		>
-			<aside className={styles.drawer} role="dialog" aria-modal="false" aria-labelledby="stock-adjustment-title">
-				{/* Header */}
-				<header className={styles.header}>
-					<div>
-						<p className={styles.eyebrow}>Stock Adjustment</p>
-						<h2 id="stock-adjustment-title" className={styles.title}>
-							{productName}
-						</h2>
-					</div>
-
-					<button
-						type="button"
-						className={styles.closeButton}
-						onClick={onClose}
-						disabled={saving}
-						aria-label="Close"
-					>
-						×
-					</button>
-				</header>
-
-				{/* Content */}
-				<div className={styles.content}>
-					{/* Current stock */}
-					<section className={styles.currentStock}>
-						<div className={styles.imageSection}>
-							{productImageUrl && !imageError ? (
-								<img
-									src={productImageUrl}
-									alt={productName}
-									className={styles.productImage}
-									onError={() => setImageError(true)}
-								/>
-							) : (
-								<div className={styles.imageFallback}>
-									<EmptyImage className={styles.fallbackIcon} />
-									<span>No Image</span>
-								</div>
-							)}
-						</div>
-						<div className={styles.qtySection}>
-							<strong>Jumlah Stok Sekarang</strong>
-							<div className={styles.currentStockValue}>
-								<span>{currentStock}</span>
-								<span className={styles.unit}>pcs</span>
-							</div>
-						</div>
-					</section>
-
-					{/* Adjustment mode */}
-					<section className={styles.section}>
-						<label className={styles.label}>Metode Penyesuaian</label>
-
-						<div className={styles.modeSelector}>
-							<button
-								type="button"
-								className={
-									mode === "CHANGE"
-										? `${styles.modeButton} ${styles.modeButtonActive}`
-										: styles.modeButton
-								}
-								onClick={() => handleModeChange("CHANGE")}
-								disabled={saving}
-							>
-								Selisih Jumlah
-							</button>
-
-							<button
-								type="button"
-								className={
-									mode === "SET"
-										? `${styles.modeButton} ${styles.modeButtonActive}`
-										: styles.modeButton
-								}
-								onClick={() => handleModeChange("SET")}
-								disabled={saving}
-							>
-								Jumlah Akhir
-							</button>
-						</div>
-					</section>
-
-					{/* Quantity */}
-					<section className={styles.section}>
-						<label htmlFor="stock-adjustment-input" className={styles.label}>
-							{mode === "CHANGE" ? "Jumlah" : "Stok Baru"}
-						</label>
-
-						<div className={styles.adjustmentSection}>
-							<button
-								type="button"
-								className={styles.adjustmentQtyButton}
-								style={{ background: "var(--pink)" }}
-								onClick={() => {
-									setInputValue(`${Number(inputValue) - 1}`);
-								}}
-							>
-								-
-							</button>
-							<div className={styles.inputWrapper}>
-								{mode === "CHANGE" && <span className={styles.inputPrefix}>±</span>}
-								<input
-									id="stock-adjustment-input"
-									type="number"
-									inputMode="numeric"
-									step="1"
-									min={mode === "SET" ? 0 : undefined}
-									value={inputValue}
-									onChange={(event) => setInputValue(event.target.value)}
-									className={styles.numberInput}
-									disabled={saving}
-								/>
-								<span className={styles.inputUnit}>pcs</span>
-							</div>
-							<button
-								type="button"
-								className={styles.adjustmentQtyButton}
-								style={{ background: "var(--blue)" }}
-								onClick={() => {
-									setInputValue(`${Number(inputValue) + 1}`);
-								}}
-							>
-								+
-							</button>
-						</div>
-					</section>
-
-					{/* Result */}
-					<section className={styles.resultCard}>
-						<div>
-							<span className={styles.resultLabel}>Selisih</span>
-							<strong
-								className={
-									quantity > 0 ? styles.positive : quantity < 0 ? styles.negative : styles.neutral
-								}
-							>
-								{quantity > 0 ? "+" : ""}
-								{quantity} pcs
-							</strong>
-						</div>
-						<div className={styles.resultDivider} />
-						<div>
-							<span className={styles.resultLabel}>New stock</span>
-							<strong className={styles.newStock}>{newStock} pcs</strong>
-						</div>
-					</section>
-
-					{/* Reason */}
-
-					<section className={styles.section}>
-						<label htmlFor="stock-adjustment-reason" className={styles.label}>
-							Kategori Penyesuaian
-						</label>
-						<select
-							id="stock-adjustment-reason"
-							value={adjustmentType}
-							onChange={(event) => setAdjustmentType(event.target.value as StockAdjustmentType)}
-							className={styles.select}
-							disabled={saving}
-						>
-							{REASONS.map((reason) => (
-								<option key={reason.value} value={reason.value}>
-									{reason.label}
-								</option>
-							))}
-						</select>
-					</section>
-
-					{/* Note */}
-
-					<section className={styles.section}>
-						<label htmlFor="stock-adjustment-note" className={styles.label}>
-							Keterangan <span>(optional)</span>
-						</label>
-
-						<textarea
-							id="stock-adjustment-note"
-							value={note}
-							onChange={(event) => setNote(event.target.value)}
-							className={styles.textarea}
-							placeholder="e.g. Produksi pagi"
-							rows={3}
-							disabled={saving}
-						/>
-					</section>
-				</div>
-
-				{/* Footer */}
-
-				<footer className={styles.footer}>
-					<button type="button" className={styles.cancelButton} onClick={onClose} disabled={saving}>
+		<Drawer
+			eyebrow="Stock Adjustment"
+			title={productName}
+			onClose={onClose}
+			disabled={saving}
+			footer={
+				<>
+					<button type="button" className={drawerStyles.cancelButton} onClick={onClose} disabled={saving}>
 						Cancel
 					</button>
 
-					<button type="button" className={styles.saveButton} onClick={handleSave} disabled={!canSave}>
+					<button type="button" className={drawerStyles.saveButton} onClick={handleSave} disabled={!canSave}>
 						{saving ? "Saving..." : "Save Adjustment"}
 					</button>
-				</footer>
-			</aside>
-		</div>
+				</>
+			}
+		>
+			{/* Current stock */}
+			<section className={styles.currentStock}>
+				<div className={styles.imageSection}>
+					{productImageUrl && !imageError ? (
+						<img
+							src={productImageUrl}
+							alt={productName}
+							className={styles.productImage}
+							onError={() => setImageError(true)}
+						/>
+					) : (
+						<div className={styles.imageFallback}>
+							<EmptyImage className={styles.fallbackIcon} />
+							<span>No Image</span>
+						</div>
+					)}
+				</div>
+				<div className={styles.qtySection}>
+					<strong>Jumlah Stok Sekarang</strong>
+					<div className={styles.currentStockValue}>
+						<span>{currentStock}</span>
+						<span className={styles.unit}>pcs</span>
+					</div>
+				</div>
+			</section>
+
+			{/* Adjustment mode */}
+			<section className={styles.section}>
+				<label className={styles.label}>Metode Penyesuaian</label>
+
+				<div className={styles.modeSelector}>
+					<button
+						type="button"
+						className={
+							mode === "CHANGE" ? `${styles.modeButton} ${styles.modeButtonActive}` : styles.modeButton
+						}
+						onClick={() => handleModeChange("CHANGE")}
+						disabled={saving}
+					>
+						Selisih Jumlah
+					</button>
+
+					<button
+						type="button"
+						className={
+							mode === "SET" ? `${styles.modeButton} ${styles.modeButtonActive}` : styles.modeButton
+						}
+						onClick={() => handleModeChange("SET")}
+						disabled={saving}
+					>
+						Jumlah Akhir
+					</button>
+				</div>
+			</section>
+
+			{/* Quantity */}
+			<section className={styles.section}>
+				<label htmlFor="stock-adjustment-input" className={styles.label}>
+					{mode === "CHANGE" ? "Jumlah" : "Stok Baru"}
+				</label>
+
+				<div className={styles.adjustmentSection}>
+					<button
+						type="button"
+						className={styles.adjustmentQtyButton}
+						style={{ background: "var(--pink)" }}
+						onClick={() => {
+							setInputValue(`${Number(inputValue) - 1}`);
+						}}
+					>
+						-
+					</button>
+					<div className={styles.inputWrapper}>
+						{mode === "CHANGE" && <span className={styles.inputPrefix}>±</span>}
+						<input
+							id="stock-adjustment-input"
+							type="number"
+							inputMode="numeric"
+							step="1"
+							min={mode === "SET" ? 0 : undefined}
+							value={inputValue}
+							onChange={(event) => setInputValue(event.target.value)}
+							className={styles.numberInput}
+							disabled={saving}
+						/>
+						<span className={styles.inputUnit}>pcs</span>
+					</div>
+					<button
+						type="button"
+						className={styles.adjustmentQtyButton}
+						style={{ background: "var(--blue)" }}
+						onClick={() => {
+							setInputValue(`${Number(inputValue) + 1}`);
+						}}
+					>
+						+
+					</button>
+				</div>
+			</section>
+
+			{/* Result */}
+			<section className={styles.resultCard}>
+				<div>
+					<span className={styles.resultLabel}>Selisih</span>
+					<strong
+						className={quantity > 0 ? styles.positive : quantity < 0 ? styles.negative : styles.neutral}
+					>
+						{quantity > 0 ? "+" : ""}
+						{quantity} pcs
+					</strong>
+				</div>
+				<div className={styles.resultDivider} />
+				<div>
+					<span className={styles.resultLabel}>New stock</span>
+					<strong className={styles.newStock}>{newStock} pcs</strong>
+				</div>
+			</section>
+
+			{/* Reason */}
+			<section className={styles.section}>
+				<label htmlFor="stock-adjustment-reason" className={styles.label}>
+					Kategori Penyesuaian
+				</label>
+				<select
+					id="stock-adjustment-reason"
+					value={adjustmentType}
+					onChange={(event) => setAdjustmentType(event.target.value as StockAdjustmentType)}
+					className={styles.select}
+					disabled={saving}
+				>
+					{REASONS.map((reason) => (
+						<option key={reason.value} value={reason.value}>
+							{reason.label}
+						</option>
+					))}
+				</select>
+			</section>
+
+			{/* Note */}
+			<section className={styles.section}>
+				<label htmlFor="stock-adjustment-note" className={styles.label}>
+					Keterangan <span>(optional)</span>
+				</label>
+
+				<textarea
+					id="stock-adjustment-note"
+					value={note}
+					onChange={(event) => setNote(event.target.value)}
+					className={styles.textarea}
+					placeholder="e.g. Produksi pagi"
+					rows={3}
+					disabled={saving}
+				/>
+			</section>
+		</Drawer>
 	);
 }

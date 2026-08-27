@@ -1,20 +1,15 @@
-import { useContext } from "react";
-
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-import { ToastContainer } from "react-toastify";
-
+// IMPORT STYLES
 import "./App.css";
-
+// IMPORT HOOKS
+import { useContext } from "react";
+// IMPORT COMPONENTS
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import Header from "./Component/Header/Header";
-
 import AuthContext from "./Component/Context/AuthProvider";
-
 import Login from "./Page/Login/Login";
 import Signup from "./Page/Login/Signup";
-
 import NotFound from "./Page/NotFound/NotFound";
 import Cashier from "./Page/Cashier/Cashier";
 import TransactionHistory from "./Page/TransactionHistory/TransactionHistory";

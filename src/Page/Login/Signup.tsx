@@ -1,11 +1,13 @@
-import { type FormEvent, useState } from "react";
-
+// IMPORT STYLES
+import styles from "./Login.module.css";
+// IMPORT TYPES
+import { type SubmitEvent } from "react";
+// IMPORT HOOKS
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import styles from "./Login.module.css";
-
+// IMPORT COMPONENTS
 import { signUp } from "../../Services/supabase/userService";
-
 import OrenjiLogo from "../../assets/Stiker Orenji.svg";
 
 function Signup() {
@@ -23,7 +25,7 @@ function Signup() {
 
 	const [error, setError] = useState<string | null>(null);
 
-	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+	async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
 
 		setError(null);

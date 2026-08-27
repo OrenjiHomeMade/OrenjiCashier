@@ -13,7 +13,7 @@ import CartItem from "../../../Component/CartItem/CartItem";
 
 // IMPORT UTILITIES
 import { generateTransactionCode, getLocalTimestamp, rupiahFormater } from "../../../Utilities/NumberFormater";
-import type { TCreateTransactionInput } from "../../../Services/supabase/transactionService";
+import type { TCreateTransactionInput } from "../../../Types/transaction";
 import AuthContext from "../../../Component/Context/AuthProvider";
 
 // PROPERTY DEFINITION
@@ -42,16 +42,16 @@ const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: 
 		const transactionTime = new Date();
 
 		const transaction = {
-			transaction_code: generateTransactionCode(cashierName, transactionTime),
-			transaction_time: getLocalTimestamp(transactionTime),
-			payment_method: paymentMethod,
+			transactionCode: generateTransactionCode(cashierName, transactionTime),
+			transactionTime: getLocalTimestamp(transactionTime),
+			paymentMethod: paymentMethod,
 			// transaction_amount: paymentMethod === "cash" ? paymentAmount - cartTotal : cartTotal,
-			transaction_amount: cartTotal,
+			transactionAmount: cartTotal,
 			cashier: cashierName,
 			items: cartItems.map((item) => ({
-				product_id: item.id,
+				productId: item.id,
 				quantity: item.quantity ?? 0,
-				unit_price: item.price,
+				unitPrice: item.price,
 				subtotal: item.itemTotal ?? 0
 			}))
 		};

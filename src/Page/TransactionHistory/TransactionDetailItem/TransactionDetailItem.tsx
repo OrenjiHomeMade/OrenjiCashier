@@ -1,5 +1,6 @@
+// IMPORT STYLES
 import style from "./TransactionDetailItem.module.css";
-
+// IMPORT UTILITITIES
 import { rupiahFormater } from "../../../Utilities/NumberFormater";
 
 export type TTransactionDetailItem = {

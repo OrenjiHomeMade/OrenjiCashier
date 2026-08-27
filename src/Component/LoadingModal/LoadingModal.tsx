@@ -1,3 +1,4 @@
+// IMPORT STYLES
 import style from "./LoadingModal.module.css";
 
 type LoadingModalProps = {

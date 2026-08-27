@@ -1,4 +1,7 @@
-const TrashIcon = () => {
+// IMPORT TYPES
+import type { SVGProps } from "react";
+
+const TrashIcon = (props: SVGProps<SVGSVGElement>) => {
 	return (
 		<svg
 			width="24"
@@ -10,6 +13,7 @@ const TrashIcon = () => {
 			strokeLinecap="round"
 			strokeLinejoin="round"
 			className="lucide lucide-trash2-icon lucide-trash-2"
+			{...props}
 		>
 			<path d="M10 11v6" />
 			<path d="M14 11v6" />

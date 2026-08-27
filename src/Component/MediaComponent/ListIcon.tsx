@@ -1,3 +1,4 @@
+// IMPORT TYPES
 import type { SVGProps } from "react";
 
 const ListIcon = (props: SVGProps<SVGSVGElement>) => {

@@ -1,3 +1,4 @@
+// IMPORT TYPES
 import type { SVGProps } from "react";
 
 export interface cartProps extends SVGProps<SVGSVGElement> {

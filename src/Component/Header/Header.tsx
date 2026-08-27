@@ -1,17 +1,15 @@
-import { useContext } from "react";
-
-import { NavLink, useNavigate } from "react-router-dom";
-
+// IMPORT STYLES
 import styles from "./Header.module.css";
-
+// IMPORT HOOKS
+import { useContext } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+// IMPORT COMPONENTS
+import AuthContext from "../Context/AuthProvider";
 import CashierIcon from "../MediaComponent/CashierIcon";
 import TransactionIcon from "../MediaComponent/TransactionIcon";
 import CatalogIcon from "../MediaComponent/CatalogIcon";
-
 import CheerfulLogo from "../../assets/OrenjiSquareLogo.svg";
 import CircleUser from "../../assets/circle-user.svg";
-
-import AuthContext from "../Context/AuthProvider";
 import LogoutIcon from "../MediaComponent/LogoutIcon";
 
 const menuList = [

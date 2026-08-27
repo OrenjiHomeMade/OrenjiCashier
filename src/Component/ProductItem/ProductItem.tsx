@@ -1,18 +1,17 @@
+// IMPORT STYLES
 import style from "./ProductInfo.module.css";
-
+// IMPORT TYPES
 import type { TProduct } from "../../Types/product";
-
+// IMPORT HOOKS
 import { useState } from "react";
-
-import EmptyImage from "../MediaComponent/EmptyImage";
-
+// IMPORT UTILITIES
 import { rupiahFormater } from "../../Utilities/NumberFormater";
-
+// IMPORT COMPONENTS
+import EmptyImage from "../MediaComponent/EmptyImage";
 import EditIcon from "../MediaComponent/EditIcon";
-
 import { ArrowUpDown } from "lucide-react";
 
-export interface TProductInfo extends TProduct {
+export interface ProductInfoProps extends TProduct {
 	availableStock: number;
 	variant?: "grid" | "list";
 	onAdd?: () => void;
@@ -30,7 +29,7 @@ const ProductItem = ({
 	onAdd,
 	onAdjustStock,
 	onEdit
-}: TProductInfo) => {
+}: ProductInfoProps) => {
 	const [imageError, setImageError] = useState(false);
 
 	const isOutOfStock = availableStock <= 0;

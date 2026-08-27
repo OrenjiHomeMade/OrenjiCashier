@@ -2,7 +2,7 @@
 import style from "./ProductSection.module.css";
 
 // IMPORT TYPES
-import { type TProductInfo } from "../ProductItem/ProductItem";
+import { type ProductInfoProps } from "../ProductItem/ProductItem";
 
 // IMPORT HOOKS
 import { useMemo, useState } from "react";
@@ -19,12 +19,13 @@ import AddProductIcon from "../MediaComponent/AddProductIcon";
 
 export type TProductSectionProps = {
 	mode: "Cashier" | "Catalog";
-	onItemAdjusted?: (prod: TProductInfo) => void;
-	onItemEdit?: (prod: TProductInfo) => void;
-	onItemAdd?: (prod: TProductInfo) => void;
+	onItemAdjusted?: (prod: ProductInfoProps) => void;
+	onItemAdd?: (prod: ProductInfoProps) => void;
+	onEditProduct?: (prod: ProductInfoProps) => void;
+	onAddProduct?: () => void;
 };
 
-const ProductSection = ({ mode, onItemAdd, onItemEdit, onItemAdjusted }: TProductSectionProps) => {
+const ProductSection = ({ mode, onItemAdd, onEditProduct, onItemAdjusted, onAddProduct }: TProductSectionProps) => {
 	const [view, setView] = useState<"grid" | "list">("grid");
 	const [selectedCategory, setSelectedCategory] = useState("Semua");
 	const [searchTerm, setSearchTerm] = useState("");
@@ -34,7 +35,7 @@ const ProductSection = ({ mode, onItemAdd, onItemEdit, onItemAdjusted }: TProduc
 		queryFn: getProducts
 	});
 
-	const productInfos: TProductInfo[] = products.map((product) => ({
+	const productInfos: ProductInfoProps[] = products.map((product) => ({
 		id: product.product_id,
 		price: product.product_price,
 		quantity: 0,
@@ -98,7 +99,12 @@ const ProductSection = ({ mode, onItemAdd, onItemEdit, onItemAdjusted }: TProduc
 					</button>
 				</div>
 				{mode === "Catalog" && (
-					<button className={style.addProductButton}>
+					<button
+						className={style.addProductButton}
+						onClick={() => {
+							onAddProduct?.();
+						}}
+					>
 						<AddProductIcon className={style.addProductIcon} />
 						<span>Add Product</span>
 					</button>
@@ -138,7 +144,7 @@ const ProductSection = ({ mode, onItemAdd, onItemEdit, onItemAdjusted }: TProduc
 								onItemAdjusted?.(product);
 							}}
 							onEdit={() => {
-								onItemEdit?.(product);
+								onEditProduct?.(product);
 							}}
 							{...product}
 						/>
