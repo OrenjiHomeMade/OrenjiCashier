@@ -1,9 +1,9 @@
-// TODO: CHANGE PRODUCT DATA TYPE MANAGEMENT
 // IMPORT STYLES
 import styles from "./EditProductDrawer.module.css";
 import drawerStyles from "../../../Component/Drawer/Drawer.module.css";
-import type { TProductProfile } from "../../../Services/supabase/productService";
 
+// IMPORT TYPES
+import type { TProductProfile, TSaveProductParams } from "../../../Types/product";
 // IMPORT HOOKS
 import { useState } from "react";
 // IMPORT COMPONENTS
@@ -18,24 +18,17 @@ export type EditProductDrawerProps =
 			mode: "edit";
 			product: TProductProfile;
 			onClose: () => void;
-			onSave: (product: TProductProfile) => void | Promise<void>;
+			onSave: (product: TSaveProductParams) => void | Promise<void>;
+			// productImageUrl: string;
 	  }
 	| {
 			mode: "add";
 			onClose: () => void;
-			onSave: (product: TProductForm) => void | Promise<void>;
+			onSave: (product: TSaveProductParams) => void | Promise<void>;
+			// productImageUrl: string;
 	  };
 
-export type TProductForm = {
-	productName: string;
-	productPrice: number;
-	productImage: File | null;
-};
-
-type EditProductForm = {
-	productName: string;
-	productPrice: number;
-};
+type EditProductForm = Omit<TProductProfile, "productId">;
 
 export default function EditProductDrawer(props: EditProductDrawerProps) {
 	const {
@@ -47,7 +40,11 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 	} = useForm<EditProductForm>({
 		defaultValues: {
 			productName: props.mode === "edit" ? props.product.productName : "",
-			productPrice: props.mode === "edit" ? props.product.productPrice : 0
+			productPrice: props.mode === "edit" ? props.product.productPrice : 0,
+			productImageUrl: props.mode === "edit" ? props.product.productImageUrl : "",
+			productCategory: props.mode === "edit" ? props.product.productCategory : "",
+			description: props.mode === "edit" ? props.product.description : "",
+			isActive: props.mode === "edit" ? props.product.isActive : true
 		},
 		mode: "onChange"
 	});
@@ -81,18 +78,15 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 			if (props.mode === "edit") {
 				await props.onSave({
 					productId: props.product.productId,
-					productName: data.productName.trim(),
-					productPrice: data.productPrice,
-					productImageUrl: props.product.productImageUrl
+					newProduct: data,
+					previousProductCode: props.product.productCode,
+					image: selectedImage
 				});
-
 				return;
 			}
-
 			await props.onSave({
-				productName: data.productName.trim(),
-				productPrice: data.productPrice,
-				productImage: selectedImage
+				newProduct: data,
+				image: selectedImage
 			});
 		} finally {
 			setSaving(false);

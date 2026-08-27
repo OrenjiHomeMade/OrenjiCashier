@@ -1,13 +1,17 @@
 // IMPORT TYPES
-import type { DTProduct, DTProductQuery, DTProductWithQty } from "../../Types/database";
-import type { TProductImage, TProductQuantityMovement } from "../../Types/product";
+import type { DTProductQuery } from "../../Types/database";
+import type {
+	TProductImage,
+	TProductProfile,
+	TProductQuantityMovement,
+	TProductWithQty,
+	TSaveProductParams
+} from "../../Types/product";
 // IMPORT LIBRARY
 import { supabase } from "./client";
 import { toast } from "react-toastify";
 
-export const getProducts = async (): Promise<Omit<DTProductWithQty, "is_active">[]> => {
-	console.log("Fetching Product");
-
+export const getProducts = async (): Promise<TProductWithQty[]> => {
 	const { data, error } = await supabase
 		.from("products")
 		.select(
@@ -19,6 +23,7 @@ export const getProducts = async (): Promise<Omit<DTProductWithQty, "is_active">
 			product_price,
 			product_category,
 			description,
+			is_active,
 			product_stock!product_stock_product_id_fkey (
 				stock_quantity
 			)
@@ -35,15 +40,16 @@ export const getProducts = async (): Promise<Omit<DTProductWithQty, "is_active">
 
 	const products = data as unknown as DTProductQuery[];
 
-	const result: Omit<DTProductWithQty, "is_active">[] = products.map((product) => ({
-		product_id: product.product_id,
-		product_code: product.product_code,
-		product_name: product.product_name,
-		product_image: product.product_image,
-		product_price: product.product_price,
-		product_category: product.product_category,
-		description: product.description,
-		stock_quantity: product.product_stock?.stock_quantity ?? 0
+	const result: TProductWithQty[] = products.map((product) => ({
+		productId: Number(product.product_id),
+		productCode: product.product_code,
+		productName: product.product_name,
+		productPrice: product.product_price,
+		productImageUrl: getProductImageUrl(product.product_code),
+		productCategory: product.product_category,
+		description: product.description ?? "",
+		isActive: product.is_active,
+		stockQuantity: product.product_stock?.stock_quantity ?? 0
 	}));
 
 	return result;
@@ -126,6 +132,8 @@ export async function uploadProductImage({ productCode, file }: TProductImage): 
 	});
 
 	if (error) {
+		toast.error(`Failed Uploading product image ${error.message}`);
+		console.log(error.message);
 		throw error;
 	}
 
@@ -138,27 +146,26 @@ export async function deleteProductImage(productCode: string): Promise<void> {
 	const { error } = await supabase.storage.from("product-images").remove([path]);
 
 	if (error) {
+		toast.error(`Failed Deleting Product Image ${error.message}`);
+		console.log(error.message);
 		throw error;
 	}
 }
 
-export type TProductSchema = {
-	productId: number;
-	productCode: string;
-	productName: string;
-	productPrice: number;
-	productCategory: string | null;
-	description: string | null;
-	isActive: boolean;
-	createdAt: string;
-	updatedAt: string;
-	deletedAt: string | null;
-};
-
-export async function createProduct(product: DTProduct): Promise<TProductSchema> {
-	const { data, error } = await supabase.from("products").insert(product).select().single();
+export async function createProduct(product: Omit<TProductProfile, "productId">): Promise<TProductProfile> {
+	const insertEntry = {
+		product_code: product.productCode,
+		product_name: product.productName,
+		product_price: product.productPrice,
+		product_category: product.productCategory,
+		description: product.description,
+		is_active: product.isActive
+	};
+	const { data, error } = await supabase.from("products").insert(insertEntry).select().single();
 
 	if (error) {
+		toast.error(`Failed Creating products ${error.message}`);
+		console.log(error.message);
 		throw error;
 	}
 
@@ -167,74 +174,60 @@ export async function createProduct(product: DTProduct): Promise<TProductSchema>
 		productCode: data.product_code,
 		productName: data.product_name,
 		productPrice: Number(data.product_price),
+		productImageUrl: getProductImageUrl(data.product_code),
 		productCategory: data.product_category,
 		description: data.description,
-		isActive: data.is_active,
-		createdAt: data.created_at,
-		updatedAt: data.updated_at,
-		deletedAt: data.deleted_at
+		isActive: data.is_active
 	};
 }
 
-// export async function updateProduct(productId: number, product: TProductInput): Promise<TProductSchema> {
-// 	const { data, error } = await supabase
-// 		.from("products")
-// 		.update(productToDb(product))
-// 		.eq("product_id", productId)
-// 		.select()
-// 		.single();
+export async function updateProduct(product: TProductProfile) {
+	const productId = product.productId;
+	const updateEntry = {
+		product_code: product.productCode,
+		product_name: product.productName,
+		product_price: product.productPrice,
+		product_category: product.productCategory,
+		description: product.description,
+		is_active: product.isActive
+	};
+	const { data, error } = await supabase
+		.from("products")
+		.update(updateEntry)
+		.eq("product_id", productId)
+		.select()
+		.single();
 
-// 	if (error) {
-// 		throw error;
-// 	}
+	if (error) {
+		toast.error(`Failed Updating Products ${error.message}`);
+		console.log(error.message);
+		throw error;
+	}
 
-// 	return {
-// 		productId: data.product_id,
-// 		productCode: data.product_code,
-// 		productName: data.product_name,
-// 		productPrice: Number(data.product_price),
-// 		productCategory: data.product_category,
-// 		description: data.description,
-// 		isActive: data.is_active,
-// 		createdAt: data.created_at,
-// 		updatedAt: data.updated_at,
-// 		deletedAt: data.deleted_at
-// 	};
-// }
+	return data;
+}
 
-// export type TSaveProductParams = {
-// 	productId?: number;
-// 	previousProductCode?: string;
-// 	product: TProductInput;
-// 	image?: File | null;
-// };
+export async function saveProduct({ productId, previousProductCode, newProduct, image }: TSaveProductParams) {
+	const isEdit = productId !== undefined;
 
-// export async function saveProduct({
-// 	productId,
-// 	previousProductCode,
-// 	product,
-// 	image
-// }: TSaveProductParams): Promise<TProductSchema> {
-// 	const isEdit = productId !== undefined;
+	let savedProduct: TProductProfile;
 
-// 	let savedProduct: TProductSchema;
+	if (isEdit) {
+		savedProduct = await updateProduct({ ...newProduct, productId: productId });
+	} else {
+		savedProduct = await createProduct(newProduct);
+	}
 
-// 	if (isEdit) {
-// 		savedProduct = await updateProduct(productId, product);
-// 	} else {
-// 		savedProduct = await createProduct(product);
-// 	}
+	if (image) {
+		if (isEdit && previousProductCode && previousProductCode !== newProduct.productCode) {
+			await deleteProductImage(previousProductCode);
+		}
 
-// 	if (image) {
-// 		if (isEdit && previousProductCode && previousProductCode !== product.productCode) {
-// 			await deleteProductImage(previousProductCode);
-// 		}
+		await uploadProductImage({
+			productCode: newProduct.productCode,
+			file: image
+		});
+	}
 
-// 		await uploadProductImage({
-// 			productCode: product.productCode,
-// 			file: image
-// 		});
-// 	}
-
-// 	return savedProduct;
-// }
+	return savedProduct;
+}

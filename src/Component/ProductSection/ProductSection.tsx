@@ -36,25 +36,27 @@ const ProductSection = ({ mode, onItemAdd, onEditProduct, onItemAdjusted, onAddP
 	});
 
 	const productInfos: ProductInfoProps[] = products.map((product) => ({
-		id: product.product_id,
-		price: product.product_price,
+		id: product.productId.toString(),
+		productCode: product.productCode,
+		price: product.productPrice,
 		quantity: 0,
-		productName: product.product_name,
-		productImageUrl: getProductImageUrl(product.product_code),
-		category: product.product_category,
+		productName: product.productName,
+		productImageUrl: getProductImageUrl(product.productCode),
+		productCategory: product.productCategory ?? "",
 		description: product.description ?? "",
-		availableStock: product.stock_quantity
+		availableStock: product.stockQuantity,
+		isActive: product.isActive
 	}));
 
 	const categories = useMemo(() => {
-		const uniqueCategories = new Set(productInfos.map((product) => product.category));
+		const uniqueCategories = new Set(productInfos.map((product) => product.productCategory));
 
 		return ["Semua", ...uniqueCategories];
 	}, [productInfos]);
 
 	const filteredProducts = useMemo(() => {
 		return productInfos.filter((product) => {
-			const matchesCategory = selectedCategory === "Semua" || product.category === selectedCategory;
+			const matchesCategory = selectedCategory === "Semua" || product.productCategory === selectedCategory;
 			const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase());
 
 			return matchesCategory && matchesSearch;

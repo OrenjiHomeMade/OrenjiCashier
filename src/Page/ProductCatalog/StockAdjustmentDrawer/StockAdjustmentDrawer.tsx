@@ -1,10 +1,13 @@
-// IMPORT TYPES
-import type { TProductQuantityMovement } from "../../../Services/supabase/productService";
 // IMPORT STYLES
 import styles from "./StockAdjustmentDrawer.module.css";
 import drawerStyles from "../../../Component/Drawer/Drawer.module.css";
+
+// IMPORT TYPES
+import type { TProductQuantityMovement } from "../../../Types/product";
+
 // IMPORT HOOKS
 import { useMemo, useState } from "react";
+
 // IMPORT COMPONENTS
 import Drawer from "../../../Component/Drawer/Drawer";
 import EmptyImage from "../../../Component/MediaComponent/EmptyImage";

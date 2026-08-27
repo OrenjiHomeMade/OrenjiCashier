@@ -49,14 +49,18 @@
    ================================================== */
 
 .imageContainer {
-	height: 80px;
-	width: 80px;
+	width: 120px;
+	height: 120px;
+
 	aspect-ratio: 1 / 1;
+
 	overflow: hidden;
 	padding: 5px;
-	border: solid 1px var(--brown);
+
+	border: 1px solid var(--border-color, #ded7d1);
 	border-radius: var(--radius-lg);
-	background-color: white;
+
+	background-color: var(--white);
 }
 
 .productImage {

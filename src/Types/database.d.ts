@@ -1,8 +1,8 @@
+/** PRODUCT QUERY **/
 export type DTProduct = {
 	product_id: string;
 	product_code: string;
 	product_name: string;
-	product_image: string | null;
 	product_price: number;
 	product_category: string;
 	description: string | null;

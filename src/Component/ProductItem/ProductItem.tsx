@@ -1,7 +1,7 @@
 // IMPORT STYLES
 import style from "./ProductInfo.module.css";
 // IMPORT TYPES
-import type { TProduct } from "../../Types/product";
+import type { TProductItem } from "../../Types/product";
 // IMPORT HOOKS
 import { useState } from "react";
 // IMPORT UTILITIES
@@ -11,7 +11,7 @@ import EmptyImage from "../MediaComponent/EmptyImage";
 import EditIcon from "../MediaComponent/EditIcon";
 import { ArrowUpDown } from "lucide-react";
 
-export interface ProductInfoProps extends TProduct {
+export interface ProductInfoProps extends TProductItem {
 	availableStock: number;
 	variant?: "grid" | "list";
 	onAdd?: () => void;

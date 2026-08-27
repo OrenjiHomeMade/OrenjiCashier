@@ -4,7 +4,7 @@ import style from "./ProductCatalog.module.css";
 import type { ProductInfoProps } from "../../Component/ProductItem/ProductItem";
 // IMPORT HOOKS
 import { useState } from "react";
-import { adjustQuantity /*saveProduct*/ } from "../../Services/supabase/productService";
+import { adjustQuantity } from "../../Services/supabase/productService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 // IMPORT COMPONENTS
 import ProductSection from "../../Component/ProductSection/ProductSection";
@@ -75,17 +75,38 @@ const ProductCatalog = () => {
 						productId: Number(drawer.product.id),
 						productName: drawer.product.productName,
 						productPrice: drawer.product.price,
-						productImageUrl: drawer.product.productImageUrl ?? ""
+						productCode: drawer.product.productCode,
+						productCategory: drawer.product.productCategory,
+						description: drawer.product.description,
+						isActive: drawer.product.isActive,
+						productImageUrl: drawer.product.productImageUrl
 					}}
+					// productImageUrl={drawer.product.productImageUrl ?? ""}
 					onClose={() => setDrawer(null)}
 					onSave={(product) => {
 						console.log(product);
-						// saveProduct(product.productId);
-						// saveProductInformation.mutate(product.productId);
-						// toast("This function is not yet available!");
+						// const { productId, productDetail } = product;
+
+						// saveProductInformation.mutate({
+						// 	productId: productId,
+						// 	newProduct: productDetail
+						// });
 					}}
 				/>
 			)}
+			{/* {drawer?.type === "add" && (
+				<EditProductDrawer
+					mode="add"
+					onClose={() => setDrawer(null)}
+					onSave={(product) => {
+						console.log(product);
+						saveProductInformation.mutate({
+							productId: productId,
+							newProduct: product
+						});
+					}}
+				/>
+			)} */}
 
 			{drawer?.type === "stock" && (
 				<StockAdjustmentDrawer
@@ -97,17 +118,6 @@ const ProductCatalog = () => {
 					onClose={() => setDrawer(null)}
 					onSave={(qtyAdjustment) => {
 						adjustProductQuantityMutation.mutate(qtyAdjustment);
-					}}
-				/>
-			)}
-
-			{drawer?.type === "add" && (
-				<EditProductDrawer
-					mode="add"
-					onClose={() => setDrawer(null)}
-					onSave={(product) => {
-						console.log(product);
-						// toast("This function is not yet available!");
 					}}
 				/>
 			)}

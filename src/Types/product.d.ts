@@ -1,21 +1,28 @@
 import type { Item } from "react-use-cart";
 
-/*************************** CART ITEM ***************************/
-export interface TProduct extends Item {
+export type TProduct = {
+	productCode: string;
 	productName: string;
 	productImageUrl?: string;
-	category: string;
+	productCategory: string;
 	description: string;
-}
+	isActive: boolean;
+};
+
+/*************************** CART ITEM ***************************/
+export type TProductItem = TProduct & Item;
 
 /*************************** PRODUCT CATALOG ***************************/
 
 /*************************** Product Management ***************************/
-export type TProductProfile = {
+export type TProductProfile = TProduct & {
 	productId: number;
-	productName: string;
-	productImageUrl: string;
+	// productCode: string;
+	// productName: string;
 	productPrice: number;
+	// productImageUrl: string | null;
+	// productCategory: string | null;
+	// description: string | null;
 };
 
 export type TProductImage = {
@@ -23,16 +30,18 @@ export type TProductImage = {
 	file: File;
 };
 
-export type TProductInput = {
-	productCode: string;
-	productName: string;
-	productPrice: number;
-	productCategory: string | null;
-	description: string | null;
-	isActive: boolean;
+export type TSaveProductParams = {
+	productId?: number;
+	previousProductCode?: string;
+	newProduct: Omit<TProductProfile, "productId">;
+	image?: File | null;
 };
 
 /*************************** Quantity Management ***************************/
+export type TProductWithQty = TProductProfile & {
+	stockQuantity: number;
+};
+
 export type TProductQuantityMovement = {
 	productId: number;
 	adjustmentQty: number;
