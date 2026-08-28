@@ -1,11 +1,11 @@
-import ProductSection from "../Component/ProductSection/ProductSection";
+// import ProductSection from "../Component/ProductSection/ProductSection";
 // import StockAdjustmentDrawer from "../Page/ProductCatalog/StockAdjustmentDrawer/StockAdjustmentDrawer";
 
 const Development = () => {
 	return (
 		<div className="page">
 			{/* <StockAdjustmentDrawer /> */}
-			<ProductSection mode="Cashier" />
+			{/* <ProductSection mode="Cashier" /> */}
 		</div>
 	);
 };

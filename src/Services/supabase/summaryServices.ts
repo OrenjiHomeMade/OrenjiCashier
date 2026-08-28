@@ -32,5 +32,5 @@ export const getSalesSummary = async (date: string): Promise<SalesSummary> => {
 		throw error;
 	}
 
-	return data;
+	return data as unknown as SalesSummary;
 };
