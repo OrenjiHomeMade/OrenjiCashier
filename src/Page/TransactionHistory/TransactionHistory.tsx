@@ -7,15 +7,13 @@ import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tansta
 import { dateStringInputFormat } from "../../Utilities/NumberFormater";
 import ChevronIcon from "../../Component/MediaComponent/ChevronIcon";
 
-import TransactionItem, { type TTransaction } from "./TransactionItem/TransactionItem";
+import TransactionItem from "./TransactionItem/TransactionItem";
 
-import {
-	deleteTransaction,
-	getCashierOperators,
-	getTransactions,
-	type TTransaction as TDatabaseTransaction
-} from "../../Services/supabase/transactionService";
+import { deleteTransaction, getCashierOperators, getTransactions } from "../../Services/supabase/transactionService";
+
 import LoadingModal from "../../Component/LoadingModal/LoadingModal";
+import type { Database } from "../../Types/database";
+import type { TTransaction } from "../../Types/transaction";
 
 type PaymentMethod = "CASH" | "QRIS";
 
@@ -48,7 +46,22 @@ const getItemsPerPage = () => {
    MAP DATABASE TRANSACTION → UI TRANSACTION
    ========================================================= */
 
-const mapTransactionToUI = (transaction: TDatabaseTransaction): TTransaction => {
+// Define the DB shape of an item returned inside transaction.items
+type RawTransactionItem = {
+	transaction_item_id: number | string;
+	product_name: string | null;
+	product_id: number | string;
+	quantity: number;
+	unit_price: number;
+	subtotal: number;
+};
+
+const mapTransactionToUI = (
+	transaction: Database["public"]["Functions"]["get_transactions"]["Returns"][0]
+): TTransaction => {
+	// Cast the Json array to your explicit item type
+	const rawItems = (transaction.items as RawTransactionItem[] | null) ?? [];
+
 	return {
 		transactionId: transaction.transaction_id,
 		transactionCode: transaction.transaction_code,
@@ -56,9 +69,9 @@ const mapTransactionToUI = (transaction: TDatabaseTransaction): TTransaction => 
 		cashier: transaction.cashier,
 		transactionAmount: Number(transaction.transaction_amount),
 		paymentMethod: transaction.payment_method as PaymentMethod,
-		transactionItems: transaction.items.map((item) => ({
+		transactionItems: rawItems.map((item) => ({
 			id: String(item.transaction_item_id),
-			productName: item.product_name ?? `Product #${item.product_id}`,
+			productName: item.product_name ?? "",
 			quantity: item.quantity,
 			unitPrice: Number(item.unit_price),
 			subtotal: Number(item.subtotal)
@@ -121,11 +134,6 @@ const TransactionHistory = () => {
 
 	/* =====================================================
 	   RESPONSIVE PAGE SIZE
-
-	   This useEffect is ONLY responsible for watching the
-	   browser width.
-
-	   It does NOT fetch transactions.
 	   ===================================================== */
 
 	useEffect(() => {
@@ -235,19 +243,7 @@ const TransactionHistory = () => {
 				maxAmount: appliedFilters.maxAmount ? Number(appliedFilters.maxAmount) : undefined
 			}),
 
-		/*
-		 * Keep the previous page visible while the next
-		 * page is loading.
-		 *
-		 * This prevents the table from flashing empty
-		 * every time the user changes page.
-		 */
 		placeholderData: keepPreviousData,
-
-		/*
-		 * Transaction history doesn't need to refetch
-		 * every time the browser window/tab gets focus.
-		 */
 		refetchOnWindowFocus: false
 	});
 

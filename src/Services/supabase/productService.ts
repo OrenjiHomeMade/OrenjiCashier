@@ -1,5 +1,6 @@
 // IMPORT TYPES
-import type { DTProductQuery } from "../../Types/database";
+import type { DTProductQuery } from "../../Types/database-query";
+// import type { Database } from "../../Types/database";
 import type {
 	TProductImage,
 	TProductProfile,
@@ -7,6 +8,7 @@ import type {
 	TProductWithQty,
 	TSaveProductParams
 } from "../../Types/product";
+
 // IMPORT LIBRARY
 import { supabase } from "./client";
 import { toast } from "react-toastify";
@@ -61,6 +63,20 @@ export const getProductImageUrl = (product_code: string) => {
 	const { data } = supabase.storage.from("product-images").getPublicUrl(imagePath);
 
 	return data.publicUrl;
+};
+
+export const getProductCategories = async (activeProduct: boolean | null = null): Promise<string[]> => {
+	const { data, error } = await supabase.rpc("get_product_categories", {
+		p_is_active: activeProduct ?? undefined
+	});
+
+	if (error) {
+		toast.error(`Failed Loading Categories ${error.message}`);
+		console.error(error.message);
+		return [];
+	}
+
+	return data ? data.map((el) => el.product_category) : [];
 };
 
 export const adjustQuantity = async ({ productId, adjustmentQty, adjustmentType, note }: TProductQuantityMovement) => {
@@ -175,13 +191,13 @@ export async function createProduct(product: Omit<TProductProfile, "productId">)
 		productName: data.product_name,
 		productPrice: Number(data.product_price),
 		productImageUrl: getProductImageUrl(data.product_code),
-		productCategory: data.product_category,
-		description: data.description,
+		productCategory: data.product_category ?? "",
+		description: data.description ?? "",
 		isActive: data.is_active
 	};
 }
 
-export async function updateProduct(product: TProductProfile) {
+export async function updateProduct(product: TProductProfile): Promise<TProductProfile> {
 	const productId = product.productId;
 	const updateEntry = {
 		product_code: product.productCode,
@@ -204,7 +220,16 @@ export async function updateProduct(product: TProductProfile) {
 		throw error;
 	}
 
-	return data;
+	return {
+		productId: data.product_id,
+		productCode: data.product_code,
+		productName: data.product_name,
+		productPrice: data.product_price,
+		productImageUrl: getProductImageUrl(data.product_code),
+		productCategory: data.product_category ?? "",
+		description: data.description ?? "",
+		isActive: data.is_active
+	};
 }
 
 export async function saveProduct({ productId, previousProductCode, newProduct, image }: TSaveProductParams) {

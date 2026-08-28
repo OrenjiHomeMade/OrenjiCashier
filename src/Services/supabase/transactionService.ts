@@ -1,25 +1,8 @@
-import type { DTTransaction } from "../../Types/database";
-import type { TCreateTransactionInput, TTransactionResult } from "../../Types/transaction";
+import type { TCreateTransactionInput, TTransactionFilter, TTransactionResult } from "../../Types/transaction";
 import { supabase } from "./client";
 import { toast } from "react-toastify";
 
-export type TTransactionFilter = {
-	page?: number;
-	pageSize?: number;
-
-	search?: string;
-
-	startDate?: string;
-	endDate?: string;
-
-	cashier?: string;
-	paymentMethod?: string;
-
-	minAmount?: number;
-	maxAmount?: number;
-};
-
-export const createTransaction = async (transaction: TCreateTransactionInput): Promise<string | null> => {
+export const createTransaction = async (transaction: TCreateTransactionInput): Promise<number | null> => {
 	const { data, error } = await supabase.rpc("create_transaction", {
 		p_transaction_code: transaction.transactionCode,
 		p_transaction_time: transaction.transactionTime,
@@ -93,17 +76,13 @@ export const getTransactions = async (filter: TTransactionFilter = {}): Promise<
 	const { data, error } = await supabase.rpc("get_transactions", {
 		p_page: page,
 		p_page_size: pageSize,
-
-		p_search: search || null,
-
-		p_start_date: startDateTime,
-		p_end_date: endDateTime,
-
-		p_cashier: cashier || null,
-		p_payment_method: paymentMethod || null,
-
-		p_min_amount: minAmount ?? null,
-		p_max_amount: maxAmount ?? null
+		p_search: search || undefined,
+		p_start_date: startDateTime || undefined,
+		p_end_date: endDateTime || undefined,
+		p_cashier: cashier || undefined,
+		p_payment_method: paymentMethod || undefined,
+		p_min_amount: minAmount ?? undefined,
+		p_max_amount: maxAmount ?? undefined
 	});
 
 	if (error) {
@@ -116,22 +95,10 @@ export const getTransactions = async (filter: TTransactionFilter = {}): Promise<
 
 	const rows = data ?? [];
 
-	const transactions: DTTransaction[] = rows.map((row: DTTransaction) => ({
-		transaction_id: row.transaction_id,
-		transaction_code: row.transaction_code,
-		transaction_time: row.transaction_time,
-		payment_method: row.payment_method,
-		transaction_amount: Number(row.transaction_amount),
-		created_at: row.created_at,
-		updated_at: row.updated_at,
-		cashier: row.cashier,
-		items: row.items ?? []
-	}));
-
 	const totalCount = rows.length > 0 ? Number(rows[0].total_count) : 0;
 
 	return {
-		data: transactions,
+		data: rows,
 		totalCount,
 		totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
 		page,

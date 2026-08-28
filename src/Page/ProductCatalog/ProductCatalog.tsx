@@ -4,14 +4,12 @@ import style from "./ProductCatalog.module.css";
 import type { ProductInfoProps } from "../../Component/ProductItem/ProductItem";
 // IMPORT HOOKS
 import { useState } from "react";
-import { adjustQuantity } from "../../Services/supabase/productService";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { adjustQuantity, getProductCategories } from "../../Services/supabase/productService";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 // IMPORT COMPONENTS
 import ProductSection from "../../Component/ProductSection/ProductSection";
 import StockAdjustmentDrawer from "./StockAdjustmentDrawer/StockAdjustmentDrawer";
 import EditProductDrawer from "./EditProductDrawer/EditProductDrawer";
-
-// import { toast } from "react-toastify";
 
 type TProductDrawer =
 	| { type: "stock"; product: ProductInfoProps }
@@ -24,7 +22,12 @@ const ProductCatalog = () => {
 
 	const queryClient = useQueryClient();
 
-	const onQuerySuccess = () => {
+	const { data: productsCategory = [] } = useQuery({
+		queryKey: ["category"],
+		queryFn: () => getProductCategories()
+	});
+
+	const onProductQuerySuccess = () => {
 		setDrawer(null);
 
 		queryClient.invalidateQueries({
@@ -34,7 +37,7 @@ const ProductCatalog = () => {
 
 	const adjustProductQuantityMutation = useMutation({
 		mutationFn: adjustQuantity,
-		onSuccess: onQuerySuccess
+		onSuccess: onProductQuerySuccess
 	});
 
 	// const saveProductInformation = useMutation({
@@ -71,6 +74,7 @@ const ProductCatalog = () => {
 				<EditProductDrawer
 					key={drawer.product.id}
 					mode="edit"
+					categories={productsCategory}
 					product={{
 						productId: Number(drawer.product.id),
 						productName: drawer.product.productName,

@@ -2,31 +2,11 @@
 import style from "./TransactionDetailItem.module.css";
 // IMPORT UTILITITIES
 import { rupiahFormater } from "../../../Utilities/NumberFormater";
+import type { TTransactionItem } from "../../../Types/transaction";
 
-export type TTransactionDetailItem = {
-	id: string;
+export type TransactionDetailItemProps = TTransactionItem;
 
-	/*
-	 * Temporary field.
-	 *
-	 * Later this will come from:
-	 *
-	 * transaction_item
-	 *      ↓
-	 * product
-	 *      ↓
-	 * product_name
-	 */
-	productName: string;
-
-	quantity: number;
-
-	unitPrice: number;
-
-	subtotal: number;
-};
-
-const TransactionDetailItem = ({ productName, quantity, unitPrice, subtotal }: TTransactionDetailItem) => {
+const TransactionDetailItem = ({ productName, quantity, unitPrice, subtotal }: TransactionDetailItemProps) => {
 	return (
 		<div className={style.transactionDetailItem}>
 			<div className={style.productInfo}>

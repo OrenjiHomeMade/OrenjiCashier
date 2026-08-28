@@ -1,6 +1,8 @@
 // TODO TRANSACTION TYPES
 // IMPORT STYLES
 import style from "./TransactionItem.module.css";
+// IMPORT TYPES
+import type { TTransaction } from "../../../Types/transaction";
 // IMPORT HOOKS
 import { useState } from "react";
 // IMPORT UTILITIES
@@ -9,26 +11,11 @@ import { rupiahFormater } from "../../../Utilities/NumberFormater";
 import TrashIcon from "../../../Component/MediaComponent/TrashIcon";
 import EditIcon from "../../../Component/MediaComponent/EditIcon";
 import ChevronIcon from "../../../Component/MediaComponent/ChevronIcon";
-import TransactionDetailItem, { type TTransactionDetailItem } from "../TransactionDetailItem/TransactionDetailItem";
+import TransactionDetailItem from "../TransactionDetailItem/TransactionDetailItem";
 import { toast } from "react-toastify";
-
-export type TTransaction = {
-	transactionId: number;
-	transactionCode: string;
-	transactionDate: Date;
-
-	cashier: string;
-
-	transactionAmount: number;
-
-	paymentMethod: "CASH" | "QRIS";
-
-	transactionItems: TTransactionDetailItem[];
-};
 
 type TransactionItemProps = TTransaction & {
 	onDelete: (transactionId: number) => void;
-
 	isDeleting?: boolean;
 };
 
