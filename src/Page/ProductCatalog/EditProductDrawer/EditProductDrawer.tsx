@@ -13,9 +13,12 @@ import Drawer from "../../../Component/Drawer/Drawer";
 import EmptyImage from "../../../Component/MediaComponent/EmptyImage";
 
 // IMPORT UTILITIES
-import { rupiahFormater } from "../../../Utilities/NumberFormater";
+// import { rupiahFormater } from "../../../Utilities/NumberFormater";
 import { useForm, useWatch } from "react-hook-form";
 import ReturnIcon from "../../../Component/MediaComponent/ReturnIcon";
+import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
+import ButtonGroup, { type ButtonGroupOption } from "../../../Component/ButtonGroup/ButtonGroup";
+import PricingSummary from "../PricingSummary/PricingSummary";
 
 export type EditProductDrawerProps =
 	| {
@@ -34,6 +37,18 @@ export type EditProductDrawerProps =
 
 type EditProductForm = Omit<TProductProfile, "productId">;
 
+type EditMode = "PROFILE" | "PRICING";
+const EDIT_SECTIONS: ButtonGroupOption<EditMode>[] = [
+	{
+		display: "Produk Detail",
+		value: "PROFILE"
+	},
+	{
+		display: "Harga Produk",
+		value: "PRICING"
+	}
+];
+
 export default function EditProductDrawer(props: EditProductDrawerProps) {
 	const {
 		register,
@@ -49,6 +64,9 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 			productCode: props.mode === "edit" ? props.product.productCode : "",
 			productName: props.mode === "edit" ? props.product.productName : "",
 			productPrice: props.mode === "edit" ? props.product.productPrice : 0,
+			costIngredient: 0,
+			costLabor: 0,
+			costUtilities: 0,
 			productImageUrl: props.mode === "edit" ? props.product.productImageUrl : "",
 			productCategory: props.mode === "edit" ? props.product.productCategory : "",
 			description: props.mode === "edit" ? props.product.description : "",
@@ -58,21 +76,35 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 	});
 
 	const [selectedImage, setSelectedImage] = useState<File | null>(null);
-	// const [previewUrl, setPreviewUrl] = useState<string>("");
 	const [saving, setSaving] = useState(false);
 	const [imageError, setImageError] = useState(false);
-	const [isEditingPayment, setIsEditingPayment] = useState(false);
 	const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 	const [newCategory, setNewCategory] = useState("");
-
-	const newPriceValue = useWatch({
-		control,
-		name: "productPrice"
-	});
+	const [sectionEdit, setSectionEdit] = useState<EditMode>("PROFILE");
 
 	const productCategory = useWatch({
 		control,
 		name: "productCategory"
+	});
+
+	const productPrice = useWatch({
+		control,
+		name: "productPrice"
+	});
+
+	const materialCost = useWatch({
+		control,
+		name: "costIngredient"
+	});
+
+	const laborCost = useWatch({
+		control,
+		name: "costLabor"
+	});
+
+	const utilityCost = useWatch({
+		control,
+		name: "costUtilities"
 	});
 
 	const canSave = isValid && !saving;
@@ -205,194 +237,216 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 			}
 		>
 			<section className={styles.section}>
-				<label htmlFor="product-code" className={styles.label}>
-					Kode Produk
-				</label>
-
-				<input
-					id="product-code"
-					type="text"
-					className={styles.textInput}
+				<ButtonGroup
+					options={EDIT_SECTIONS}
+					value={sectionEdit}
+					onChange={(newMode) => {
+						setSectionEdit(newMode);
+					}}
 					disabled={saving}
-					{...register("productCode", {
-						required: "Product code is required",
-						validate: {
-							noEmpty: (value) => value.length > 0 || "Product code cannot be empty",
-							noSpaces: (value) => !/\s/.test(value) || "Spaces are not allowed"
-						}
-					})}
-				/>
-				{errors.productCode && <p className={styles.errorMessage}>{errors.productCode.message}</p>}
-			</section>
-
-			<section className={styles.section}>
-				<label htmlFor="product-name" className={styles.label}>
-					Nama Produk
-				</label>
-
-				<input
-					id="product-name"
-					type="text"
-					className={styles.textInput}
-					disabled={saving}
-					{...register("productName", {
-						required: true,
-						validate: (value) => value.trim() !== ""
-					})}
 				/>
 			</section>
+			{sectionEdit === "PROFILE" && (
+				<>
+					<section className={styles.section}>
+						<label htmlFor="product-name" className={styles.label}>
+							Nama Produk
+						</label>
 
-			<section className={styles.section}>
-				<label className={styles.label}>Gambar Produk</label>
-
-				<div className={styles.imageContainer}>
-					{previewUrl && !imageError ? (
-						<img
-							src={previewUrl}
-							alt={props.mode === "edit" ? props.product.productName : "Product"}
-							className={styles.productImage}
-							onError={() => setImageError(true)}
-						/>
-					) : (
-						<div className={styles.imageFallback}>
-							<EmptyImage className={styles.fallbackIcon} />
-							<span>No Image</span>
-						</div>
-					)}
-				</div>
-
-				<div className={styles.imageActions}>
-					<input
-						type="file"
-						accept="image/png,image/jpeg,image/webp"
-						disabled={saving}
-						onChange={(e) => {
-							const file = e.target.files?.[0];
-
-							if (file) {
-								setSelectedImage(file);
-								setImageError(false);
-							}
-						}}
-					/>
-				</div>
-			</section>
-
-			<section className={styles.section}>
-				<label htmlFor="product-category" className={styles.label}>
-					Kategori Produk
-				</label>
-
-				{isCreatingCategory ? (
-					<>
 						<input
-							id="product-category"
+							id="product-name"
 							type="text"
 							className={styles.textInput}
-							placeholder="Masukkan kategori baru"
-							value={newCategory}
 							disabled={saving}
-							onChange={(event) => handleNewCategoryChange(event.target.value)}
+							{...register("productName", {
+								required: true,
+								validate: (value) => value.trim() !== ""
+							})}
 						/>
+					</section>
+					<section className={styles.section}>
+						<label className={styles.checkboxLabel}>
+							<input type="checkbox" disabled={saving} {...register("isActive")} />
+							<span>Produk Aktif</span>
+						</label>
+					</section>
+					<section className={styles.section}>
+						<label htmlFor="product-code" className={styles.label}>
+							Kode Produk
+						</label>
 
-						<button
-							type="button"
-							className={styles.secondaryButton}
-							onClick={() => {
-								setIsCreatingCategory(false);
-								setNewCategory("");
-								setValue("productCategory", "", {
-									shouldValidate: true,
-									shouldDirty: true
-								});
-								clearErrors("productCategory");
-							}}
+						<input
+							id="product-code"
+							type="text"
+							className={styles.textInput}
 							disabled={saving}
-						>
-							<ReturnIcon />
-							<span>Pilih Kategori yang Sudah Ada</span>
-						</button>
-					</>
-				) : (
-					<select
-						id="product-category"
-						className={styles.textInput}
-						value={productCategory}
-						disabled={saving}
-						onChange={(event) => handleCategoryChange(event.target.value)}
-					>
-						<option value="">Pilih kategori</option>
+							{...register("productCode", {
+								required: "Product code is required",
+								validate: {
+									noEmpty: (value) => value.length > 0 || "Product code cannot be empty",
+									noSpaces: (value) => !/\s/.test(value) || "Spaces are not allowed"
+								}
+							})}
+						/>
+						{errors.productCode && <p className={styles.errorMessage}>{errors.productCode.message}</p>}
+					</section>
 
-						{props.categories.map((category) => (
-							<option key={category} value={category}>
-								{category}
-							</option>
-						))}
+					<section className={styles.section}>
+						<label className={styles.label}>Gambar Produk</label>
 
-						<option value="__new__">+ Buat kategori baru</option>
-					</select>
-				)}
+						<div className={styles.imageContainer}>
+							{previewUrl && !imageError ? (
+								<img
+									src={previewUrl}
+									alt={props.mode === "edit" ? props.product.productName : "Product"}
+									className={styles.productImage}
+									onError={() => setImageError(true)}
+								/>
+							) : (
+								<div className={styles.imageFallback}>
+									<EmptyImage className={styles.fallbackIcon} />
+									<span>No Image</span>
+								</div>
+							)}
+						</div>
 
-				{errors.productCategory && <p className={styles.errorMessage}>{errors.productCategory.message}</p>}
-			</section>
+						<div className={styles.imageActions}>
+							<input
+								type="file"
+								accept="image/png,image/jpeg,image/webp"
+								disabled={saving}
+								onChange={(e) => {
+									const file = e.target.files?.[0];
 
-			<section className={styles.section}>
-				<label htmlFor="product-description" className={styles.label}>
-					Deskripsi
-				</label>
+									if (file) {
+										setSelectedImage(file);
+										setImageError(false);
+									}
+								}}
+							/>
+						</div>
+					</section>
 
-				<input
-					id="product-description"
-					type="text"
-					className={styles.textInput}
-					disabled={saving}
-					{...register("description")}
-				/>
-			</section>
+					<section className={styles.section}>
+						<label htmlFor="product-category" className={styles.label}>
+							Kategori Produk
+						</label>
 
-			<section className={styles.section}>
-				<label htmlFor="product-price" className={styles.label}>
-					Harga Jual
-				</label>
+						{isCreatingCategory ? (
+							<>
+								<input
+									id="product-category"
+									type="text"
+									className={styles.textInput}
+									placeholder="Masukkan kategori baru"
+									value={newCategory}
+									disabled={saving}
+									onChange={(event) => handleNewCategoryChange(event.target.value)}
+								/>
 
-				<input
-					id="product-price"
-					type="text"
-					inputMode="numeric"
-					value={
-						isEditingPayment
-							? newPriceValue === 0
-								? ""
-								: newPriceValue.toString()
-							: newPriceValue === 0
-								? ""
-								: rupiahFormater(newPriceValue)
-					}
-					onFocus={() => {
-						setIsEditingPayment(true);
-					}}
-					onBlur={() => {
-						setIsEditingPayment(false);
-					}}
-					onChange={(event) => {
-						const numericValue = event.target.value.replace(/\D/g, "");
+								<button
+									type="button"
+									className={styles.secondaryButton}
+									onClick={() => {
+										setIsCreatingCategory(false);
+										setNewCategory("");
+										setValue("productCategory", "", {
+											shouldValidate: true,
+											shouldDirty: true
+										});
+										clearErrors("productCategory");
+									}}
+									disabled={saving}
+								>
+									<ReturnIcon />
+									<span>Pilih Kategori yang Sudah Ada</span>
+								</button>
+							</>
+						) : (
+							<select
+								id="product-category"
+								className={styles.textInput}
+								value={productCategory}
+								disabled={saving}
+								onChange={(event) => handleCategoryChange(event.target.value)}
+							>
+								<option value="" selected disabled>
+									Pilih kategori
+								</option>
 
-						setValue("productPrice", numericValue === "" ? 0 : Number(numericValue), {
-							shouldValidate: true,
-							shouldDirty: true
-						});
-					}}
-					className={styles.textInput}
-					disabled={saving}
-				/>
-			</section>
+								{props.categories.map((category) => (
+									<option key={category} value={category}>
+										{category}
+									</option>
+								))}
 
-			<section className={styles.section}>
-				<label className={styles.checkboxLabel}>
-					<input type="checkbox" disabled={saving} {...register("isActive")} />
-					<span>Produk Aktif</span>
-				</label>
-			</section>
+								<option value="__new__">+ Buat kategori baru</option>
+							</select>
+						)}
+
+						{errors.productCategory && (
+							<p className={styles.errorMessage}>{errors.productCategory.message}</p>
+						)}
+					</section>
+
+					<section className={styles.section}>
+						<label htmlFor="product-description" className={styles.label}>
+							Deskripsi
+						</label>
+
+						<input
+							id="product-description"
+							type="text"
+							className={styles.textInput}
+							disabled={saving}
+							{...register("description")}
+						/>
+					</section>
+				</>
+			)}
+
+			{sectionEdit === "PRICING" && (
+				<>
+					<section className={styles.section}>
+						<label htmlFor="product-price" className={styles.label}>
+							Harga Jual
+						</label>
+						<RupiahInput
+							id="product-price"
+							// className={styles.textInput}
+							disabled={saving}
+							{...register("productPrice", { required: "Product price is required" })}
+						/>
+					</section>
+
+					<section className={styles.section}>
+						<label htmlFor="ingredient-cost" className={styles.label}>
+							Biaya Bahan Baku
+						</label>
+						<RupiahInput id="ingredient-cost" disabled={saving} {...register("costIngredient")} />
+					</section>
+
+					<section className={styles.section}>
+						<label htmlFor="labor-cost" className={styles.label}>
+							Biaya Tenaga Kerja
+						</label>
+						<RupiahInput id="labor-cost" disabled={saving} {...register("costLabor")} />
+					</section>
+
+					<section className={styles.section}>
+						<label htmlFor="utility-cost" className={styles.label}>
+							Biaya Operational
+						</label>
+						<RupiahInput id="utility-cost" disabled={saving} {...register("costUtilities")} />
+					</section>
+					<PricingSummary
+						productPrice={productPrice}
+						costIngredient={Number(materialCost)}
+						costLabor={Number(laborCost)}
+						costUtilities={Number(utilityCost)}
+					/>
+				</>
+			)}
 		</Drawer>
 	);
 }

@@ -20,6 +20,9 @@ export type TProductProfile = TProduct & {
 	// productCode: string;
 	// productName: string;
 	productPrice: number;
+	costIngredient?: number;
+	costUtilities?: number;
+	costLabor?: number;
 	// productImageUrl: string | null;
 	// productCategory: string | null;
 	// description: string | null;

@@ -93,19 +93,17 @@ const ProductCatalog = () => {
 					}}
 				/>
 			)}
-			{/* {drawer?.type === "add" && (
+			{drawer?.type === "add" && (
 				<EditProductDrawer
 					mode="add"
+					categories={productsCategory}
 					onClose={() => setDrawer(null)}
 					onSave={(product) => {
 						console.log(product);
-						saveProductInformation.mutate({
-							productId: productId,
-							newProduct: product
-						});
+						saveProductInformation.mutate(product);
 					}}
 				/>
-			)} */}
+			)}
 
 			{drawer?.type === "stock" && (
 				<StockAdjustmentDrawer

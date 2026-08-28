@@ -33,7 +33,9 @@ export const getProducts = async (activeProduct: boolean | null = null): Promise
 		`
 		)
 		.in("is_active", isActiveFilter)
-		.is("deleted_at", null);
+		.is("deleted_at", null)
+		.order("is_active", { ascending: false })
+		.order("product_name");
 
 	if (error) {
 		toast.error(`Failed Loading products ${error.message}`);
@@ -46,7 +48,7 @@ export const getProducts = async (activeProduct: boolean | null = null): Promise
 	const result: TProductWithQty[] = products.map((product) => ({
 		productId: Number(product.product_id),
 		productCode: product.product_code,
-		productName: product.product_name,
+		productName: product.product_name ?? "",
 		productPrice: product.product_price,
 		productImageUrl: getProductImageUrl(product.product_code),
 		productCategory: product.product_category,

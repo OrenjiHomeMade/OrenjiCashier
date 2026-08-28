@@ -1,0 +1,25 @@
+.textInput {
+	width: 100%;
+	min-height: 46px;
+
+	box-sizing: border-box;
+	padding: 10px 12px;
+
+	border: 1px solid var(--border-color, #d9d9d9);
+	border-radius: 9px;
+
+	background: var(--white);
+
+	font: inherit;
+	font-size: 14px;
+
+	color: var(--text-dark, #333333);
+
+	outline: none;
+}
+
+.textInput:focus {
+	border-color: var(--orange-dark);
+
+	box-shadow: 0 0 0 3px rgba(229, 143, 24, 0.1);
+}

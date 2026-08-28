@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 // IMPORT COMPONENTS
 import Drawer from "../../../Component/Drawer/Drawer";
 import EmptyImage from "../../../Component/MediaComponent/EmptyImage";
+import ButtonGroup, { type ButtonGroupOption } from "../../../Component/ButtonGroup/ButtonGroup";
 
 export type StockAdjustmentType = "RESTOCK" | "DAMAGE" | "STOCK_COUNT" | "CORRECTION";
 
@@ -24,6 +25,11 @@ type StockAdjustmentDrawerProps = {
 	onClose: () => void;
 	onSave: (data: TProductQuantityMovement) => void | Promise<void>;
 };
+
+const ADJUSTMENT_MODES: ButtonGroupOption<AdjustmentMode>[] = [
+	{ value: "CHANGE", display: "Selisih Jumlah" },
+	{ value: "SET", display: "Jumlah Akhir" }
+];
 
 const REASONS: {
 	value: StockAdjustmentType;
@@ -146,7 +152,8 @@ export default function StockAdjustmentDrawer({
 			<section className={styles.section}>
 				<label className={styles.label}>Metode Penyesuaian</label>
 
-				<div className={styles.modeSelector}>
+				<ButtonGroup options={ADJUSTMENT_MODES} value={mode} onChange={handleModeChange} disabled={saving} />
+				{/* <div className={styles.modeSelector}>
 					<button
 						type="button"
 						className={
@@ -168,7 +175,7 @@ export default function StockAdjustmentDrawer({
 					>
 						Jumlah Akhir
 					</button>
-				</div>
+				</div> */}
 			</section>
 
 			{/* Quantity */}
