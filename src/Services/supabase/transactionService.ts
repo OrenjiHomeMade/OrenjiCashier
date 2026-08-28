@@ -1,4 +1,10 @@
-import type { TCreateTransactionInput, TTransactionFilter, TTransactionResult } from "../../Types/transaction";
+import type {
+	TCreateTransactionInput,
+	TPaymentMethod,
+	TTransaction,
+	TTransactionFilter,
+	TTransactionResult
+} from "../../Types/transaction";
 import { supabase } from "./client";
 import { toast } from "react-toastify";
 
@@ -103,6 +109,59 @@ export const getTransactions = async (filter: TTransactionFilter = {}): Promise<
 		totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
 		page,
 		pageSize
+	};
+};
+
+export const getTransactionById = async (transactionId: number): Promise<TTransaction | null> => {
+	const { data, error } = await supabase
+		.from("transactions")
+		.select(
+			`
+			transaction_id,
+			transaction_code,
+			transaction_time,
+			payment_method,
+			transaction_amount,
+			cashier,
+			transaction_items (
+				transaction_item_id,
+				product_id,
+				quantity,
+				unit_price,
+				subtotal,
+				products (
+					product_name
+				)
+			)
+		`
+		)
+		.eq("transaction_id", transactionId)
+		.single();
+
+	if (error) {
+		console.error("Failed to get transaction:", error);
+
+		throw error;
+	}
+
+	if (!data) {
+		return null;
+	}
+
+	return {
+		transactionId: data.transaction_id,
+		transactionCode: data.transaction_code,
+		transactionDate: new Date(data.transaction_time),
+		paymentMethod: data.payment_method as TPaymentMethod,
+		transactionAmount: data.transaction_amount,
+		cashier: data.cashier ?? "",
+		transactionItems: data.transaction_items.map((item) => ({
+			id: String(item.transaction_item_id),
+			productName: item.products?.product_name ?? "Unknown Product",
+			quantity: item.quantity,
+			unitPrice: item.unit_price,
+			subtotal: item.subtotal
+		}))
 	};
 };
 

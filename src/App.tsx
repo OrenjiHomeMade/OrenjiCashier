@@ -16,6 +16,7 @@ import TransactionHistory from "./Page/TransactionHistory/TransactionHistory";
 import ProductCatalog from "./Page/ProductCatalog/ProductCatalog";
 import Development from "./Development/Development";
 import Report from "./Page/Report/Report";
+import InvoicePreviewPage from "./Page/Invoice/Invoice";
 
 // =========================================================
 // QUERY CLIENT
@@ -96,10 +97,11 @@ function AppRoutes() {
 				<Route path="/dev" element={<Development />} />
 			</Route>
 
+			<Route path="/report" element={<Report />} />
+			<Route path="/invoice" element={<InvoicePreviewPage />} />
 			{/* =================================================
                 NOT FOUND
             ================================================= */}
-			<Route path="/report" element={<Report />} />
 
 			<Route path="*" element={<NotFound />} />
 		</Routes>
