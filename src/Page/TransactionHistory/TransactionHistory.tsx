@@ -1,28 +1,25 @@
 // IMPORT STYLES
 import style from "./TransactionHistory.module.css";
+// IMPORT TYPES
+import type { Database } from "../../Types/database";
+import type { TTransaction, TPaymentMethod, TRawTransactionItem } from "../../Types/transaction";
 // IMPORT HOOKS
 import { useEffect, useState } from "react";
 import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
+// IMPORT UTILITIES
 import { dateStringInputFormat } from "../../Utilities/NumberFormater";
+// IMPORT SERVICES
+import { deleteTransaction, getCashierOperators, getTransactions } from "../../Services/supabase/transactionService";
+// IMPORT COMPONENTS
+import LoadingModal from "../../Component/LoadingModal/LoadingModal";
 import ChevronIcon from "../../Component/MediaComponent/ChevronIcon";
-
 import TransactionItem from "./TransactionItem/TransactionItem";
 
-import { deleteTransaction, getCashierOperators, getTransactions } from "../../Services/supabase/transactionService";
-
-import LoadingModal from "../../Component/LoadingModal/LoadingModal";
-import type { Database } from "../../Types/database";
-import type { TTransaction } from "../../Types/transaction";
-
-type PaymentMethod = "CASH" | "QRIS";
-
-const PAYMENT_METHODS: PaymentMethod[] = ["CASH", "QRIS"];
+const PAYMENT_METHODS: TPaymentMethod[] = ["CASH", "QRIS"];
 
 /* =========================================================
    RESPONSIVE ITEMS PER PAGE
    ========================================================= */
-
 const getItemsPerPage = () => {
 	if (typeof window === "undefined") {
 		return 10;
@@ -45,22 +42,11 @@ const getItemsPerPage = () => {
 /* =========================================================
    MAP DATABASE TRANSACTION → UI TRANSACTION
    ========================================================= */
-
-// Define the DB shape of an item returned inside transaction.items
-type RawTransactionItem = {
-	transaction_item_id: number | string;
-	product_name: string | null;
-	product_id: number | string;
-	quantity: number;
-	unit_price: number;
-	subtotal: number;
-};
-
 const mapTransactionToUI = (
 	transaction: Database["public"]["Functions"]["get_transactions"]["Returns"][0]
 ): TTransaction => {
 	// Cast the Json array to your explicit item type
-	const rawItems = (transaction.items as RawTransactionItem[] | null) ?? [];
+	const rawItems = (transaction.items as TRawTransactionItem[] | null) ?? [];
 
 	return {
 		transactionId: transaction.transaction_id,
@@ -68,7 +54,7 @@ const mapTransactionToUI = (
 		transactionDate: new Date(transaction.transaction_time),
 		cashier: transaction.cashier,
 		transactionAmount: Number(transaction.transaction_amount),
-		paymentMethod: transaction.payment_method as PaymentMethod,
+		paymentMethod: transaction.payment_method as TPaymentMethod,
 		transactionItems: rawItems.map((item) => ({
 			id: String(item.transaction_item_id),
 			productName: item.product_name ?? "",
@@ -82,7 +68,6 @@ const mapTransactionToUI = (
 /* =========================================================
    COMPONENT
    ========================================================= */
-
 const TransactionHistory = () => {
 	const queryClient = useQueryClient();
 	const { data: CASHIERS } = useQuery({ queryKey: ["cashiers"], queryFn: () => getCashierOperators() });
@@ -128,14 +113,12 @@ const TransactionHistory = () => {
 	/* =====================================================
 	   PAGINATION
 	   ===================================================== */
-
 	const [currentPage, setCurrentPage] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage);
 
 	/* =====================================================
 	   RESPONSIVE PAGE SIZE
 	   ===================================================== */
-
 	useEffect(() => {
 		const handleResize = () => {
 			const newItemsPerPage = getItemsPerPage();
@@ -157,7 +140,6 @@ const TransactionHistory = () => {
 	/* =====================================================
 	   APPLY FILTER
 	   ===================================================== */
-
 	const handleFilter = () => {
 		setAppliedFilters({
 			searchTerm: searchTerm.trim(),
@@ -175,7 +157,6 @@ const TransactionHistory = () => {
 	/* =====================================================
 	   RESET FILTER
 	   ===================================================== */
-
 	const handleReset = () => {
 		const defaultStartDate = (() => {
 			const date = new Date();
@@ -208,7 +189,6 @@ const TransactionHistory = () => {
 	/* =====================================================
 	   TANSTACK QUERY
 	   ===================================================== */
-
 	const {
 		data: transactionResult,
 		isPending,
@@ -273,7 +253,6 @@ const TransactionHistory = () => {
 	/* =====================================================
 	   DATA
 	   ===================================================== */
-
 	const transactions: TTransaction[] = transactionResult?.data.map(mapTransactionToUI) ?? [];
 	const totalCount = transactionResult?.totalCount ?? 0;
 	const totalPages = transactionResult?.totalPages ?? 1;
@@ -309,7 +288,6 @@ const TransactionHistory = () => {
 	/* =====================================================
 	   RENDER
 	   ===================================================== */
-
 	return (
 		<div className={`page ${style.transactionHistoryLayout}`}>
 			{isFetching && !isPending && <LoadingModal isOpen={isFetching && !isPending}>Refreshing Data</LoadingModal>}

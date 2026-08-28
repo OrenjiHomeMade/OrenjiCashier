@@ -1,4 +1,3 @@
-// TODO TRANSACTION TYPES
 // IMPORT STYLES
 import style from "./TransactionItem.module.css";
 // IMPORT TYPES

@@ -4,7 +4,7 @@ import style from "./TransactionDetailItem.module.css";
 import { rupiahFormater } from "../../../Utilities/NumberFormater";
 import type { TTransactionItem } from "../../../Types/transaction";
 
-export type TransactionDetailItemProps = TTransactionItem;
+type TransactionDetailItemProps = TTransactionItem;
 
 const TransactionDetailItem = ({ productName, quantity, unitPrice, subtotal }: TransactionDetailItemProps) => {
 	return (
