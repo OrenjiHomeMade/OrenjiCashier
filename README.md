@@ -77,3 +77,4 @@ export default defineConfig([
 - Pending Cart & Select from pending cart - minimal ada nama
 - Ordering
 - Stock & Reserved Stock
+- Sales Result Allocation
