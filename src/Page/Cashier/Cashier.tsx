@@ -3,7 +3,7 @@ import style from "./Cashier.module.css";
 
 // IMPORT HOOKS
 import { CartProvider, useCart } from "react-use-cart";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 // IMPORT COMPONENT
@@ -13,11 +13,13 @@ import LoadingModal from "../../Component/LoadingModal/LoadingModal";
 
 // IMPORT SERVICES
 import { createTransaction } from "../../Services/supabase/transactionService";
+import { getProductCategories } from "../../Services/supabase/productService";
 
 const CashierContent = () => {
 	const { emptyCart, addItem } = useCart();
 	const [cartIsOpenOnPhone, setCartIsOpenOnPhone] = useState(false);
 	const queryClient = useQueryClient();
+
 	const handleCartHeaderClick = () => {
 		if (cartIsOpenOnPhone) {
 			setCartIsOpenOnPhone(false);
@@ -37,10 +39,16 @@ const CashierContent = () => {
 		}
 	});
 
+	const { data: productsCategory = [] } = useQuery({
+		queryKey: ["category"],
+		queryFn: () => getProductCategories()
+	});
+
 	return (
 		<>
 			<ProductSection
 				mode="Cashier"
+				categories={productsCategory}
 				onItemAdd={(product) => {
 					const item = {
 						id: product.id,

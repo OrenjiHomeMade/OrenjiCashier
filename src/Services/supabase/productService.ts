@@ -140,16 +140,22 @@ export async function convertToWebP(file: File): Promise<Blob> {
 export async function uploadProductImage({ productCode, file }: TProductImage): Promise<string> {
 	const image = file.name.toLowerCase().endsWith(".webp") ? file : await convertToWebP(file);
 
-	const path = `products/${productCode}.webp`;
+	const path = `${productCode}.webp`;
 
-	const { error } = await supabase.storage.from("product-images").upload(path, image, {
+	const { data, error } = await supabase.storage.from("product-images").upload(path, image, {
 		contentType: "image/webp",
 		upsert: true
 	});
 
+	console.log("UPLOAD DATA:", data);
+	console.log("UPLOAD ERROR:", error);
+
 	if (error) {
 		toast.error(`Failed Uploading product image ${error.message}`);
-		console.log(error.message);
+		console.log("message:", error.message);
+		console.log("name:", error.name);
+		console.log("statusCode:", error.statusCode);
+		console.log("cause:", error.cause);
 		throw error;
 	}
 

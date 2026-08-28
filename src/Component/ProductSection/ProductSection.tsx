@@ -19,13 +19,21 @@ import AddProductIcon from "../MediaComponent/AddProductIcon";
 
 export type TProductSectionProps = {
 	mode: "Cashier" | "Catalog";
+	categories: string[];
 	onItemAdjusted?: (prod: ProductInfoProps) => void;
 	onItemAdd?: (prod: ProductInfoProps) => void;
 	onEditProduct?: (prod: ProductInfoProps) => void;
 	onAddProduct?: () => void;
 };
 
-const ProductSection = ({ mode, onItemAdd, onEditProduct, onItemAdjusted, onAddProduct }: TProductSectionProps) => {
+const ProductSection = ({
+	mode,
+	categories,
+	onItemAdd,
+	onEditProduct,
+	onItemAdjusted,
+	onAddProduct
+}: TProductSectionProps) => {
 	const [view, setView] = useState<"grid" | "list">("grid");
 	const [selectedCategory, setSelectedCategory] = useState("Semua");
 	const [searchTerm, setSearchTerm] = useState("");
@@ -48,11 +56,7 @@ const ProductSection = ({ mode, onItemAdd, onEditProduct, onItemAdjusted, onAddP
 		isActive: product.isActive
 	}));
 
-	const categories = useMemo(() => {
-		const uniqueCategories = new Set(productInfos.map((product) => product.productCategory));
-
-		return ["Semua", ...uniqueCategories];
-	}, [productInfos]);
+	const productCategory = ["Semua", ...categories];
 
 	const filteredProducts = useMemo(() => {
 		return productInfos.filter((product) => {
@@ -114,7 +118,7 @@ const ProductSection = ({ mode, onItemAdd, onEditProduct, onItemAdjusted, onAddP
 			</div>
 
 			<div className={style.productCategoryFilter}>
-				{categories.map((category) => (
+				{productCategory.map((category) => (
 					<button
 						key={category}
 						type="button"

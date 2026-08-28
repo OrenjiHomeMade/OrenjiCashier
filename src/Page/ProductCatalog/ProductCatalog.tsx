@@ -4,7 +4,7 @@ import style from "./ProductCatalog.module.css";
 import type { ProductInfoProps } from "../../Component/ProductItem/ProductItem";
 // IMPORT HOOKS
 import { useState } from "react";
-import { adjustQuantity, getProductCategories } from "../../Services/supabase/productService";
+import { adjustQuantity, getProductCategories, saveProduct } from "../../Services/supabase/productService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 // IMPORT COMPONENTS
 import ProductSection from "../../Component/ProductSection/ProductSection";
@@ -40,16 +40,17 @@ const ProductCatalog = () => {
 		onSuccess: onProductQuerySuccess
 	});
 
-	// const saveProductInformation = useMutation({
-	// 	mutationFn: saveProduct,
-	// 	onSuccess: () => onQuerySuccess
-	// });
+	const saveProductInformation = useMutation({
+		mutationFn: saveProduct,
+		onSuccess: onProductQuerySuccess
+	});
 
 	return (
 		<div className={`page ${style.productCatalog}`}>
 			<main className={style.productSection}>
 				<ProductSection
 					mode="Catalog"
+					categories={productsCategory}
 					onItemAdjusted={(product) => {
 						setDrawer({
 							type: "stock",
@@ -85,16 +86,10 @@ const ProductCatalog = () => {
 						isActive: drawer.product.isActive,
 						productImageUrl: drawer.product.productImageUrl
 					}}
-					// productImageUrl={drawer.product.productImageUrl ?? ""}
 					onClose={() => setDrawer(null)}
 					onSave={(product) => {
 						console.log(product);
-						// const { productId, productDetail } = product;
-
-						// saveProductInformation.mutate({
-						// 	productId: productId,
-						// 	newProduct: productDetail
-						// });
+						saveProductInformation.mutate(product);
 					}}
 				/>
 			)}

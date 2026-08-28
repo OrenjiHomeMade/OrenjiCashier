@@ -6,7 +6,7 @@ import drawerStyles from "../../../Component/Drawer/Drawer.module.css";
 import type { TProductProfile, TSaveProductParams } from "../../../Types/product";
 
 // IMPORT HOOKS
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // IMPORT COMPONENTS
 import Drawer from "../../../Component/Drawer/Drawer";
@@ -58,6 +58,7 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 	});
 
 	const [selectedImage, setSelectedImage] = useState<File | null>(null);
+	// const [previewUrl, setPreviewUrl] = useState<string>("");
 	const [saving, setSaving] = useState(false);
 	const [imageError, setImageError] = useState(false);
 	const [isEditingPayment, setIsEditingPayment] = useState(false);
@@ -79,8 +80,17 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 	const previewUrl = selectedImage
 		? URL.createObjectURL(selectedImage)
 		: props.mode === "edit"
-			? props.product.productImageUrl
+			? props.product.productImageUrl || ""
 			: "";
+
+	useEffect(() => {
+		// If previewUrl is a blob URL created for selectedImage, revoke it on cleanup
+		if (selectedImage && previewUrl.startsWith("blob:")) {
+			return () => {
+				URL.revokeObjectURL(previewUrl);
+			};
+		}
+	}, [selectedImage, previewUrl]);
 
 	const handleCategoryChange = (value: string) => {
 		if (value === "__new__") {
@@ -205,10 +215,14 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 					className={styles.textInput}
 					disabled={saving}
 					{...register("productCode", {
-						required: true,
-						validate: (value) => value.trim() !== ""
+						required: "Product code is required",
+						validate: {
+							noEmpty: (value) => value.length > 0 || "Product code cannot be empty",
+							noSpaces: (value) => !/\s/.test(value) || "Spaces are not allowed"
+						}
 					})}
 				/>
+				{errors.productCode && <p className={styles.errorMessage}>{errors.productCode.message}</p>}
 			</section>
 
 			<section className={styles.section}>
