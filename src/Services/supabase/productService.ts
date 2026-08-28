@@ -189,6 +189,10 @@ export async function createProduct(product: Omit<TProductProfile, "productId">)
 	const { data, error } = await supabase.from("products").insert(insertEntry).select().single();
 
 	if (error) {
+		if (error.code === "23505") {
+			throw error;
+		}
+
 		toast.error(`Failed Creating products ${error.message}`);
 		console.log(error.message);
 		throw error;
@@ -224,6 +228,10 @@ export async function updateProduct(product: TProductProfile): Promise<TProductP
 		.single();
 
 	if (error) {
+		if (error.code === "23505") {
+			throw error;
+		}
+
 		toast.error(`Failed Updating Products ${error.message}`);
 		console.log(error.message);
 		throw error;
@@ -265,3 +273,153 @@ export async function saveProduct({ productId, previousProductCode, newProduct, 
 
 	return savedProduct;
 }
+
+type ProductCodeSuggestionParams = {
+	productCategory: string;
+	productName: string;
+	excludeProductId?: number;
+};
+
+type ProductCodeAvailabilityParams = {
+	productCode: string;
+	excludeProductId?: number;
+};
+
+const getCategoryCode = (category: string): string => {
+	const trimmedCategory = category.trim();
+
+	if (!trimmedCategory) {
+		return "PR";
+	}
+
+	return trimmedCategory
+		.replace(/[^a-zA-Z0-9]/g, "")
+		.slice(0, 2)
+		.toUpperCase()
+		.padEnd(2, "X");
+};
+
+const getNameCode = (name: string): string => {
+	const words = name.trim().split(/\s+/).filter(Boolean);
+
+	if (words.length === 0) {
+		return "XXX";
+	}
+
+	if (words.length === 1) {
+		return words[0]
+			.replace(/[^a-zA-Z0-9]/g, "")
+			.slice(0, 3)
+			.toUpperCase()
+			.padEnd(3, "X");
+	}
+
+	const firstWord = words[0].replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+
+	const secondWord = words[1].replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+
+	return (firstWord.slice(0, 1) + secondWord.slice(0, 2)).padEnd(3, "X");
+};
+
+export const getProductCodeSuggestion = async ({
+	productCategory,
+	productName,
+	excludeProductId
+}: ProductCodeSuggestionParams): Promise<string> => {
+	const categoryCode = getCategoryCode(productCategory);
+	const nameCode = getNameCode(productName);
+
+	const prefix = `${categoryCode}-${nameCode}`;
+
+	/**
+	 * Find existing product codes using the generated prefix.
+	 *
+	 * Example:
+	 *
+	 * prefix = MA-NGO
+	 *
+	 * Existing:
+	 * MA-NGO001
+	 * MA-NGO002
+	 * MA-NGO005
+	 *
+	 * The next suggestion will be:
+	 * MA-NGO006
+	 */
+	let query = supabase.from("products").select("product_code").like("product_code", `${prefix}%`);
+
+	if (excludeProductId !== undefined) {
+		query = query.neq("product_id", excludeProductId);
+	}
+
+	const { data, error } = await query;
+
+	if (error) {
+		console.error("Failed checking product codes for suggestion:", error.message);
+
+		throw error;
+	}
+
+	const usedNumbers = new Set<number>();
+
+	for (const row of data ?? []) {
+		const code = row.product_code;
+
+		/**
+		 * Only accept the exact expected structure:
+		 *
+		 * CC-NNN###
+		 */
+		const match = code.match(new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\d{3})$`));
+
+		if (!match) {
+			continue;
+		}
+
+		usedNumbers.add(Number(match[1]));
+	}
+
+	let nextNumber = 1;
+
+	while (usedNumbers.has(nextNumber)) {
+		nextNumber += 1;
+	}
+
+	/**
+	 * Product codes are specified as three digits.
+	 *
+	 * Therefore 001 ... 999 are available.
+	 */
+	if (nextNumber > 999) {
+		throw new Error(`Tidak ada nomor kode produk yang tersedia untuk prefix ${prefix}.`);
+	}
+
+	return `${prefix}${String(nextNumber).padStart(3, "0")}`;
+};
+
+export const isProductCodeAvailable = async ({
+	productCode,
+	excludeProductId
+}: ProductCodeAvailabilityParams): Promise<boolean> => {
+	const trimmedCode = productCode.trim();
+
+	if (!trimmedCode) {
+		return false;
+	}
+
+	let query = supabase.from("products").select("product_id").eq("product_code", trimmedCode).limit(1);
+
+	if (excludeProductId !== undefined) {
+		query = query.neq("product_id", excludeProductId);
+	}
+
+	const { data, error } = await query;
+
+	if (error) {
+		console.error("Failed checking product code availability:", error.message);
+
+		throw error;
+	}
+
+	return data.length === 0;
+};

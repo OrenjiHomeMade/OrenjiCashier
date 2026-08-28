@@ -14,8 +14,8 @@ export default function PricingSummary({
 	costLabor,
 	costUtilities
 }: PricingSummaryProps) {
-	const totalCost = costIngredient + costLabor + costUtilities;
-	const margin = productPrice - totalCost;
+	const goodsSoldCost = costIngredient + costLabor + costUtilities;
+	const margin = productPrice - goodsSoldCost;
 	const marginPercentage = productPrice > 0 ? (margin / productPrice) * 100 : 0;
 
 	const marginClass = margin > 0 ? styles.positive : margin < 0 ? styles.negative : styles.neutral;
@@ -28,8 +28,8 @@ export default function PricingSummary({
 			</div>
 
 			<div className={styles.row}>
-				<span className={styles.label}>Total Biaya</span>
-				<strong className={styles.value}>{rupiahFormater(totalCost)}</strong>
+				<span className={styles.label}>Harga Pokok Produksi</span>
+				<strong className={styles.value}>{rupiahFormater(goodsSoldCost)}</strong>
 			</div>
 
 			<div className={styles.divider} />
