@@ -1,11 +1,15 @@
 // IMPORT STYLES
 import style from "./ProductInfo.module.css";
+
 // IMPORT TYPES
 import type { TProductItem } from "../../Types/product";
+
 // IMPORT HOOKS
 import { useState } from "react";
+
 // IMPORT UTILITIES
 import { rupiahFormater } from "../../Utilities/NumberFormater";
+
 // IMPORT COMPONENTS
 import EmptyImage from "../MediaComponent/EmptyImage";
 import EditIcon from "../MediaComponent/EditIcon";
@@ -24,6 +28,7 @@ const ProductItem = ({
 	price,
 	productImageUrl,
 	availableStock,
+	isActive,
 	mode = "Cashier",
 	variant = "grid",
 	onAdd,
@@ -33,6 +38,7 @@ const ProductItem = ({
 	const [imageError, setImageError] = useState(false);
 
 	const isOutOfStock = availableStock <= 0;
+	const isInactive = !isActive;
 
 	const inCashierMode = mode === "Cashier";
 
@@ -65,15 +71,26 @@ const ProductItem = ({
 
 	if (variant === "list") {
 		return (
-			<div className={`${style.productItem} ${style.listItem} ${disabledAddItem ? style.outOfStock : ""}`}>
-				<div className={style.listImage}>{imageContent}</div>
+			<div
+				className={`${style.productItem} ${style.listItem} ${
+					disabledAddItem ? style.outOfStock : ""
+				} ${isInactive ? style.inactive : ""}`}
+			>
+				<div className={style.listImage}>
+					{imageContent}
+
+					{isInactive && <span className={style.inactiveBadge}>Inactive</span>}
+				</div>
+
 				<div className={style.listInfo}>
 					<span className={style.productName}>{productName}</span>
 				</div>
+
 				<div className={style.priceInfo}>
 					<strong className={style.price}>{rupiahFormater(price)}</strong>
 					<span className={style.stock}>Stock: {availableStock}</span>
 				</div>
+
 				{inCashierMode && (
 					<button type="button" className={style.addButton} disabled={disabledAddItem} onClick={handleAdd}>
 						<span>+</span>
@@ -91,8 +108,6 @@ const ProductItem = ({
 							title="Adjust stock"
 						>
 							<ArrowUpDown className={style.actionIcon} />
-
-							{/* <span className={style.actionText}>Adjust Stock</span> */}
 						</button>
 
 						<button
@@ -120,11 +135,15 @@ const ProductItem = ({
 				type="button"
 				className={`${style.productItem} ${style.gridItem} ${style.gridClick} ${
 					disabledAddItem ? style.outOfStock : ""
-				}`}
+				} ${isInactive ? style.inactive : ""}`}
 				disabled={disabledAddItem}
 				onClick={handleAdd}
 			>
-				<div className={style.gridImage}>{imageContent}</div>
+				<div className={style.gridImage}>
+					{imageContent}
+
+					{isInactive && <span className={style.inactiveBadge}>Inactive</span>}
+				</div>
 
 				<div className={style.gridInfo}>
 					<span className={style.productName}>{productName}</span>
@@ -136,13 +155,21 @@ const ProductItem = ({
 			</button>
 		);
 	}
+
 	/* ==================================================
 	   GRID — CATALOG
 	   ================================================== */
+
 	return (
-		<div className={`${style.productItem} ${style.gridItem} ${disabledAddItem ? style.outOfStock : ""}`}>
+		<div
+			className={`${style.productItem} ${style.gridItem} ${
+				disabledAddItem ? style.outOfStock : ""
+			} ${isInactive ? style.inactive : ""}`}
+		>
 			<div className={style.gridImage}>
 				{imageContent}
+
+				{isInactive && <span className={style.inactiveBadge}>Inactive</span>}
 
 				<button
 					type="button"

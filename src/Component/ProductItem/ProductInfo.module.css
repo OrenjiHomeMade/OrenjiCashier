@@ -9,7 +9,8 @@
 		transform 150ms ease,
 		border-color 150ms ease,
 		box-shadow 150ms ease,
-		background-color 150ms ease;
+		background-color 150ms ease,
+		opacity 150ms ease;
 }
 
 /* ==================================================
@@ -198,6 +199,8 @@
 
 	pointer-events: none;
 
+	z-index: 3;
+
 	transform: translateY(-4px);
 
 	transition:
@@ -257,6 +260,8 @@
 	border-radius: var(--radius-md);
 
 	background-color: var(--cream-soft);
+
+	position: relative;
 }
 
 .listImage .imageFallback {
@@ -468,6 +473,111 @@
 }
 
 /* ==================================================
+   INACTIVE PRODUCT
+   ================================================== */
+
+/*
+ * Inactive products remain fully interactive.
+ *
+ * This is intentionally separate from .outOfStock.
+ * An inactive product is visually distinguished,
+ * but it is NOT disabled.
+ */
+
+.inactive {
+	opacity: 0.72;
+
+	border-color: #c9c2bc;
+	background-color: #f7f4f1;
+}
+
+.inactive .productImage {
+	filter: grayscale(65%);
+}
+
+.inactive .productName {
+	color: var(--text-muted, #756d67);
+}
+
+.inactive .price {
+	color: var(--text-muted, #756d67);
+}
+
+.inactive .stock strong {
+	color: var(--text-muted, #756d67);
+}
+
+/* ==================================================
+   INACTIVE RIBBON
+   ================================================== */
+
+/*
+ * Diagonal status ribbon across the product image.
+ *
+ * The same indicator is used by both grid and list
+ * variants, with a smaller size applied to the list.
+ */
+
+.inactiveBadge {
+	position: absolute;
+
+	top: 50%;
+	left: 50%;
+
+	z-index: 2;
+
+	width: 115px;
+
+	padding: 5px 0;
+
+	border: 1px solid rgba(255, 255, 255, 0.35);
+
+	background-color: rgba(65, 59, 54, 0.88);
+	color: var(--white);
+
+	font-size: 0.72rem;
+	font-weight: 800;
+	line-height: 1;
+	letter-spacing: 0.05em;
+	text-align: center;
+	text-transform: uppercase;
+
+	transform: translate(-50%, -50%) rotate(-35deg);
+
+	pointer-events: none;
+
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+}
+
+/*
+ * Keep inactive products visually distinct while
+ * preserving normal hover/click behavior.
+ */
+
+.gridClick.inactive:hover {
+	border-color: #b8afa8;
+
+	box-shadow:
+		0 0 0 2px rgba(117, 109, 103, 0.12),
+		0 6px 18px rgba(0, 0, 0, 0.07);
+
+	transform: translateY(-2px);
+}
+
+/* ==================================================
+   INACTIVE RIBBON — LIST
+   ================================================== */
+
+.listImage .inactiveBadge {
+	width: 82px;
+
+	padding: 4px 0;
+
+	font-size: 0.62rem;
+	letter-spacing: 0.04em;
+}
+
+/* ==================================================
    OUT OF STOCK
    ================================================== */
 
@@ -579,5 +689,14 @@
 	.listItem .editButton {
 		width: 36px;
 		height: 36px;
+	}
+
+	.inactiveBadge {
+		top: 5px;
+		left: 5px;
+
+		padding: 3px 5px;
+
+		font-size: 0.58rem;
 	}
 }

@@ -13,7 +13,9 @@ import type {
 import { supabase } from "./client";
 import { toast } from "react-toastify";
 
-export const getProducts = async (): Promise<TProductWithQty[]> => {
+export const getProducts = async (activeProduct: boolean | null = null): Promise<TProductWithQty[]> => {
+	const isActiveFilter = activeProduct !== null ? [activeProduct] : [true, false];
+
 	const { data, error } = await supabase
 		.from("products")
 		.select(
@@ -21,7 +23,6 @@ export const getProducts = async (): Promise<TProductWithQty[]> => {
 			product_id,
 			product_code,
 			product_name,
-			product_image,
 			product_price,
 			product_category,
 			description,
@@ -31,7 +32,7 @@ export const getProducts = async (): Promise<TProductWithQty[]> => {
 			)
 		`
 		)
-		.eq("is_active", true)
+		.in("is_active", isActiveFilter)
 		.is("deleted_at", null);
 
 	if (error) {

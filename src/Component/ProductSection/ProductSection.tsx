@@ -40,7 +40,7 @@ const ProductSection = ({
 
 	const { data: products = [] } = useQuery({
 		queryKey: ["products"],
-		queryFn: getProducts
+		queryFn: () => getProducts(mode === "Cashier" ? true : null)
 	});
 
 	const productInfos: ProductInfoProps[] = products.map((product) => ({
