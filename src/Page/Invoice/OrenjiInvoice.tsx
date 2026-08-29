@@ -56,7 +56,7 @@ const COLORS = {
 
 const RIBBON_SRC = "/Ribbon.svg";
 const FLORAL_BACKGROUND_SRC = "/FloralBackground.png";
-const ORENJI_SQUARE_ICON = "/OrenjiSquareLogo.svg";
+const ORENJI_SQUARE_ICON = "/OrenjiSquareLogo.png";
 
 /* ------------------------------------------------------------------ */
 /* 4. Icons                                                            */
@@ -102,20 +102,9 @@ const FlowerIcon = ({ size = 12, color = COLORS.orange }) => (
  * can reference it using `/Ribbon.svg`.
  */
 
-const RibbonIcon = ({ size = 22 }: { size?: number }) => (
-	<Image
-		src={RIBBON_SRC}
-		style={{
-			// position: "absolute",
-			width: size,
-			height: size,
-			// left: 0,
-			// top: 8
-			zIndex: 10,
-			marginRight: -10,
-			marginTop: 8
-		}}
-	/>
+// --- RibbonIcon: accept a style override ---
+const RibbonIcon = ({ size = 22, style }: { size?: number; style?: object }) => (
+	<Image src={RIBBON_SRC} style={{ width: size, height: size, ...style }} />
 );
 
 /* ------------------------------------------------------------------ */
@@ -137,27 +126,31 @@ const styles = StyleSheet.create({
 	headerRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",
-		alignItems: "flex-start",
+		// alignItems: "flex-start",
+		alignItems: "center",
 		marginBottom: 0
 	},
 
+	// --- styles: add/replace these two ---
 	invoiceTitleRow: {
-		// position: "relative",
-		// width: "auto",
 		flexDirection: "row",
 		alignItems: "flex-start"
-		// height: 50,
-		// justifyContent: "flex-start",
-		// marginLeft: 0
 	},
-
+	invoiceTitleWrap: {
+		position: "relative"
+	},
 	invoiceTitle: {
 		fontFamily: "Boby Jones Soft",
-		fontSize: 48,
+		fontSize: 60, // bumped up — see point 3
 		color: COLORS.orange,
 		letterSpacing: 4,
-		lineHeight: 1,
-		zIndex: -5
+		lineHeight: 1
+	},
+	invoiceTitleShadow: {
+		position: "absolute",
+		top: 3,
+		left: 3,
+		color: "#FBD9A6" // light orange shadow
 	},
 
 	logoBadge: {
@@ -185,7 +178,7 @@ const styles = StyleSheet.create({
 		fontFamily: "Inter",
 		fontWeight: "bold",
 		fontSize: 13,
-		letterSpacing: 3,
+		letterSpacing: 5, // was 3 — widen to match Canva
 		marginTop: 6,
 		marginBottom: 10
 	},
@@ -410,18 +403,17 @@ const InvoiceHeader: React.FC<{
 	<View fixed>
 		<View style={styles.headerRow}>
 			<View style={styles.invoiceTitleRow}>
-				<RibbonIcon size={22} />
-				<Text style={styles.invoiceTitle}>INVOICE</Text>
+				<View style={styles.invoiceTitleWrap}>
+					{/* shadow layer — painted first, sits behind */}
+					<Text style={[styles.invoiceTitle, styles.invoiceTitleShadow]}>INVOICE</Text>
+					{/* main text — defines the box size, painted second */}
+					<Text style={styles.invoiceTitle}>INVOICE</Text>
+					{/* ribbon — painted last, so it's guaranteed on top */}
+					<RibbonIcon size={32} style={{ position: "absolute", top: 6, left: -10 }} />
+				</View>
 			</View>
 			<View>
-				<Image
-					src={ORENJI_SQUARE_ICON}
-					style={{
-						width: 100,
-						height: 70,
-						objectFit: "contain"
-					}}
-				/>
+				<Image src={ORENJI_SQUARE_ICON} style={{ width: 200, height: 95, objectFit: "contain" }} />
 			</View>
 		</View>
 		<Text style={styles.brandName}>ORENJI HOMEMADE</Text>
