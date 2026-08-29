@@ -1,22 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { PDFViewer } from "@react-pdf/renderer";
+import { pdf } from "@react-pdf/renderer";
 
 import OrenjiInvoiceDocument, { type OrenjiInvoiceData } from "./OrenjiInvoice";
 
 import { getTransactionById } from "../../Services/supabase/transactionService";
 
-type InvoicePreviewPageProps = {
-	className: string;
+type InvoiceDownloadButtonProps = {
+	className?: string;
+	billedTo: string;
+	transactionId: number;
 };
 
-function InvoicePreviewPage({ className }: InvoicePreviewPageProps) {
-	const searchParams = new URLSearchParams(window.location.hash.split("?")[1] ?? "");
-
-	const transactionIdParam = searchParams.get("transactionId");
-	const billedTo = searchParams.get("billedTo");
-
-	const transactionId = transactionIdParam ? Number(transactionIdParam) : null;
-
+function InvoiceDownloadButton({ className, billedTo, transactionId }: InvoiceDownloadButtonProps) {
 	const {
 		data: transaction,
 		isLoading,
@@ -47,6 +42,7 @@ function InvoicePreviewPage({ className }: InvoicePreviewPageProps) {
 
 	const invoice: OrenjiInvoiceData = {
 		invoiceNumber: String(transaction.transactionId),
+		invoiceCode: transaction.transactionCode,
 
 		date: transaction.transactionDate.toLocaleDateString("en-US", {
 			month: "long",
@@ -74,13 +70,31 @@ function InvoicePreviewPage({ className }: InvoicePreviewPageProps) {
 		}
 	};
 
+	const handleDownloadInvoice = async () => {
+		try {
+			const blob = await pdf(<OrenjiInvoiceDocument invoice={invoice} />).toBlob();
+
+			const url = URL.createObjectURL(blob);
+
+			const link = document.createElement("a");
+			link.href = url;
+			link.download = `invoice-${invoice.invoiceCode || invoice.invoiceNumber}.pdf`;
+
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+
+			URL.revokeObjectURL(url);
+		} catch (error) {
+			console.error("Failed to generate invoice:", error);
+		}
+	};
+
 	return (
-		<div className={className}>
-			<PDFViewer width="100%" height="100%" style={{ border: "none" }}>
-				<OrenjiInvoiceDocument invoice={invoice} />
-			</PDFViewer>
-		</div>
+		<button disabled={billedTo === ""} onClick={handleDownloadInvoice} type="button" className={className}>
+			Download Invoice
+		</button>
 	);
 }
 
-export default InvoicePreviewPage;
+export default InvoiceDownloadButton;

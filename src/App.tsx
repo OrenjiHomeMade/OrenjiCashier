@@ -98,7 +98,7 @@ function AppRoutes() {
 			</Route>
 
 			<Route path="/report" element={<Report />} />
-			<Route path="/invoice" element={<InvoicePreviewPage />} />
+			<Route path="/invoice" element={<InvoicePreviewPage className="page full-height" />} />
 			{/* =================================================
                 NOT FOUND
             ================================================= */}

@@ -374,6 +374,7 @@ export interface InvoiceItem {
 
 export interface OrenjiInvoiceData {
 	invoiceNumber: string;
+	invoiceCode?: string;
 	date: string;
 	billedTo: string;
 

@@ -1,0 +1,128 @@
+.invoiceModalOverlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	background: rgba(0, 0, 0, 0.35);
+}
+
+.invoiceModal {
+	width: min(420px, calc(100vw - 32px));
+
+	background: #ffffff;
+	border-radius: 12px;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+
+	overflow: hidden;
+}
+
+.invoiceModalHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+
+	padding: 20px 22px 16px;
+
+	border-bottom: 1px solid #eeeeee;
+}
+
+.invoiceModalHeader h2 {
+	margin: 0 0 5px;
+
+	font-size: 18px;
+	font-weight: 700;
+}
+
+.invoiceModalHeader p {
+	margin: 0;
+
+	font-size: 13px;
+	color: #777777;
+}
+
+.invoiceModalClose {
+	border: none;
+	background: transparent;
+
+	font-size: 24px;
+	line-height: 1;
+	color: #777777;
+
+	cursor: pointer;
+}
+
+.invoiceModalBody {
+	padding: 20px 22px;
+}
+
+.invoiceModalLabel {
+	display: block;
+	margin-bottom: 7px;
+
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.invoiceModalInput {
+	width: 100%;
+	box-sizing: border-box;
+
+	padding: 10px 12px;
+
+	border: 1px solid #d8d8d8;
+	border-radius: 7px;
+
+	font-family: inherit;
+	font-size: 14px;
+
+	outline: none;
+}
+
+.invoiceModalInput:focus {
+	border-color: #f5921b;
+	box-shadow: 0 0 0 2px rgba(245, 146, 27, 0.12);
+}
+
+.invoiceModalFooter {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+
+	padding: 14px 22px;
+
+	border-top: 1px solid #eeeeee;
+}
+
+.invoiceModalCancel,
+.invoiceModalConfirm {
+	padding: 9px 16px;
+
+	border-radius: 7px;
+
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+
+	cursor: pointer;
+}
+
+.invoiceModalCancel {
+	border: 1px solid #dddddd;
+	background: #ffffff;
+	color: #444444;
+}
+
+.invoiceModalConfirm {
+	border: 1px solid #f5921b;
+	background: #f5921b;
+	color: #ffffff;
+}
+
+.invoiceModalConfirm:disabled {
+	cursor: not-allowed;
+	opacity: 0.6;
+}

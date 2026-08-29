@@ -12,6 +12,8 @@ import EditIcon from "../../../Component/MediaComponent/EditIcon";
 import ChevronIcon from "../../../Component/MediaComponent/ChevronIcon";
 import TransactionDetailItem from "../TransactionDetailItem/TransactionDetailItem";
 import { toast } from "react-toastify";
+import TransactionInvoiceModal from "../TransactionInvoiceModal/TransactionInvoiceModal";
+import InvoiceIcon from "../../../Component/MediaComponent/InvoiceIcon";
 
 type TransactionItemProps = TTransaction & {
 	onDelete: (transactionId: number) => void;
@@ -33,7 +35,6 @@ const TransactionItem = ({
 
 	// Invoice modal
 	const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
-	const [recipientName, setRecipientName] = useState("");
 
 	const totalItems = transactionItems.reduce((total, item) => total + item.quantity, 0);
 
@@ -46,32 +47,7 @@ const TransactionItem = ({
 	});
 
 	const handleOpenInvoiceModal = () => {
-		setRecipientName("");
 		setInvoiceModalOpen(true);
-	};
-
-	const handleCloseInvoiceModal = () => {
-		setInvoiceModalOpen(false);
-	};
-
-	const handleGenerateInvoice = () => {
-		const trimmedRecipientName = recipientName.trim();
-
-		if (!trimmedRecipientName) {
-			toast.error("Please enter the recipient name.");
-			return;
-		}
-
-		const params = new URLSearchParams({
-			transactionId: String(transactionId),
-			billedTo: trimmedRecipientName
-		});
-
-		const invoiceUrl = `${window.location.origin}/#/invoice?${params.toString()}`;
-
-		window.open(invoiceUrl, "_blank", "noopener,noreferrer");
-
-		setInvoiceModalOpen(false);
 	};
 
 	return (
@@ -126,25 +102,7 @@ const TransactionItem = ({
 							aria-label={`Create invoice for ${transactionCode}`}
 							onClick={handleOpenInvoiceModal}
 						>
-							<svg
-								width="18"
-								height="18"
-								viewBox="0 0 24 24"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-								aria-hidden="true"
-							>
-								<path
-									d="M7 3H17C18.1046 3 19 3.89543 19 5V21L16 19L13 21L10 19L7 21V3Z"
-									stroke="currentColor"
-									strokeWidth="1.8"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								/>
-								<path d="M10 7H16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-								<path d="M10 11H16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-								<path d="M10 15H14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-							</svg>
+							<InvoiceIcon />
 						</button>
 
 						{/* EDIT */}
@@ -205,73 +163,7 @@ const TransactionItem = ({
 			    ================================================== */}
 
 			{invoiceModalOpen && (
-				<div
-					className={style.invoiceModalOverlay}
-					onMouseDown={(event) => {
-						if (event.target === event.currentTarget) {
-							handleCloseInvoiceModal();
-						}
-					}}
-				>
-					<div
-						className={style.invoiceModal}
-						role="dialog"
-						aria-modal="true"
-						aria-labelledby="invoice-modal-title"
-					>
-						<div className={style.invoiceModalHeader}>
-							<div>
-								<h2 id="invoice-modal-title">Create Invoice</h2>
-
-								<p>Enter the recipient information for this invoice.</p>
-							</div>
-
-							<button
-								type="button"
-								className={style.invoiceModalClose}
-								onClick={handleCloseInvoiceModal}
-								aria-label="Close invoice dialog"
-							>
-								×
-							</button>
-						</div>
-
-						<div className={style.invoiceModalBody}>
-							<label htmlFor={`invoice-recipient-${transactionId}`} className={style.invoiceModalLabel}>
-								Recipient Name
-							</label>
-
-							<input
-								id={`invoice-recipient-${transactionId}`}
-								type="text"
-								className={style.invoiceModalInput}
-								value={recipientName}
-								onChange={(event) => setRecipientName(event.target.value)}
-								onKeyDown={(event) => {
-									if (event.key === "Enter") {
-										handleGenerateInvoice();
-									}
-								}}
-								placeholder="e.g. Bu Elly"
-								autoFocus
-							/>
-						</div>
-
-						<div className={style.invoiceModalFooter}>
-							<button
-								type="button"
-								className={style.invoiceModalCancel}
-								onClick={handleCloseInvoiceModal}
-							>
-								Cancel
-							</button>
-
-							<button type="button" className={style.invoiceModalConfirm} onClick={handleGenerateInvoice}>
-								Create Invoice
-							</button>
-						</div>
-					</div>
-				</div>
+				<TransactionInvoiceModal transactionId={transactionId} setInvoiceModalOpen={setInvoiceModalOpen} />
 			)}
 		</>
 	);
