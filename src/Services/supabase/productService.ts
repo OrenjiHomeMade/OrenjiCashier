@@ -109,43 +109,70 @@ export const adjustQuantity = async ({ productId, adjustmentQty, adjustmentType,
 	return data;
 };
 
-export async function convertToWebP(file: File): Promise<Blob> {
-	const image = new Image();
-	const objectUrl = URL.createObjectURL(file);
+export interface ConvertOptions {
+	maxSizeBytes?: number; // default 100 KB
+	maxDimension?: number; // cap on longest edge
+	initialQuality?: number;
+	minQuality?: number; // don't go below this — protects visual quality
+}
+
+export async function convertToWebP(file: File, options: ConvertOptions = {}): Promise<Blob> {
+	const { maxSizeBytes = 300 * 1024, maxDimension = 1600, initialQuality = 0.85, minQuality = 0.1 } = options;
+
+	// createImageBitmap avoids the Image()/objectURL dance and its race conditions,
+	// and works in workers too if you later want to offload this.
+	const bitmap = await createImageBitmap(file);
 
 	try {
-		image.src = objectUrl;
-
-		await new Promise<void>((resolve, reject) => {
-			image.onload = () => resolve();
-			image.onerror = () => reject(new Error("Failed to load image"));
-		});
+		let { width, height } = fitWithin(bitmap.width, bitmap.height, maxDimension);
 
 		const canvas = document.createElement("canvas");
-
-		canvas.width = image.naturalWidth;
-		canvas.height = image.naturalHeight;
-
 		const ctx = canvas.getContext("2d");
+		if (!ctx) throw new Error("Could not create canvas context");
 
-		if (!ctx) {
-			throw new Error("Could not create canvas context");
+		canvas.width = width;
+		canvas.height = height;
+		ctx.drawImage(bitmap, 0, 0, width, height);
+
+		// Pass 1: step quality down until under budget
+		let quality = initialQuality;
+		let blob = await encode(canvas, quality);
+
+		while (blob.size > maxSizeBytes && quality > minQuality) {
+			quality = Math.max(minQuality, quality - 0.1);
+			blob = await encode(canvas, quality);
 		}
 
-		ctx.drawImage(image, 0, 0);
-
-		const blob = await new Promise<Blob | null>((resolve) => {
-			canvas.toBlob(resolve, "image/webp", 0.85);
-		});
-
-		if (!blob) {
-			throw new Error("Could not convert image to WebP");
+		// Pass 2: if quality floor still isn't enough, shrink dimensions and retry
+		while (blob.size > maxSizeBytes && width > 320 && height > 320) {
+			width = Math.round(width * 0.85);
+			height = Math.round(height * 0.85);
+			canvas.width = width;
+			canvas.height = height;
+			ctx.clearRect(0, 0, width, height);
+			ctx.drawImage(bitmap, 0, 0, width, height);
+			blob = await encode(canvas, minQuality);
 		}
 
 		return blob;
 	} finally {
-		URL.revokeObjectURL(objectUrl);
+		bitmap.close();
 	}
+}
+
+function fitWithin(w: number, h: number, maxDim: number) {
+	const scale = Math.min(1, maxDim / Math.max(w, h));
+	return { width: Math.round(w * scale), height: Math.round(h * scale) };
+}
+
+function encode(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
+	return new Promise((resolve, reject) => {
+		canvas.toBlob(
+			(blob) => (blob ? resolve(blob) : reject(new Error("Could not convert image to WebP"))),
+			"image/webp",
+			quality
+		);
+	});
 }
 
 export async function uploadProductImage({ productCode, file }: TProductImage): Promise<string> {
