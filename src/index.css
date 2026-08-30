@@ -33,8 +33,8 @@
 	--success: var(--sage);
 	--success-bg: var(--sage-light);
 
-	--danger: var(--pink);
-	--danger-bg: var(--pink-light);
+	--danger: rgb(236, 44, 92);
+	--danger-bg: rgb(245, 139, 165);
 
 	--border: #efd8b5;
 

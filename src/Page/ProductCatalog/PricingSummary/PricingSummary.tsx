@@ -39,13 +39,16 @@ export default function PricingSummary({
 			<div className={styles.marginRow}>
 				<div>
 					<span className={styles.label}>Margin</span>
-					<strong className={`${styles.marginValue} ${marginClass}`}>
-						{rupiahFormater(Math.abs(margin))}
-						{margin < 0 && " (Rugi)"}
-					</strong>
 				</div>
-
-				<strong className={`${styles.percentage} ${marginClass}`}>{marginPercentage.toFixed(1)}%</strong>
+				<strong className={`${styles.marginValue} ${marginClass}`}>{rupiahFormater(Math.abs(margin))}</strong>
+			</div>
+			<div className={styles.marginRow}>
+				<div>
+					<span className={styles.label}></span>
+				</div>
+				<strong className={`${styles.percentage} ${marginClass}`}>
+					{marginPercentage.toFixed(1)}%{margin < 0 && " (Rugi)"}
+				</strong>
 			</div>
 		</section>
 	);
