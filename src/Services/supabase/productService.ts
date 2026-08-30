@@ -110,21 +110,40 @@ export const adjustQuantity = async ({ productId, adjustmentQty, adjustmentType,
 };
 
 export interface ConvertOptions {
-	maxSizeBytes?: number; // default 100 KB
-	maxDimension?: number; // cap on longest edge
+	maxSizeBytes?: number;
+	maxDimension?: number;
 	initialQuality?: number;
-	minQuality?: number; // don't go below this — protects visual quality
+	minQuality?: number;
+	timeoutMs?: number;
 }
 
 export async function convertToWebP(file: File, options: ConvertOptions = {}): Promise<Blob> {
-	const { maxSizeBytes = 300 * 1024, maxDimension = 1600, initialQuality = 0.85, minQuality = 0.1 } = options;
+	const {
+		maxSizeBytes = 300 * 1024,
+		maxDimension = 1600,
+		initialQuality = 0.85,
+		minQuality = 0.1,
+		timeoutMs = 5000
+	} = options;
 
-	// createImageBitmap avoids the Image()/objectURL dance and its race conditions,
-	// and works in workers too if you later want to offload this.
-	const bitmap = await createImageBitmap(file);
+	return withTimeout(convert(file, maxSizeBytes, maxDimension, initialQuality, minQuality), timeoutMs);
+}
+
+async function convert(
+	file: File,
+	maxSizeBytes: number,
+	maxDimension: number,
+	initialQuality: number,
+	minQuality: number
+): Promise<Blob> {
+	const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
 
 	try {
-		let { width, height } = fitWithin(bitmap.width, bitmap.height, maxDimension);
+		let width = bitmap.width;
+		let height = bitmap.height;
+		const scale = Math.min(1, maxDimension / Math.max(width, height));
+		width = Math.round(width * scale);
+		height = Math.round(height * scale);
 
 		const canvas = document.createElement("canvas");
 		const ctx = canvas.getContext("2d");
@@ -134,16 +153,16 @@ export async function convertToWebP(file: File, options: ConvertOptions = {}): P
 		canvas.height = height;
 		ctx.drawImage(bitmap, 0, 0, width, height);
 
-		// Pass 1: step quality down until under budget
 		let quality = initialQuality;
 		let blob = await encode(canvas, quality);
 
+		// Step 1: reduce quality until under budget
 		while (blob.size > maxSizeBytes && quality > minQuality) {
 			quality = Math.max(minQuality, quality - 0.1);
 			blob = await encode(canvas, quality);
 		}
 
-		// Pass 2: if quality floor still isn't enough, shrink dimensions and retry
+		// Step 2: if quality floor still isn't enough, shrink dimensions too
 		while (blob.size > maxSizeBytes && width > 320 && height > 320) {
 			width = Math.round(width * 0.85);
 			height = Math.round(height * 0.85);
@@ -160,17 +179,28 @@ export async function convertToWebP(file: File, options: ConvertOptions = {}): P
 	}
 }
 
-function fitWithin(w: number, h: number, maxDim: number) {
-	const scale = Math.min(1, maxDim / Math.max(w, h));
-	return { width: Math.round(w * scale), height: Math.round(h * scale) };
-}
-
 function encode(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
 	return new Promise((resolve, reject) => {
 		canvas.toBlob(
 			(blob) => (blob ? resolve(blob) : reject(new Error("Could not convert image to WebP"))),
 			"image/webp",
 			quality
+		);
+	});
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+	return new Promise((resolve, reject) => {
+		const timer = setTimeout(() => reject(new Error(`Image processing timed out after ${ms}ms`)), ms);
+		promise.then(
+			(v) => {
+				clearTimeout(timer);
+				resolve(v);
+			},
+			(e) => {
+				clearTimeout(timer);
+				reject(e);
+			}
 		);
 	});
 }
