@@ -17,7 +17,7 @@ const TransactionDetailItem = ({ productName, quantity, unitPrice, subtotal }: T
 
 			<div className={style.unitPrice}>{rupiahFormater(unitPrice)}</div>
 
-			<div className={style.subtotal}>{rupiahFormater(subtotal)}</div>
+			<div className={style.subtotal}>{rupiahFormater(subtotal ?? 0)}</div>
 		</div>
 	);
 };

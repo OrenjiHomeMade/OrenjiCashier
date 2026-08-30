@@ -60,6 +60,10 @@ const mapTransactionToUI = (
 			productName: item.product_name ?? "",
 			quantity: item.quantity,
 			unitPrice: Number(item.unit_price),
+			unitCostIngredient: item.unit_cost_ingredient,
+			unitCostLabor: item.unit_cost_labor,
+			unitCostPackaging: item.unit_cost_packaging,
+			unitCostUtilities: item.unit_cost_utilities,
 			subtotal: Number(item.subtotal)
 		}))
 	};
@@ -124,8 +128,6 @@ const TransactionHistory = () => {
 			const newItemsPerPage = getItemsPerPage();
 			setItemsPerPage((previous) => {
 				if (previous !== newItemsPerPage) {
-					// Changing page size can make the
-					// current page invalid.
 					setCurrentPage(1);
 				}
 				return newItemsPerPage;

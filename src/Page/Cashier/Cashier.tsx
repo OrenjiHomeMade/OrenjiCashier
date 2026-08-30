@@ -55,7 +55,11 @@ const CashierContent = () => {
 						price: product.price,
 						quantity: product.quantity,
 						name: product.productName,
-						productImageUrl: product.productImageUrl
+						productImageUrl: product.productImageUrl,
+						costLabor: product.costLabor,
+						costIngredient: product.costIngredient,
+						costUtilities: product.costUtilities,
+						costPackaging: product.costPackaging
 					};
 					addItem(item, 1);
 				}}

@@ -9,24 +9,24 @@ export type TProduct = {
 	isActive: boolean;
 };
 
+export type TProductPricing = {
+	productPrice: number;
+	costIngredient?: number;
+	costLabor?: number;
+	costPackaging?: number;
+	costUtilities?: number;
+};
+
 /*************************** CART ITEM ***************************/
-export type TProductItem = TProduct & Item;
+export type TProductItem = TProduct & TProductPricing & Item;
 
 /*************************** PRODUCT CATALOG ***************************/
 
 /*************************** Product Management ***************************/
-export type TProductProfile = TProduct & {
+export type TProductProfile = {
 	productId: number;
-	// productCode: string;
-	// productName: string;
-	productPrice: number;
-	costIngredient?: number;
-	costUtilities?: number;
-	costLabor?: number;
-	// productImageUrl: string | null;
-	// productCategory: string | null;
-	// description: string | null;
-};
+} & TProduct &
+	TProductPricing;
 
 export type TProductImage = {
 	productCode: string;

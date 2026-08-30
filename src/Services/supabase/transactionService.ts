@@ -9,14 +9,24 @@ import { supabase } from "./client";
 import { toast } from "react-toastify";
 
 export const createTransaction = async (transaction: TCreateTransactionInput): Promise<number | null> => {
-	const { data, error } = await supabase.rpc("create_transaction", {
+	const transactionEntry = {
 		p_transaction_code: transaction.transactionCode,
 		p_transaction_time: transaction.transactionTime,
 		p_payment_method: transaction.paymentMethod,
 		p_transaction_amount: transaction.transactionAmount,
 		p_cashier: transaction.cashier,
-		p_items: transaction.items
-	});
+		p_items: transaction.items.map((item) => ({
+			product_id: Number(item.productId),
+			quantity: item.quantity,
+			unit_price: item.unitPrice,
+			unit_cost_labor: item.unitCostLabor,
+			unit_cost_ingredient: item.unitCostIngredient,
+			unit_cost_utilities: item.unitCostUtilities,
+			unit_cost_packaging: item.unitCostPackaging
+		}))
+	};
+	console.log(transactionEntry);
+	const { data, error } = await supabase.rpc("create_transaction", transactionEntry);
 
 	if (error) {
 		toast.error(`Failed to create transaction: ${error.message}`);
@@ -128,7 +138,12 @@ export const getTransactionById = async (transactionId: number): Promise<TTransa
 				product_id,
 				quantity,
 				unit_price,
+				unit_cost_labor,
+				unit_cost_ingredient,
+				unit_cost_utilities,
+				unit_cost_packaging,
 				subtotal,
+				total_cogs,
 				products (
 					product_name
 				)
@@ -160,7 +175,12 @@ export const getTransactionById = async (transactionId: number): Promise<TTransa
 			productName: item.products?.product_name ?? "Unknown Product",
 			quantity: item.quantity,
 			unitPrice: item.unit_price,
-			subtotal: item.subtotal
+			unitCostIngredient: item.unit_cost_ingredient,
+			unitCostLabor: item.unit_cost_labor,
+			unitCostPackaging: item.unit_cost_packaging,
+			unitCostUtilities: item.unit_cost_utilities,
+			subtotal: item.subtotal ?? 0,
+			totalCOGS: item.total_cogs ?? 0
 		}))
 	};
 };

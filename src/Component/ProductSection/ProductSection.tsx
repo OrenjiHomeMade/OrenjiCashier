@@ -45,15 +45,24 @@ const ProductSection = ({
 
 	const productInfos: ProductInfoProps[] = products.map((product) => ({
 		id: product.productId.toString(),
-		productCode: product.productCode,
 		price: product.productPrice,
 		quantity: 0,
+
+		productCode: product.productCode,
 		productName: product.productName,
 		productImageUrl: getProductImageUrl(product.productCode),
 		productCategory: product.productCategory ?? "",
 		description: product.description ?? "",
-		availableStock: product.stockQuantity,
-		isActive: product.isActive
+		isActive: product.isActive,
+
+		costIngredient: product.costIngredient,
+		costLabor: product.costLabor,
+		costPackaging: product.costPackaging,
+		costUtilities: product.costUtilities,
+
+		productPrice: product.productPrice,
+
+		availableStock: product.stockQuantity
 	}));
 
 	const productCategory = ["Semua", ...categories];

@@ -10,6 +10,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ProductSection from "../../Component/ProductSection/ProductSection";
 import StockAdjustmentDrawer from "./StockAdjustmentDrawer/StockAdjustmentDrawer";
 import EditProductDrawer from "./EditProductDrawer/EditProductDrawer";
+import LoadingModal from "../../Component/LoadingModal/LoadingModal";
+import { toast } from "react-toastify";
 
 type TProductDrawer =
 	| { type: "stock"; product: ProductInfoProps }
@@ -35,14 +37,20 @@ const ProductCatalog = () => {
 		});
 	};
 
+	const onQueryFailed = () => {
+		toast("Something Wrong");
+	};
+
 	const adjustProductQuantityMutation = useMutation({
 		mutationFn: adjustQuantity,
-		onSuccess: onProductQuerySuccess
+		onSuccess: onProductQuerySuccess,
+		onError: onQueryFailed
 	});
 
-	const saveProductInformation = useMutation({
+	const saveProductInformationMutation = useMutation({
 		mutationFn: saveProduct,
-		onSuccess: onProductQuerySuccess
+		onSuccess: onProductQuerySuccess,
+		onError: onQueryFailed
 	});
 
 	return (
@@ -78,18 +86,12 @@ const ProductCatalog = () => {
 					categories={productsCategory}
 					product={{
 						productId: Number(drawer.product.id),
-						productName: drawer.product.productName,
-						productPrice: drawer.product.price,
-						productCode: drawer.product.productCode,
-						productCategory: drawer.product.productCategory,
-						description: drawer.product.description,
-						isActive: drawer.product.isActive,
-						productImageUrl: drawer.product.productImageUrl
+						...drawer.product
 					}}
 					onClose={() => setDrawer(null)}
 					onSave={(product) => {
 						console.log(product);
-						saveProductInformation.mutate(product);
+						saveProductInformationMutation.mutate(product);
 					}}
 				/>
 			)}
@@ -100,7 +102,7 @@ const ProductCatalog = () => {
 					onClose={() => setDrawer(null)}
 					onSave={(product) => {
 						console.log(product);
-						saveProductInformation.mutate(product);
+						saveProductInformationMutation.mutate(product);
 					}}
 				/>
 			)}
@@ -118,6 +120,8 @@ const ProductCatalog = () => {
 					}}
 				/>
 			)}
+			<LoadingModal isOpen={adjustProductQuantityMutation.isPending}>Update stok sedang diproses...</LoadingModal>
+			<LoadingModal isOpen={saveProductInformationMutation.isPending}>Produk sedang diproses...</LoadingModal>
 		</div>
 	);
 };

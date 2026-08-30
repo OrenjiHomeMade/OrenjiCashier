@@ -69,9 +69,10 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 			productCode: props.mode === "edit" ? props.product.productCode : "",
 			productName: props.mode === "edit" ? props.product.productName : "",
 			productPrice: props.mode === "edit" ? props.product.productPrice : 0,
-			costIngredient: 0,
-			costLabor: 0,
-			costUtilities: 0,
+			costIngredient: props.mode === "edit" ? props.product.costIngredient : 0,
+			costLabor: props.mode === "edit" ? props.product.costLabor : 0,
+			costUtilities: props.mode === "edit" ? props.product.costUtilities : 0,
+			costPackaging: props.mode === "edit" ? props.product.costPackaging : 0,
 			productImageUrl: props.mode === "edit" ? props.product.productImageUrl : "",
 			productCategory: props.mode === "edit" ? props.product.productCategory : "",
 			description: props.mode === "edit" ? props.product.description : "",
@@ -134,11 +135,6 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 		name: "productCategory"
 	});
 
-	// const productName = useWatch({
-	// 	control,
-	// 	name: "productName"
-	// });
-
 	const productCode = useWatch({
 		control,
 		name: "productCode"
@@ -162,6 +158,11 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 	const utilityCost = useWatch({
 		control,
 		name: "costUtilities"
+	});
+
+	const packaginCost = useWatch({
+		control,
+		name: "costPackaging"
 	});
 
 	const canSave = isValid && !saving;
@@ -723,6 +724,14 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 					</section>
 
 					<section className={styles.section}>
+						<label htmlFor="packaging-cost" className={styles.label}>
+							Biaya Packaging
+						</label>
+
+						<RupiahInput id="packaging-cost" disabled={saving} {...register("costPackaging")} />
+					</section>
+
+					<section className={styles.section}>
 						<label htmlFor="utility-cost" className={styles.label}>
 							Biaya Operational
 						</label>
@@ -735,6 +744,7 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 						costIngredient={Number(materialCost)}
 						costLabor={Number(laborCost)}
 						costUtilities={Number(utilityCost)}
+						costPackaging={Number(packaginCost)}
 					/>
 				</>
 			)}

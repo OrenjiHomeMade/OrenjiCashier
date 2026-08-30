@@ -17,7 +17,12 @@ export type TPaymentMethod = "CASH" | "QRIS";
 export type TTransactionItemBase = {
 	quantity: number;
 	unitPrice: number;
-	subtotal: number;
+	unitCostLabor: number;
+	unitCostIngredient: number;
+	unitCostUtilities: number;
+	unitCostPackaging: number;
+	subtotal?: number;
+	totalCOGS?: number;
 };
 
 /** UI Domain Model for an item */
@@ -38,6 +43,10 @@ export type TRawTransactionItem = {
 	product_id: number | string;
 	quantity: number;
 	unit_price: number;
+	unit_cost_labor: number;
+	unit_cost_ingredient: number;
+	unit_cost_utilities: number;
+	unit_cost_packaging: number;
 	subtotal: number;
 };
 

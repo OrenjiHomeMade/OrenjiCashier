@@ -45,16 +45,20 @@ const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: 
 			transactionCode: generateTransactionCode(cashierName, transactionTime),
 			transactionTime: getLocalTimestamp(transactionTime),
 			paymentMethod: paymentMethod,
-			// transaction_amount: paymentMethod === "cash" ? paymentAmount - cartTotal : cartTotal,
 			transactionAmount: cartTotal,
 			cashier: cashierName,
 			items: cartItems.map((item) => ({
 				productId: item.id,
 				quantity: item.quantity ?? 0,
 				unitPrice: item.price,
-				subtotal: item.itemTotal ?? 0
+				unitCostLabor: item.costLabor,
+				unitCostIngredient: item.costIngredient,
+				unitCostUtilities: item.costUtilities,
+				unitCostPackaging: item.costPackaging
 			}))
 		};
+
+		console.log(cartItems);
 
 		onExecutePayment(transaction);
 	};

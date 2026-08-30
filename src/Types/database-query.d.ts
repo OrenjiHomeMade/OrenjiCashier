@@ -4,6 +4,10 @@ export type DTProduct = {
 	product_code: string;
 	product_name: string;
 	product_price: number;
+	cost_ingredient: number;
+	cost_labor: number;
+	cost_packaging: number;
+	cost_utilities: number;
 	product_category: string;
 	description: string | null;
 	is_active: boolean;

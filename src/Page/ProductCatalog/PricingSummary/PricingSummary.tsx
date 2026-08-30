@@ -6,15 +6,17 @@ export type PricingSummaryProps = {
 	costIngredient: number;
 	costLabor: number;
 	costUtilities: number;
+	costPackaging: number;
 };
 
 export default function PricingSummary({
 	productPrice,
 	costIngredient,
 	costLabor,
-	costUtilities
+	costUtilities,
+	costPackaging
 }: PricingSummaryProps) {
-	const goodsSoldCost = costIngredient + costLabor + costUtilities;
+	const goodsSoldCost = costIngredient + costLabor + costUtilities + costPackaging;
 	const margin = productPrice - goodsSoldCost;
 	const marginPercentage = productPrice > 0 ? (margin / productPrice) * 100 : 0;
 

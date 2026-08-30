@@ -1,6 +1,6 @@
 // IMPORT TYPES
 import type { DTProductQuery } from "../../Types/database-query";
-// import type { Database } from "../../Types/database";
+
 import type {
 	TProductImage,
 	TProductProfile,
@@ -24,6 +24,10 @@ export const getProducts = async (activeProduct: boolean | null = null): Promise
 			product_code,
 			product_name,
 			product_price,
+			cost_ingredient,
+			cost_labor,
+			cost_packaging,
+			cost_utilities,
 			product_category,
 			description,
 			is_active,
@@ -51,6 +55,10 @@ export const getProducts = async (activeProduct: boolean | null = null): Promise
 		productName: product.product_name ?? "",
 		productPrice: product.product_price,
 		productImageUrl: getProductImageUrl(product.product_code),
+		costLabor: product.cost_labor,
+		costIngredient: product.cost_ingredient,
+		costPackaging: product.cost_packaging,
+		costUtilities: product.cost_utilities,
 		productCategory: product.product_category,
 		description: product.description ?? "",
 		isActive: product.is_active,
@@ -178,15 +186,23 @@ export async function deleteProductImage(productCode: string): Promise<void> {
 }
 
 export async function createProduct(product: Omit<TProductProfile, "productId">): Promise<TProductProfile> {
-	const insertEntry = {
-		product_code: product.productCode,
-		product_name: product.productName,
-		product_price: product.productPrice,
-		product_category: product.productCategory,
-		description: product.description,
-		is_active: product.isActive
-	};
-	const { data, error } = await supabase.from("products").insert(insertEntry).select().single();
+	// const insertEntry =
+	const { data, error } = await supabase
+		.from("products")
+		.insert({
+			product_code: product.productCode,
+			product_name: product.productName,
+			product_price: product.productPrice,
+			cost_ingredient: product.costIngredient,
+			cost_labor: product.costLabor,
+			cost_packaging: product.costPackaging,
+			cost_utilities: product.costUtilities,
+			product_category: product.productCategory,
+			description: product.description,
+			is_active: product.isActive
+		})
+		.select()
+		.single();
 
 	if (error) {
 		if (error.code === "23505") {
@@ -203,6 +219,10 @@ export async function createProduct(product: Omit<TProductProfile, "productId">)
 		productCode: data.product_code,
 		productName: data.product_name,
 		productPrice: Number(data.product_price),
+		costLabor: data.cost_labor,
+		costIngredient: data.cost_ingredient,
+		costPackaging: data.cost_packaging,
+		costUtilities: data.cost_utilities,
 		productImageUrl: getProductImageUrl(data.product_code),
 		productCategory: data.product_category ?? "",
 		description: data.description ?? "",
@@ -212,17 +232,20 @@ export async function createProduct(product: Omit<TProductProfile, "productId">)
 
 export async function updateProduct(product: TProductProfile): Promise<TProductProfile> {
 	const productId = product.productId;
-	const updateEntry = {
-		product_code: product.productCode,
-		product_name: product.productName,
-		product_price: product.productPrice,
-		product_category: product.productCategory,
-		description: product.description,
-		is_active: product.isActive
-	};
 	const { data, error } = await supabase
 		.from("products")
-		.update(updateEntry)
+		.update({
+			product_code: product.productCode,
+			product_name: product.productName,
+			product_price: product.productPrice,
+			cost_ingredient: product.costIngredient,
+			cost_labor: product.costLabor,
+			cost_packaging: product.costPackaging,
+			cost_utilities: product.costUtilities,
+			product_category: product.productCategory,
+			description: product.description,
+			is_active: product.isActive
+		})
 		.eq("product_id", productId)
 		.select()
 		.single();
@@ -242,6 +265,10 @@ export async function updateProduct(product: TProductProfile): Promise<TProductP
 		productCode: data.product_code,
 		productName: data.product_name,
 		productPrice: data.product_price,
+		costLabor: data.cost_labor,
+		costIngredient: data.cost_ingredient,
+		costPackaging: data.cost_packaging,
+		costUtilities: data.cost_utilities,
 		productImageUrl: getProductImageUrl(data.product_code),
 		productCategory: data.product_category ?? "",
 		description: data.description ?? "",
