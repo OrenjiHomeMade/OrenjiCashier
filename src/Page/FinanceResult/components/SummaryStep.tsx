@@ -1,17 +1,15 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 import styles from "./SummaryStep.module.css";
 import Button from "../../../Component/Button/Button";
-import CurrencyStat from "./CurrencyStat";
 import StatusBadge from "./StatusBadge";
 import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
 import { resolveDistributionAmount } from "../../../Utilities/financeCalculations";
-import type { TDistributionMode, TFinanceAllocation, TSalesSummary } from "../../../Types/finance";
+import type { TDistributionMode, TFinanceAllocation } from "../../../Types/finance";
 
 export type SummaryStepProps = {
 	allocation: TFinanceAllocation;
-	salesSummary: TSalesSummary;
-	adjustmentsTotal: number;
 	finalResult: number;
 	onDistributionModeChange: (mode: TDistributionMode) => void;
 	onUpdateDistributionEntry: (id: string, value: number) => void;
@@ -29,12 +27,12 @@ export type SummaryStepProps = {
 	onConfirm: () => void;
 	onEnableEdit: () => void;
 	onDistribute: () => void;
+	/** Built once in FinanceResult and shared across all 3 steps — see SalesBreakdown. */
+	breakdown: ReactNode;
 };
 
 export default function SummaryStep({
 	allocation,
-	salesSummary,
-	adjustmentsTotal,
 	finalResult,
 	onDistributionModeChange,
 	onUpdateDistributionEntry,
@@ -47,7 +45,8 @@ export default function SummaryStep({
 	statusActions,
 	onConfirm,
 	onEnableEdit,
-	onDistribute
+	onDistribute,
+	breakdown
 }: SummaryStepProps) {
 	const [newLabel, setNewLabel] = useState("");
 
@@ -61,33 +60,7 @@ export default function SummaryStep({
 				<StatusBadge status={allocation.status} />
 			</section>
 
-			<section className={`${styles.resultCard} card`}>
-				<h3 className={styles.cardTitle}>Selected sales</h3>
-				<div className={styles.grid}>
-					<CurrencyStat
-						label="Transactions"
-						value={salesSummary.transactionCount}
-						format="number"
-						tone="muted"
-					/>
-					<CurrencyStat label="Revenue" value={salesSummary.revenue} />
-					<CurrencyStat label="COGS" value={salesSummary.cogs} tone="muted" />
-					<CurrencyStat label="Labor" value={salesSummary.labor} tone="muted" />
-					<CurrencyStat label="Other costs" value={salesSummary.otherCosts} tone="muted" />
-					<CurrencyStat label="Margin" value={salesSummary.margin} tone="accent" />
-				</div>
-
-				<div className={styles.divider} />
-
-				<div className={styles.resultRow}>
-					<span>Adjustments</span>
-					<span className={styles.negativeValue}>-{formatRupiah(adjustmentsTotal)}</span>
-				</div>
-				<div className={`${styles.resultRow} ${styles.finalRow}`}>
-					<span>Final result</span>
-					<span>{formatRupiah(finalResult)}</span>
-				</div>
-			</section>
+			{breakdown}
 
 			<section className={`${styles.distributionCard} card`}>
 				<div className={styles.distributionHeader}>

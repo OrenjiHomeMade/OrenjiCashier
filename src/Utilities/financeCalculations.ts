@@ -1,5 +1,11 @@
 import type { TTransaction, TTransactionItem } from "../Types/transaction";
-import type { TAdjustment, TDistributionEntry, TDistributionMode, TSalesSummary } from "../Types/finance";
+import type {
+	TAdjustment,
+	TAdjustmentCategory,
+	TDistributionEntry,
+	TDistributionMode,
+	TSalesSummary
+} from "../Types/finance";
 
 /** Per-item cost breakdown, multiplied out by quantity. */
 export function calcItemCosts(item: TTransactionItem) {
@@ -79,4 +85,76 @@ export function resolveDistributionAmount(
 		return entry.value;
 	}
 	return Math.round((entry.value / 100) * finalResult);
+}
+
+export function calcItemsSoldCount(transactions: TTransaction[]): number {
+	return transactions.reduce(
+		(sum, transaction) => sum + transaction.transactionItems.reduce((itemSum, item) => itemSum + item.quantity, 0),
+		0
+	);
+}
+
+export type TProductBreakdown = {
+	productName: string;
+	quantity: number;
+	revenue: number;
+	ingredient: number;
+	labor: number;
+	utility: number;
+	packaging: number;
+	margin: number;
+};
+
+/** Per-product decomposition of revenue into cost components + margin — "product bound". */
+export function aggregateSalesByProduct(transactions: TTransaction[]): TProductBreakdown[] {
+	const map = new Map<string, TProductBreakdown>();
+
+	for (const transaction of transactions) {
+		for (const item of transaction.transactionItems) {
+			const revenue = item.subtotal ?? item.unitPrice * item.quantity;
+			const costs = calcItemCosts(item);
+			const margin = revenue - costs.ingredient - costs.labor - costs.utilities - costs.packaging;
+
+			const existing = map.get(item.productName) ?? {
+				productName: item.productName,
+				quantity: 0,
+				revenue: 0,
+				ingredient: 0,
+				labor: 0,
+				utility: 0,
+				packaging: 0,
+				margin: 0
+			};
+
+			existing.quantity += item.quantity;
+			existing.revenue += revenue;
+			existing.ingredient += costs.ingredient;
+			existing.labor += costs.labor;
+			existing.utility += costs.utilities;
+			existing.packaging += costs.packaging;
+			existing.margin += margin;
+
+			map.set(item.productName, existing);
+		}
+	}
+
+	return Array.from(map.values()).sort((a, b) => b.revenue - a.revenue);
+}
+
+export type TAdjustmentBreakdown = {
+	category: TAdjustmentCategory;
+	amount: number;
+};
+
+/** Adjustment total broken down by category — cost that's unbound from any product. */
+export function aggregateAdjustmentsByCategory(adjustments: TAdjustment[]): TAdjustmentBreakdown[] {
+	const map = new Map<TAdjustmentCategory, number>();
+
+	for (const adjustment of adjustments) {
+		map.set(adjustment.category, (map.get(adjustment.category) ?? 0) + adjustment.amount);
+	}
+
+	return Array.from(map.entries())
+		.map(([category, amount]) => ({ category, amount }))
+		.sort((a, b) => b.amount - a.amount);
 }

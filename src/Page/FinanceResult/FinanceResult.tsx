@@ -6,6 +6,7 @@ import { useState } from "react";
 import StepNav from "./components/StepNav";
 import SalesStep from "./components/SalesStep";
 import SummaryStep from "./components/SummaryStep";
+import SalesBreakdown from "./components/SalesBreakdown";
 import Button from "../../Component/Button/Button";
 import LoadingModal from "../../Component/LoadingModal/LoadingModal";
 
@@ -23,6 +24,7 @@ export default function FinancePage() {
 		categories,
 		productNames,
 		filteredTransactions,
+		selectedTransactions,
 		salesSummary,
 		adjustmentsTotal,
 		finalResult,
@@ -78,13 +80,27 @@ export default function FinancePage() {
 
 	const showNameField = (isNewAllocation || draftAllocation.status === "DRAFT") && !isReadOnly;
 
+	// Built once, fed by one data source, then handed to whichever step is
+	// currently on screen — SalesStep/AdjustmentsStep/SummaryStep each just
+	// drop it into their own existing layout slot.
+	const salesBreakdown = (
+		<SalesBreakdown
+			step={currentStep}
+			transactions={selectedTransactions}
+			salesSummary={salesSummary}
+			adjustments={draftAllocation.adjustments}
+			adjustmentsTotal={adjustmentsTotal}
+			finalResult={finalResult}
+		/>
+	);
+
 	return (
 		<div className={`page ${styles.pageRow}`}>
 			<div className={styles.pageColumn}>
 				<header className={styles.header}>
 					<div>
 						<p className={styles.eyebrow}>Orenji Cashier</p>
-						<h1 className={styles.title}>Finance Allocation</h1>
+						<h1 className={styles.title}>Finance</h1>
 					</div>
 
 					<AllocationSelector
@@ -129,8 +145,8 @@ export default function FinancePage() {
 							onToggleTransaction={toggleTransaction}
 							onSelectAll={selectAllFiltered}
 							onClearSelection={clearSelection}
-							summary={salesSummary}
 							readOnly={!isSalesAdjustmentsEditable}
+							breakdown={salesBreakdown}
 						/>
 					)}
 
@@ -138,18 +154,16 @@ export default function FinancePage() {
 						<AdjustmentsStep
 							adjustments={draftAllocation.adjustments}
 							onRemoveAdjustment={removeAdjustment}
-							salesMargin={salesSummary.margin}
 							readOnly={!isSalesAdjustmentsEditable}
 							drawerState={addAdjustmentDrawerState}
 							setDrawerState={openAdjustmentDrawer}
+							breakdown={salesBreakdown}
 						/>
 					)}
 
 					{currentStep === "SUMMARY" && (
 						<SummaryStep
 							allocation={draftAllocation}
-							salesSummary={salesSummary}
-							adjustmentsTotal={adjustmentsTotal}
 							finalResult={finalResult}
 							onDistributionModeChange={setDistributionMode}
 							onUpdateDistributionEntry={updateDistributionEntry}
@@ -163,6 +177,7 @@ export default function FinancePage() {
 							onConfirm={confirmAllocation}
 							onEnableEdit={enableEdit}
 							onDistribute={distributeAllocation}
+							breakdown={salesBreakdown}
 						/>
 					)}
 				</main>

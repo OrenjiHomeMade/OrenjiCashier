@@ -13,6 +13,10 @@
 	flex-shrink: 1;
 }
 
+.breakdownSection {
+	flex: 0 0 340px;
+}
+
 .pageColumn {
 	display: flex;
 	flex-grow: 1;

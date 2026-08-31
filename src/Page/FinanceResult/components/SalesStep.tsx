@@ -1,11 +1,10 @@
 import { useState } from "react";
-import type { SubmitEvent } from "react";
+import type { ReactNode, SubmitEvent } from "react";
 import styles from "./SalesStep.module.css";
 import Button from "../../../Component/Button/Button";
-import CurrencyStat from "./CurrencyStat";
 import Drawer from "../../../Component/Drawer/Drawer";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
-import type { TSalesFilter, TSalesSummary } from "../../../Types/finance";
+import type { TSalesFilter } from "../../../Types/finance";
 import type { TTransaction } from "../../../Types/transaction";
 
 export type SalesStepProps = {
@@ -18,8 +17,9 @@ export type SalesStepProps = {
 	onToggleTransaction: (id: number) => void;
 	onSelectAll: () => void;
 	onClearSelection: () => void;
-	summary: TSalesSummary;
 	readOnly: boolean;
+	/** Built once in FinanceResult and shared across all 3 steps — see SalesBreakdown. */
+	breakdown: ReactNode;
 };
 
 function FilterFields({
@@ -96,8 +96,8 @@ export default function SalesStep({
 	onToggleTransaction,
 	onSelectAll,
 	onClearSelection,
-	summary,
-	readOnly
+	readOnly,
+	breakdown
 }: SalesStepProps) {
 	const [isFilterDrawerOpen, setFilterDrawerOpen] = useState(false);
 	const activeFilterCount = Object.values(filters).filter(Boolean).length;
@@ -178,20 +178,7 @@ export default function SalesStep({
 				</div>
 			</section>
 
-			<aside className={`${styles.summaryCard} card`}>
-				<h3 className={styles.cardTitle}>Sales result</h3>
-				<div className={styles.summaryGrid}>
-					<CurrencyStat label="Transactions" value={summary.transactionCount} format="number" tone="muted" />
-					<CurrencyStat label="Revenue" value={summary.revenue} size="lg" />
-					<CurrencyStat label="COGS" value={summary.cogs} tone="muted" />
-					<CurrencyStat label="Labor" value={summary.labor} tone="muted" />
-					<CurrencyStat label="Other costs" value={summary.otherCosts} tone="muted" />
-				</div>
-				<div className={styles.marginRow}>
-					<span className={styles.marginLabel}>Margin</span>
-					<span className={styles.marginValue}>{formatRupiah(summary.margin)}</span>
-				</div>
-			</aside>
+			<div className={styles.summaryCard}>{breakdown}</div>
 
 			{isFilterDrawerOpen && (
 				<Drawer

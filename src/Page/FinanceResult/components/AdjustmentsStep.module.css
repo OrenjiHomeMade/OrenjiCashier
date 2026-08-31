@@ -9,9 +9,13 @@
 	font-size: 0.95rem;
 }
 
-.listCard,
-.compareCard {
+.listCard {
 	padding: 1.1rem;
+}
+
+/* Just a grid slot now — SalesBreakdown supplies its own card chrome + sticky */
+.compareCard {
+	min-width: 0;
 }
 
 .listHeader {
@@ -86,25 +90,6 @@
 	color: var(--white);
 }
 
-.compareCard {
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
-	position: sticky;
-	top: 1rem;
-}
-
-.operator {
-	text-align: center;
-	color: var(--text-muted);
-	font-weight: 700;
-}
-
-.divider {
-	border-top: 1px dashed var(--border);
-	margin: 0.25rem 0;
-}
-
 .field {
 	display: flex;
 	flex-direction: column;
@@ -138,6 +123,6 @@
 	}
 
 	.compareCard {
-		position: static;
+		grid-column: 1 / -1;
 	}
 }

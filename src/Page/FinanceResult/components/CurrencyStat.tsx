@@ -5,7 +5,7 @@ export type CurrencyStatProps = {
 	label: string;
 	value: number;
 	tone?: "default" | "muted" | "positive" | "negative" | "accent";
-	size?: "md" | "lg";
+	size?: "sm" | "md" | "lg";
 	format?: "currency" | "number";
 };
 

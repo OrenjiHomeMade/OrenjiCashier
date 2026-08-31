@@ -24,7 +24,6 @@
 	font-size: 1.3rem;
 }
 
-.resultCard,
 .distributionCard {
 	padding: 1.3rem;
 }
@@ -32,40 +31,6 @@
 .cardTitle {
 	font-size: 0.95rem;
 	margin-bottom: 1rem;
-}
-
-.grid {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 1rem;
-}
-
-.divider {
-	border-top: 1px dashed var(--border);
-	margin: 1.1rem 0;
-}
-
-.resultRow {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0.4rem 0;
-	font-weight: 600;
-	color: var(--brown);
-}
-
-.negativeValue {
-	color: var(--danger);
-	font-weight: 700;
-}
-
-.finalRow {
-	font-size: 1.15rem;
-	font-weight: 800;
-	color: var(--orange-dark);
-	padding-top: 0.6rem;
-	border-top: 1px solid var(--border);
-	margin-top: 0.4rem;
 }
 
 .distributionHeader {
@@ -227,10 +192,6 @@
 }
 
 @container finance-content (max-width: 800px) {
-	.grid {
-		grid-template-columns: repeat(2, 1fr);
-	}
-
 	.distributionRow {
 		grid-template-columns: 1fr;
 		align-items: flex-start;
@@ -246,10 +207,6 @@
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 0.5rem;
-	}
-
-	.grid {
-		grid-template-columns: 1fr 1fr;
 	}
 
 	.actions {

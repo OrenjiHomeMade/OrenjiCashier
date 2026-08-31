@@ -1,8 +1,7 @@
 import { useState } from "react";
-import type { SubmitEvent } from "react";
+import type { ReactNode, SubmitEvent } from "react";
 import styles from "./AdjustmentsStep.module.css";
 import Button from "../../../Component/Button/Button";
-import CurrencyStat from "./CurrencyStat";
 import Drawer from "../../../Component/Drawer/Drawer";
 import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
@@ -10,30 +9,28 @@ import { ADJUSTMENT_CATEGORIES } from "../../../Types/finance";
 import type { TAdjustment, TAdjustmentCategory } from "../../../Types/finance";
 
 /* =========================================================
-   MAIN STEP — list + result comparison. No Drawer here;
-   it only asks the parent (FinanceResult) to open one.
+   MAIN STEP — adjustments list + shared breakdown. No Drawer
+   here; it only asks the parent (FinanceResult) to open one.
    ========================================================= */
 
 export type AdjustmentsStepProps = {
 	adjustments: TAdjustment[];
 	onRemoveAdjustment: (id: string) => void;
-	salesMargin: number;
 	readOnly: boolean;
 	drawerState: boolean;
 	setDrawerState: (state: boolean) => void;
+	/** Built once in FinanceResult and shared across all 3 steps — see SalesBreakdown. */
+	breakdown: ReactNode;
 };
 
 export function AdjustmentsStep({
 	adjustments,
 	onRemoveAdjustment,
-	salesMargin,
 	readOnly,
 	drawerState,
-	setDrawerState
+	setDrawerState,
+	breakdown
 }: AdjustmentsStepProps) {
-	const adjustmentsTotal = adjustments.reduce((sum, adjustment) => sum + adjustment.amount, 0);
-	const adjustedResult = salesMargin - adjustmentsTotal;
-
 	return (
 		<div className={styles.layout}>
 			<section className={`${styles.listCard} card`}>
@@ -80,14 +77,7 @@ export function AdjustmentsStep({
 				</div>
 			</section>
 
-			<aside className={`${styles.compareCard} card`}>
-				<h3 className={styles.cardTitle}>Result comparison</h3>
-				<CurrencyStat label="Sales margin" value={salesMargin} />
-				<div className={styles.operator}>−</div>
-				<CurrencyStat label="Adjustments" value={adjustmentsTotal} tone="negative" />
-				<div className={styles.divider} />
-				<CurrencyStat label="Adjusted result" value={adjustedResult} tone="accent" size="lg" />
-			</aside>
+			<div className={styles.compareCard}>{breakdown}</div>
 		</div>
 	);
 }

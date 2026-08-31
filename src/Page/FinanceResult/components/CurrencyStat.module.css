@@ -18,6 +18,10 @@
 	font-variant-numeric: tabular-nums;
 }
 
+.sm {
+	font-size: 0.88rem;
+}
+
 .md {
 	font-size: 1.05rem;
 }
