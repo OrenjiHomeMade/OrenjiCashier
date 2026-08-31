@@ -2,10 +2,9 @@
 import "./App.css";
 // IMPORT HOOKS
 import { useContext } from "react";
-// IMPORT COMPONENTS
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// IMPORT COMPONENTS
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
 import Header from "./Component/Header/Header";
 import AuthContext from "./Component/Context/AuthProvider";
 import Login from "./Page/Login/Login";
@@ -17,6 +16,9 @@ import ProductCatalog from "./Page/ProductCatalog/ProductCatalog";
 import Development from "./Development/Development";
 import Report from "./Page/Report/Report";
 import InvoicePreviewPage from "./Page/Invoice/Invoice";
+import FinanceResult from "./Page/FinanceResult/FinanceResult";
+// IMPORT UTILITIES
+import { ToastContainer } from "react-toastify";
 
 // =========================================================
 // QUERY CLIENT
@@ -91,6 +93,7 @@ function AppRoutes() {
 				<Route path="/cashier" element={<Cashier />} />
 				<Route path="/transactions" element={<TransactionHistory />} />
 				<Route path="/products" element={<ProductCatalog />} />
+				<Route path="/finance" element={<FinanceResult />} />
 				{/* =================================================
                 DEVELOPMENT ONLY
             	================================================= */}

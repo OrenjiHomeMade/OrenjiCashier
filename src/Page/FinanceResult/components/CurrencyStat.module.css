@@ -1,0 +1,44 @@
+.stat {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.label {
+	font-size: 0.72rem;
+	color: var(--text-muted);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+}
+
+.value {
+	font-weight: 700;
+	color: var(--brown);
+	font-variant-numeric: tabular-nums;
+}
+
+.md {
+	font-size: 1.05rem;
+}
+
+.lg {
+	font-size: 1.5rem;
+}
+
+.muted {
+	color: var(--text-muted);
+	font-weight: 600;
+}
+
+.positive {
+	color: #3d6b26;
+}
+
+.negative {
+	color: var(--danger);
+}
+
+.accent {
+	color: var(--orange-dark);
+}

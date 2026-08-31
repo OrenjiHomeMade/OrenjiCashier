@@ -1,0 +1,77 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+.eyebrow {
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--text-muted);
+}
+
+.title {
+	font-size: 1.6rem;
+}
+
+.controlRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+.nameField {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	flex: 1;
+	min-width: 260px;
+	max-width: 32rem;
+}
+
+.nameInput {
+	flex: 1;
+	padding: 0.6rem 0.85rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-md);
+	background: var(--white);
+	font-weight: 600;
+	color: var(--brown);
+}
+
+.nameInput:focus {
+	outline: none;
+	border-color: var(--orange);
+}
+
+.content {
+	min-height: 24rem;
+}
+
+@media (max-width: 800px) {
+	.header {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.controlRow {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.nameField {
+		max-width: none;
+	}
+}

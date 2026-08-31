@@ -1,0 +1,35 @@
+.badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	white-space: nowrap;
+}
+
+.badge::before {
+	content: "";
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: currentColor;
+}
+
+.DRAFT {
+	background: var(--blue-light);
+	color: #4a5590;
+}
+
+.CONFIRMED {
+	background: var(--success-bg);
+	color: #3d6b26;
+}
+
+.DISTRIBUTED {
+	background: rgba(178, 94, 52, 0.14);
+	color: var(--terracotta);
+}

@@ -1,0 +1,143 @@
+.layout {
+	display: grid;
+	grid-template-columns: 1fr 300px;
+	gap: 1rem;
+	align-items: start;
+}
+
+.cardTitle {
+	font-size: 0.95rem;
+}
+
+.listCard,
+.compareCard {
+	padding: 1.1rem;
+}
+
+.listHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.9rem;
+}
+
+.list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.emptyState {
+	padding: 1.5rem 0;
+	text-align: center;
+	color: var(--text-muted);
+	font-size: 0.85rem;
+}
+
+.row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.7rem 0.85rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-md);
+}
+
+.rowMain {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+}
+
+.rowDescription {
+	font-weight: 700;
+	font-size: 0.88rem;
+	color: var(--brown);
+}
+
+.rowCategory {
+	font-size: 0.72rem;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+}
+
+.rowAmount {
+	font-weight: 700;
+	color: var(--danger);
+	font-variant-numeric: tabular-nums;
+	flex-shrink: 0;
+}
+
+.removeButton {
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 999px;
+	background: transparent;
+	color: var(--text-muted);
+	font-size: 1.1rem;
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+.removeButton:hover {
+	background: var(--danger-bg);
+	color: var(--white);
+}
+
+.compareCard {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	position: sticky;
+	top: 1rem;
+}
+
+.operator {
+	text-align: center;
+	color: var(--text-muted);
+	font-weight: 700;
+}
+
+.divider {
+	border-top: 1px dashed var(--border);
+	margin: 0.25rem 0;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	color: var(--text-muted);
+	margin-bottom: 1rem;
+}
+
+.field input,
+.field select {
+	padding: 0.55rem 0.7rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	background: var(--cream-soft);
+	color: var(--text-dark);
+	font-weight: 500;
+}
+
+.field input:focus,
+.field select:focus {
+	outline: none;
+	border-color: var(--orange);
+	background: var(--white);
+}
+
+@media (max-width: 800px) {
+	.layout {
+		grid-template-columns: 1fr;
+	}
+
+	.compareCard {
+		position: static;
+	}
+}

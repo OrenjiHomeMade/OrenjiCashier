@@ -11,6 +11,7 @@ import CatalogIcon from "../MediaComponent/CatalogIcon";
 import CheerfulLogo from "../../assets/OrenjiSquareLogo.svg";
 import CircleUser from "../../assets/circle-user.svg";
 import LogoutIcon from "../MediaComponent/LogoutIcon";
+import FinanceIcon from "../MediaComponent/FinanceIcon";
 
 const menuList = [
 	{
@@ -19,14 +20,19 @@ const menuList = [
 		icon: CashierIcon
 	},
 	{
-		label: "Transaction History",
+		label: "Transactions",
 		path: "/transactions",
 		icon: TransactionIcon
 	},
 	{
-		label: "Product Catalog",
+		label: "Catalog",
 		path: "/products",
 		icon: CatalogIcon
+	},
+	{
+		label: "Finance",
+		path: "/finance",
+		icon: FinanceIcon
 	}
 ];
 

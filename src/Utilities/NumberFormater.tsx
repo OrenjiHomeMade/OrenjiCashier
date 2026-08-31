@@ -15,6 +15,16 @@ export const rupiahFormater = (value: number, notation: "compact" | "standard" =
 	}).format(value);
 };
 
+/**
+ * Formats a number as a signed Rupiah string, e.g. formatRupiah(-15000) -> "-Rp 15.000".
+ * Wraps the existing rupiahFormater (used inside RupiahInput) so display
+ * formatting stays consistent across the app.
+ */
+export function formatRupiah(value: number): string {
+	const sign = value < 0 ? "- " : "";
+	return `${sign}${rupiahFormater(Math.abs(Math.round(value)))}`;
+}
+
 export const generateTransactionCode = (cashierName: string, date: Date = new Date()): string => {
 	// YYMMDD
 	const year = String(date.getFullYear()).slice(-2);

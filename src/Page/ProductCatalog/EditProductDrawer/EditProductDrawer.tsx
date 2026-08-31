@@ -474,11 +474,6 @@ export default function EditProductDrawer(props: EditProductDrawerProps) {
 		!isGeneratingCode &&
 		((props.mode === "edit" && productCode.trim() === "") || (props.mode === "add" && isCodeManuallyEdited));
 
-	console.log(showSuggestionButton);
-	console.log(codeSuggestion);
-	console.log(isGeneratingCode);
-	console.log(isCodeManuallyEdited);
-
 	return (
 		<Drawer
 			eyebrow={eyebrow}
