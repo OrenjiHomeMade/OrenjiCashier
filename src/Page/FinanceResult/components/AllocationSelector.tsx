@@ -21,7 +21,6 @@ export type AllocationSelectorButtonProps = {
 export type AllocationSelectorDrawerProps = {
 	allocations: TFinanceAllocation[];
 	selectedAllocation: TFinanceAllocation | null;
-	// isNewAllocation: boolean;
 	setDrawerState: (state: boolean) => void;
 	onSelect: (id: string) => void;
 	onCreateNew: () => void;
@@ -34,15 +33,6 @@ export type AllocationSelectorDrawerProps = {
  * pattern already used on the Catalog page.
  */
 export function AllocationSelector(props: AllocationSelectorButtonProps) {
-	// const {
-	// 	allocations,
-	// 	selectedAllocation,
-	// 	isNewAllocation,
-	// 	onSelect,
-	// 	onCreateNew,
-	// 	getTransactionCount
-	// } = props;
-
 	const triggerLabel = props.isNewAllocation
 		? "New allocation"
 		: props.selectedAllocation?.name || "Select allocation";

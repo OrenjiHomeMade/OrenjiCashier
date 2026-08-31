@@ -84,7 +84,7 @@ export default function FinancePage() {
 				<header className={styles.header}>
 					<div>
 						<p className={styles.eyebrow}>Orenji Cashier</p>
-						<h1 className={styles.title}>Finance</h1>
+						<h1 className={styles.title}>Finance Allocation</h1>
 					</div>
 
 					<AllocationSelector
