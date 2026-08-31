@@ -132,7 +132,7 @@
 	background: var(--white);
 }
 
-@media (max-width: 800px) {
+@container finance-content (max-width: 800px) {
 	.layout {
 		grid-template-columns: 1fr;
 	}

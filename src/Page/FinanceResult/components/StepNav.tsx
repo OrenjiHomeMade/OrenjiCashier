@@ -2,9 +2,9 @@ import styles from "./StepNav.module.css";
 import type { TFinanceStep } from "../../../Types/finance";
 
 const STEPS: { key: TFinanceStep; number: string; label: string }[] = [
-	{ key: "SALES", number: "①", label: "Sales" },
-	{ key: "ADJUSTMENTS", number: "②", label: "Adjustments" },
-	{ key: "SUMMARY", number: "③", label: "Summary" }
+	{ key: "SALES", number: "1", label: "Sales" },
+	{ key: "ADJUSTMENTS", number: "2", label: "Adjustments" },
+	{ key: "SUMMARY", number: "3", label: "Summary" }
 ];
 
 export type StepNavProps = {

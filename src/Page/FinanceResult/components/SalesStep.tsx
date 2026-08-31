@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { FormEvent } from "react";
+import type { SubmitEvent } from "react";
 import styles from "./SalesStep.module.css";
 import Button from "../../../Component/Button/Button";
 import CurrencyStat from "./CurrencyStat";
@@ -102,7 +102,7 @@ export default function SalesStep({
 	const [isFilterDrawerOpen, setFilterDrawerOpen] = useState(false);
 	const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
-	function handleDrawerSubmit(event: FormEvent<HTMLFormElement>) {
+	function handleDrawerSubmit(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
 		setFilterDrawerOpen(false);
 	}
