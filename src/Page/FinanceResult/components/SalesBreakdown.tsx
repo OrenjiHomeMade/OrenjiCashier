@@ -14,17 +14,16 @@ import type { TAdjustment, TFinanceStep, TSalesSummary } from "../../../Types/fi
 import type { TTransaction } from "../../../Types/transaction";
 
 /* =========================================================
-   COLORS — pulled from index.css brand variables so the
-   charts stay on-theme without inventing a new palette.
+   COLORS
    ========================================================= */
 
 const COLOR = {
-	ingredient: "#b25e34", // terracotta
-	labor: "#8e97ca", // blue
-	other: "#de9155", // peach
-	adjustment: "#d14957", // pink
-	margin: "#efac32", // orange
-	profitNegative: "#ec2c5c" // danger
+	ingredient: "#b25e34",
+	labor: "#8e97ca",
+	other: "#de9155",
+	adjustment: "#d14957",
+	margin: "#efac32",
+	profitNegative: "#ec2c5c"
 };
 
 const ADJUSTMENT_COLORS: Record<string, string> = {
@@ -38,8 +37,15 @@ const ADJUSTMENT_COLORS: Record<string, string> = {
 
 function compactRupiah(value: number): string {
 	const abs = Math.abs(value);
-	if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}jt`;
-	if (abs >= 1_000) return `${Math.round(value / 1_000)}rb`;
+
+	if (abs >= 1_000_000) {
+		return `${(value / 1_000_000).toFixed(1)}jt`;
+	}
+
+	if (abs >= 1_000) {
+		return `${Math.round(value / 1_000)}rb`;
+	}
+
 	return `${value}`;
 }
 
@@ -49,48 +55,116 @@ function compactRupiah(value: number): string {
 
 function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 	const products = data.map((p) => p.productName);
+	const hasZoom = products.length > 20;
 
 	return {
-		grid: { left: 8, right: 28, top: 8, bottom: 8, containLabel: true },
+		grid: {
+			left: 8,
+			right: 28,
+			top: 8,
+			bottom: hasZoom ? 56 : 42,
+			containLabel: true
+		},
+
 		tooltip: {
 			trigger: "axis",
 			axisPointer: { type: "shadow" },
 			valueFormatter: (value) => formatRupiah(Number(value))
 		},
-		legend: { bottom: 0, textStyle: { color: "#756d67", fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
-		xAxis: {
-			type: "value",
-			axisLabel: { formatter: (value: number) => compactRupiah(value), color: "#756d67" },
-			splitLine: { lineStyle: { color: "#efd8b5" } }
+
+		legend: {
+			bottom: hasZoom ? 28 : 8,
+			textStyle: {
+				color: "#756d67",
+				fontSize: 11
+			},
+			itemWidth: 10,
+			itemHeight: 10
 		},
-		yAxis: { type: "category", data: products, axisLabel: { color: "#583f16", fontSize: 11 } },
+
+		xAxis: {
+			type: "category",
+			data: products,
+			axisLabel: {
+				color: "#583f16",
+				fontSize: 11,
+				interval: 0,
+				rotate: products.length > 8 ? 35 : 0
+			}
+		},
+
+		yAxis: {
+			type: "value",
+			axisLabel: {
+				formatter: (value: number) => compactRupiah(value),
+				color: "#756d67"
+			},
+			splitLine: {
+				lineStyle: {
+					color: "#efd8b5"
+				}
+			}
+		},
+
+		dataZoom: hasZoom
+			? [
+					{
+						type: "slider",
+						xAxisIndex: 0,
+						startValue: 0,
+						endValue: 19,
+						height: 12,
+						left: 8,
+						right: 28,
+						bottom: 8,
+						showDetail: false,
+						zoomLock: true
+					},
+					{
+						type: "inside",
+						xAxisIndex: 0,
+						startValue: 0,
+						endValue: 19,
+						zoomLock: true
+					}
+				]
+			: undefined,
+
 		series: [
 			{
 				name: "Ingredient (COGS)",
 				type: "bar",
 				stack: "total",
-				itemStyle: { color: COLOR.ingredient },
+				itemStyle: {
+					color: COLOR.ingredient
+				},
 				data: data.map((p) => p.ingredient)
 			},
 			{
 				name: "Labor",
 				type: "bar",
 				stack: "total",
-				itemStyle: { color: COLOR.labor },
+				itemStyle: {
+					color: COLOR.labor
+				},
 				data: data.map((p) => p.labor)
 			},
 			{
 				name: "Other costs",
 				type: "bar",
 				stack: "total",
-				itemStyle: { color: COLOR.other },
+				itemStyle: {
+					color: COLOR.other
+				},
 				data: data.map((p) => p.utility + p.packaging)
 			},
 			{
 				name: "Margin",
 				type: "bar",
 				stack: "total",
-				itemStyle: { color: COLOR.margin },
+				itemStyle: {
+					color: COLOR.margin
+				},
 				data: data.map((p) => p.margin)
 			}
 		]
@@ -99,70 +173,117 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 
 function buildAdjustmentBreakdownOption(data: TAdjustmentBreakdown[]): EChartsOption {
 	return {
-		tooltip: { trigger: "item", valueFormatter: (value) => formatRupiah(Number(value)) },
-		legend: { bottom: 0, textStyle: { color: "#756d67", fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
+		tooltip: {
+			trigger: "item",
+			valueFormatter: (value) => formatRupiah(Number(value))
+		},
+
+		legend: {
+			bottom: 0,
+			textStyle: {
+				color: "#756d67",
+				fontSize: 11
+			},
+			itemWidth: 10,
+			itemHeight: 10
+		},
+
 		series: [
 			{
 				type: "pie",
 				radius: ["45%", "72%"],
 				center: ["50%", "42%"],
 				avoidLabelOverlap: true,
-				itemStyle: { borderColor: "#fefcfa", borderWidth: 2 },
-				label: { formatter: "{b}\n{d}%", color: "#583f16", fontSize: 11 },
+
+				itemStyle: {
+					borderColor: "#fefcfa",
+					borderWidth: 2
+				},
+
+				label: {
+					formatter: "{b}\n{d}%",
+					color: "#583f16",
+					fontSize: 11
+				},
+
 				data: data.map((entry) => ({
 					name: entry.category,
 					value: entry.amount,
-					itemStyle: { color: ADJUSTMENT_COLORS[entry.category] ?? COLOR.other }
+					itemStyle: {
+						color: ADJUSTMENT_COLORS[entry.category] ?? COLOR.other
+					}
 				}))
 			}
 		]
 	};
 }
 
-function buildFinalBreakdownOption(
-	summary: TSalesSummary,
-	adjustmentsTotal: number,
-	finalResult: number
-): EChartsOption {
-	const categories = ["COGS", "Labor", "Other costs", "Adjustments", "Profit"];
-	const values = [summary.cogs, summary.labor, summary.otherCosts, adjustmentsTotal, finalResult];
-	const colors = [
-		COLOR.ingredient,
-		COLOR.labor,
-		COLOR.other,
-		COLOR.adjustment,
-		finalResult < 0 ? COLOR.profitNegative : COLOR.margin
+/* =========================================================
+   SALES BREAKDOWN
+   Revenue allocation:
+   Revenue = COGS + Labor + Other Costs + Margin
+   ========================================================= */
+
+function buildSalesBreakdownOption(summary: TSalesSummary): EChartsOption {
+	const data = [
+		{
+			name: "COGS",
+			value: summary.cogs,
+			itemStyle: { color: COLOR.ingredient }
+		},
+		{
+			name: "Labor",
+			value: summary.labor,
+			itemStyle: { color: COLOR.labor }
+		},
+		{
+			name: "Other costs",
+			value: summary.otherCosts,
+			itemStyle: { color: COLOR.other }
+		},
+		{
+			name: "Margin",
+			value: summary.margin,
+			itemStyle: { color: COLOR.margin }
+		}
 	];
 
 	return {
-		grid: { left: 8, right: 56, top: 8, bottom: 8, containLabel: true },
 		tooltip: {
-			trigger: "axis",
-			axisPointer: { type: "shadow" },
+			trigger: "item",
 			valueFormatter: (value) => formatRupiah(Number(value))
 		},
-		xAxis: {
-			type: "value",
-			axisLabel: { formatter: (value: number) => compactRupiah(value), color: "#756d67" },
-			splitLine: { lineStyle: { color: "#efd8b5" } }
+
+		legend: {
+			bottom: 0,
+			textStyle: {
+				color: "#756d67",
+				fontSize: 11
+			},
+			itemWidth: 10,
+			itemHeight: 10
 		},
-		yAxis: { type: "category", data: categories, axisLabel: { color: "#583f16", fontSize: 12, fontWeight: 700 } },
+
 		series: [
 			{
-				type: "bar",
-				barWidth: "55%",
-				data: values.map((value, index) => ({
-					value,
-					itemStyle: { color: colors[index], borderRadius: value >= 0 ? [0, 6, 6, 0] : [6, 0, 0, 6] }
-				})),
+				name: "Revenue allocation",
+				type: "pie",
+				radius: ["45%", "72%"],
+				center: ["50%", "42%"],
+				avoidLabelOverlap: true,
+
+				itemStyle: {
+					borderColor: "#fefcfa",
+					borderWidth: 2
+				},
+
 				label: {
-					show: true,
-					position: "right",
-					formatter: (params) => formatRupiah(Number((params as { value: number }).value)),
+					formatter: "{b}\n{d}%",
 					color: "#583f16",
-					fontWeight: 700,
 					fontSize: 11
-				}
+				},
+
+				data
 			}
 		]
 	};
@@ -192,7 +313,7 @@ const FOCUS_SECTION: Record<TFinanceStep, TSectionKey> = {
 
 export type SalesBreakdownProps = {
 	step: TFinanceStep;
-	transactions: TTransaction[]; // the currently *selected* transactions
+	transactions: TTransaction[];
 	salesSummary: TSalesSummary;
 	adjustments: TAdjustment[];
 	adjustmentsTotal: number;
@@ -211,7 +332,9 @@ export default function SalesBreakdown({
 	const focusSection = FOCUS_SECTION[step];
 
 	const itemsSold = useMemo(() => calcItemsSoldCount(transactions), [transactions]);
+
 	const productBreakdown = useMemo(() => aggregateSalesByProduct(transactions), [transactions]);
+
 	const adjustmentBreakdown = useMemo(() => aggregateAdjustmentsByCategory(adjustments), [adjustments]);
 
 	return (
@@ -260,6 +383,7 @@ function SalesSummarySection({
 	productBreakdown: TProductBreakdown[];
 }) {
 	const [isExpanded, setIsExpanded] = useState(focused);
+
 	const chartOption = useMemo(() => buildProductBreakdownOption(productBreakdown), [productBreakdown]);
 
 	return (
@@ -269,6 +393,7 @@ function SalesSummarySection({
 					<span className={`${styles.dot} ${styles.dotSales}`} aria-hidden="true" />
 					Sales summary
 				</h3>
+
 				{productBreakdown.length > 0 && (
 					<button
 						type="button"
@@ -276,6 +401,7 @@ function SalesSummarySection({
 						onClick={() => setIsExpanded((value) => !value)}
 					>
 						{isExpanded ? "Hide" : "By product"}
+
 						<span
 							className={`${styles.chevron} ${isExpanded ? styles.chevronOpen : ""}`}
 							aria-hidden="true"
@@ -294,6 +420,7 @@ function SalesSummarySection({
 					tone="muted"
 					size={focused ? "md" : "sm"}
 				/>
+
 				<CurrencyStat
 					label="Items sold"
 					value={itemsSold}
@@ -301,12 +428,17 @@ function SalesSummarySection({
 					tone="muted"
 					size={focused ? "md" : "sm"}
 				/>
+
 				<CurrencyStat label="Revenue" value={summary.revenue} tone="accent" size={focused ? "lg" : "md"} />
+
 				{focused && (
 					<>
 						<CurrencyStat label="COGS" value={summary.cogs} tone="muted" />
+
 						<CurrencyStat label="Labor" value={summary.labor} tone="muted" />
+
 						<CurrencyStat label="Other costs" value={summary.otherCosts} tone="muted" />
+
 						<CurrencyStat label="Margin" value={summary.margin} tone="positive" />
 					</>
 				)}
@@ -314,7 +446,7 @@ function SalesSummarySection({
 
 			{isExpanded && productBreakdown.length > 0 && (
 				<div className={styles.chartWrap}>
-					<EChart option={chartOption} height={Math.max(180, productBreakdown.length * 34)} />
+					<EChart option={chartOption} height={Math.max(180, Math.min(productBreakdown.length, 20) * 34)} />
 				</div>
 			)}
 
@@ -339,6 +471,7 @@ function AdjustmentSummarySection({
 	breakdown: TAdjustmentBreakdown[];
 }) {
 	const [isExpanded, setIsExpanded] = useState(focused);
+
 	const chartOption = useMemo(() => buildAdjustmentBreakdownOption(breakdown), [breakdown]);
 
 	return (
@@ -348,6 +481,7 @@ function AdjustmentSummarySection({
 					<span className={`${styles.dot} ${styles.dotAdjustment}`} aria-hidden="true" />
 					Adjustment summary
 				</h3>
+
 				{breakdown.length > 0 && (
 					<button
 						type="button"
@@ -355,6 +489,7 @@ function AdjustmentSummarySection({
 						onClick={() => setIsExpanded((value) => !value)}
 					>
 						{isExpanded ? "Hide" : "By category"}
+
 						<span
 							className={`${styles.chevron} ${isExpanded ? styles.chevronOpen : ""}`}
 							aria-hidden="true"
@@ -381,9 +516,12 @@ function AdjustmentSummarySection({
 }
 
 /* =========================================================
-   SECTION: Sales Breakdown (final — COGS / Labor / Other /
-   Adjustments / Profit). Always expanded — this is the
-   canonical view the whole workflow builds toward.
+   SECTION: Sales Breakdown
+   Revenue allocation:
+   COGS + Labor + Other costs + Margin = Revenue
+
+   Adjustments are intentionally excluded because they are
+   applied after the initial revenue allocation.
    ========================================================= */
 
 function FinalBreakdownSection({
@@ -395,10 +533,7 @@ function FinalBreakdownSection({
 	adjustmentsTotal: number;
 	finalResult: number;
 }) {
-	const chartOption = useMemo(
-		() => buildFinalBreakdownOption(summary, adjustmentsTotal, finalResult),
-		[summary, adjustmentsTotal, finalResult]
-	);
+	const chartOption = useMemo(() => buildSalesBreakdownOption(summary), [summary]);
 
 	return (
 		<section className={`${styles.section} ${styles.sectionFocused} ${styles.sectionBreakdown}`}>
@@ -410,11 +545,14 @@ function FinalBreakdownSection({
 			</div>
 
 			<div className={styles.chartWrap}>
-				<EChart option={chartOption} height={220} />
+				<EChart option={chartOption} height={240} />
 			</div>
 
 			<div className={styles.finalRow}>
-				<span>Profit</span>
+				<div>
+					<span>Profit after {formatRupiah(adjustmentsTotal)} adjustment</span>
+				</div>
+
 				<span className={finalResult < 0 ? styles.negativeBig : styles.positiveBig}>
 					{formatRupiah(finalResult)}
 				</span>
