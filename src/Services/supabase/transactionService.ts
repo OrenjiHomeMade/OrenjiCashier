@@ -1,9 +1,13 @@
+import type { Database } from "../../Types/database";
 import type {
 	TCreateTransactionInput,
 	TPaymentMethod,
 	TTransaction,
 	TTransactionFilter,
-	TTransactionResult
+	TTransactionPerItem,
+	TTransactionResult,
+	TTransactionSalesSummary,
+	TTrasnasctionSalesBreakdown
 } from "../../Types/transaction";
 import { supabase } from "./client";
 import { toast } from "react-toastify";
@@ -183,6 +187,104 @@ export const getTransactionById = async (transactionId: number): Promise<TTransa
 			totalCOGS: item.total_cogs ?? 0
 		}))
 	};
+};
+
+type GetTransactionItemParams = Database["public"]["Functions"]["get_flattened_transaction_items"]["Args"];
+// the types are
+//  {
+//  p_cashier?: string | undefined;
+//  p_end_date?: string | undefined;
+//  p_max_amount?: number | undefined;
+//  p_min_amount?: number | undefined;
+//  p_page?: number | undefined;
+//  p_page_size?: number | undefined;
+//  p_payment_method?: string | undefined;
+//  p_product_category?: string | undefined;
+//  p_search?: string | undefined;
+//  p_start_date?: string | undefined;
+// }
+
+export const getTransactionsPerItem = async (
+	params: GetTransactionItemParams
+): Promise<TTransactionPerItem[] | null> => {
+	const { data, error } = await supabase.rpc("get_flattened_transaction_items", params);
+	if (error) {
+		console.error("Failed to get transactions per item:", error);
+		toast.error(`Failed to load transactions per item: ${error.message}`);
+		throw error;
+	}
+
+	return data.map((dat) => ({
+		cashier: dat.cashier,
+		paymentMethod: dat.payment_method,
+		productCategory: dat.product_category,
+		productId: dat.product_id,
+		productName: dat.product_name,
+		quantity: dat.quantity,
+		subtotal: dat.subtotal,
+		totalCount: dat.total_count,
+		transactionAmount: dat.transaction_amount,
+		transactionCode: dat.transaction_code,
+		transactionId: dat.transaction_id,
+		transactionItemId: dat.transaction_item_id,
+		transactionTime: dat.transaction_time,
+		unitPrice: dat.unit_price
+	}));
+};
+
+type SalesSummaryParams = Database["public"]["Functions"]["get_transaction_items_settlement_summary"]["Args"];
+// type SalesSummaryParams = {
+//  p_transaction_item_ids: number[];
+// }
+
+export const getSalesSummaryOnTransactionItems = async (
+	params: SalesSummaryParams
+): Promise<TTransactionSalesSummary[] | null> => {
+	const { data, error } = await supabase.rpc("get_transaction_items_settlement_summary", params);
+	if (error) {
+		console.error("Failed to get sales summary on transaction items:", error);
+		toast.error(`Failed to load sales summary on transaction items: ${error.message}`);
+		throw error;
+	}
+	return data.map((dat) => ({
+		ingredientCost: dat.sales_ingredient_cost,
+		laborCost: dat.sales_labor_cost,
+		salesMargin: dat.sales_margin,
+		packagingCost: dat.sales_packaging_cost,
+		revenue: dat.sales_revenue,
+		utilityCost: dat.sales_utility_cost,
+		soldItem: dat.selected_item_count
+	}));
+};
+
+type SalesBreakdownParams = Database["public"]["Functions"]["get_transaction_items_settlement_breakdown"]["Args"];
+// type SalesBreakdownParams = {
+//  p_group_by?: string | undefined;
+//  p_transaction_item_ids: number[];
+// }
+
+export const getSalesBreakdownOnTransactionItems = async (
+	params: SalesBreakdownParams
+): Promise<TTrasnasctionSalesBreakdown[] | null> => {
+	const { data, error } = await supabase.rpc("get_transaction_items_settlement_breakdown", params);
+	if (error) {
+		console.error("Failed to get sales breakdown on transaction items:", error);
+		toast.error(`Failed to load sales breakdown on transaction items: ${error.message}`);
+		throw error;
+	}
+	return data.map((dat) => ({
+		ingredientCost: dat.ingredient_cost,
+		laborCost: dat.labor_cost,
+		salesMargin: dat.margin,
+		packagingCost: dat.packaging_cost,
+		productCategory: dat.product_category,
+		productId: dat.product_id,
+		productName: dat.product_name,
+		quantity: dat.quantity,
+		revenue: dat.revenue,
+		totalCogs: dat.total_cogs,
+		utilityCost: dat.utility_cost
+	}));
 };
 
 export const deleteTransaction = async (transactionId: number): Promise<boolean> => {

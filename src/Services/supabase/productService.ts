@@ -216,7 +216,7 @@ export async function uploadProductImage({ productCode, file }: TProductImage): 
 	});
 
 	console.log("UPLOAD DATA:", data);
-	console.log("UPLOAD ERROR:", error);
+	// console.log("UPLOAD ERROR:", error);
 
 	if (error) {
 		toast.error(`Failed Uploading product image ${error.message}`);
@@ -343,6 +343,10 @@ export async function saveProduct({ productId, previousProductCode, newProduct, 
 	} else {
 		savedProduct = await createProduct(newProduct);
 	}
+
+	console.log("update Trans Item");
+	await updateTransactionItemPrices();
+	console.log("success");
 
 	if (image) {
 		if (isEdit && previousProductCode && previousProductCode !== newProduct.productCode) {
@@ -506,4 +510,13 @@ export const isProductCodeAvailable = async ({
 	}
 
 	return data.length === 0;
+};
+
+export const updateTransactionItemPrices = async () => {
+	const { error } = await supabase.rpc("update_transaction_item_costs");
+	if (error) {
+		console.error("Failed updating transaction item:", error.message);
+		toast("Failed updating transaction item:");
+		throw error;
+	}
 };

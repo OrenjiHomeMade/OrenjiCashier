@@ -76,6 +76,47 @@ export type TCreateTransactionInput = TTransactionBase & {
 	items: TTransactionItemInput[];
 };
 
+export type TTransactionPerItem = {
+	cashier: string;
+	paymentMethod: string;
+	productCategory: string;
+	productId: number;
+	productName: string;
+	quantity: number;
+	subtotal: number;
+	totalCount: number;
+	transactionAmount: number;
+	transactionCode: string;
+	transactionId: number;
+	transactionItemId: number;
+	transactionTime: string;
+	unitPrice: number;
+};
+
+export type TTransactionSalesSummary = {
+	ingredientCost: number;
+	laborCost: number;
+	salesMargin: number;
+	packagingCost: number;
+	revenue: number;
+	utilityCost: number;
+	soldItem: number;
+};
+
+export type TTrasnasctionSalesBreakdown = {
+	ingredientCost: number;
+	laborCost: number;
+	salesMargin: number;
+	packagingCost: number;
+	productCategory: string;
+	productId: number;
+	productName: string;
+	quantity: number;
+	revenue: number;
+	totalCogs: number;
+	utilityCost: number;
+};
+
 /* =========================================================
    FILTER & API RESULT TYPES
    ========================================================= */
