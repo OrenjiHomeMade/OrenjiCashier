@@ -1,0 +1,415 @@
+.layout {
+	display: grid;
+	grid-template-columns: 1fr 300px;
+	gap: 1rem;
+	align-items: start;
+}
+
+.listCard {
+	padding: 1.1rem;
+}
+
+/* Just a grid slot — SalesBreakdown supplies its own card chrome + sticky */
+.compareCard {
+	min-width: 0;
+}
+
+.listHeader {
+	margin-bottom: 0.9rem;
+}
+
+.cardTitle {
+	font-size: 0.95rem;
+}
+
+.cardSubtitle {
+	margin-top: 0.2rem;
+	font-size: 0.8rem;
+	color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------
+   Sections
+   --------------------------------------------------------- */
+
+.sections {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+.section {
+	border: 1px solid var(--border);
+	border-radius: var(--radius-md);
+	padding: 0.85rem 0.95rem;
+}
+
+.sectionHead {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.sectionHeading {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.sectionTitle {
+	font-size: 0.88rem;
+	color: var(--brown);
+}
+
+.basisBadge {
+	font-size: 0.65rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: var(--orange-dark);
+	background: rgba(239, 172, 50, 0.14);
+	border-radius: 999px;
+	padding: 0.15rem 0.5rem;
+}
+
+.sectionEstimate {
+	font-size: 0.75rem;
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
+.sectionBody {
+	margin-top: 0.7rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+}
+
+/* Labor */
+
+.inlineField {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--text-muted);
+}
+
+.inlineField input {
+	max-width: 12rem;
+}
+
+.diffPill {
+	align-self: flex-start;
+	font-size: 0.72rem;
+	font-weight: 700;
+	border-radius: 999px;
+	padding: 0.15rem 0.55rem;
+}
+
+.diffOver {
+	color: var(--danger);
+	background: var(--danger-bg);
+}
+
+.diffUnder {
+	color: var(--orange-dark);
+	background: rgba(239, 172, 50, 0.14);
+}
+
+/* Packaging / Ingredient (derived, read-only) */
+
+.derivedAmount {
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--brown);
+	font-variant-numeric: tabular-nums;
+}
+
+.derivedNote {
+	font-size: 0.75rem;
+	color: var(--text-muted);
+	line-height: 1.4;
+}
+
+/* Utilities / Additional (expense-backed) */
+
+.expenseList {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.expenseRow {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.4rem 0.6rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	background: var(--cream-soft);
+}
+
+.expenseDescription {
+	flex: 1;
+	min-width: 0;
+	font-weight: 600;
+	font-size: 0.8rem;
+	color: var(--brown);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.expenseCategory {
+	font-size: 0.68rem;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	flex-shrink: 0;
+}
+
+.expenseAmount {
+	font-weight: 700;
+	font-size: 0.8rem;
+	color: var(--danger);
+	font-variant-numeric: tabular-nums;
+	flex-shrink: 0;
+}
+
+.emptyState {
+	padding: 0.6rem 0;
+	text-align: center;
+	color: var(--text-muted);
+	font-size: 0.8rem;
+}
+
+.sectionFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding-top: 0.3rem;
+}
+
+.sectionTotal {
+	display: flex;
+	align-items: baseline;
+	gap: 0.4rem;
+	font-size: 0.78rem;
+	color: var(--text-muted);
+}
+
+.sectionTotal strong {
+	font-size: 0.9rem;
+	color: var(--brown);
+	font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------
+   Drawer form fields (Add expense)
+   --------------------------------------------------------- */
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	color: var(--text-muted);
+	margin-bottom: 1rem;
+}
+
+.field input,
+.field select {
+	padding: 0.55rem 0.7rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	background: var(--cream-soft);
+	color: var(--text-dark);
+	font-weight: 500;
+}
+
+.field input:focus,
+.field select:focus {
+	outline: none;
+	border-color: var(--orange);
+	background: var(--white);
+}
+
+/* ---------------------------------------------------------
+   Drawer — select expenses
+   --------------------------------------------------------- */
+
+.drawerToolbar {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+}
+
+.searchInput {
+	padding: 0.55rem 0.7rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	background: var(--cream-soft);
+	color: var(--text-dark);
+	font-weight: 500;
+}
+
+.searchInput:focus {
+	outline: none;
+	border-color: var(--orange);
+	background: var(--white);
+}
+
+.statusChips {
+	display: flex;
+	gap: 0.4rem;
+	flex-wrap: wrap;
+}
+
+.chip {
+	font-size: 0.72rem;
+	font-weight: 600;
+	color: var(--text-muted);
+	background: var(--cream-soft);
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	padding: 0.25rem 0.65rem;
+}
+
+.chipActive {
+	color: var(--white);
+	background: var(--orange);
+	border-color: var(--orange);
+}
+
+.addNewRow {
+	margin-bottom: 0.75rem;
+}
+
+.drawerList {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.drawerRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.6rem;
+	padding: 0.6rem 0.7rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-md);
+}
+
+.drawerRowSelected {
+	border-color: var(--orange);
+	background: rgba(239, 172, 50, 0.08);
+}
+
+.drawerRowLabel {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	min-width: 0;
+	flex: 1;
+}
+
+.drawerRowLabel input[type="checkbox"] {
+	flex-shrink: 0;
+	width: 1rem;
+	height: 1rem;
+}
+
+.drawerRowInfo {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.drawerRowDescription {
+	font-weight: 700;
+	font-size: 0.82rem;
+	color: var(--brown);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.drawerRowMeta {
+	font-size: 0.72rem;
+	color: var(--text-muted);
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+}
+
+.statusPill {
+	font-size: 0.65rem;
+	font-weight: 700;
+	text-transform: capitalize;
+	border-radius: 999px;
+	padding: 0.05rem 0.45rem;
+}
+
+.statusUNSETTLED {
+	color: var(--danger);
+	background: var(--danger-bg);
+}
+
+.statusPARTIAL {
+	color: var(--orange-dark);
+	background: rgba(239, 172, 50, 0.14);
+}
+
+.statusSETTLED {
+	color: var(--text-muted);
+	background: var(--cream-soft);
+}
+
+.drawerRowAmounts {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	flex-shrink: 0;
+}
+
+.drawerRowOriginal {
+	font-size: 0.78rem;
+	font-weight: 700;
+	color: var(--brown);
+	font-variant-numeric: tabular-nums;
+}
+
+.drawerRowRemaining {
+	font-size: 0.68rem;
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+@container finance-content (max-width: 800px) {
+	.layout {
+		grid-template-columns: 1fr;
+	}
+
+	.compareCard {
+		grid-column: 1 / -1;
+	}
+
+	.sectionHead {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.sectionFooter {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}
