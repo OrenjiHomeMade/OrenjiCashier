@@ -64,7 +64,6 @@ export function AllocationSelector(props: AllocationSelectorButtonProps) {
 export function AllocationSelectorDrawer({
 	allocations,
 	selectedAllocation,
-	// isNewAllocation,
 	setDrawerState,
 	onSelect,
 	onCreateNew,

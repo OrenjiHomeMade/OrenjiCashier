@@ -1,16 +1,24 @@
 import styles from "./FinanceResult.module.css";
 import { useFinanceAllocation } from "../../Hooks/useFinanceAllocation";
 import { AllocationSelector, AllocationSelectorDrawer } from "./components/AllocationSelector";
-import { AdjustmentsStep, AdjustmentsStepDrawer } from "./components/AdjustmentsStep";
+import {
+	// AdjustmentsStep,
+	AdjustmentsStepDrawer
+} from "./components/AdjustmentsStep";
 import { useState } from "react";
 import StepNav from "./components/StepNav";
 import SalesStep from "./components/SalesStep";
-import SummaryStep from "./components/SummaryStep";
+// import SummaryStep from "./components/SummaryStep";
 import SalesBreakdown from "./components/SalesBreakdown";
 import Button from "../../Component/Button/Button";
 import LoadingModal from "../../Component/LoadingModal/LoadingModal";
 
 export default function FinancePage() {
+	// CUSTOM HOOKS IDEA
+	// -- allocation selections, creation and update
+	// -- transaction item and selection
+	// -- expense adjustment
+
 	const {
 		allocations,
 		selectedAllocation,
@@ -18,7 +26,7 @@ export default function FinancePage() {
 		draftAllocation,
 		currentStep,
 		setCurrentStep,
-		editMode,
+		// editMode,
 		filters,
 		setFilters,
 		categories,
@@ -28,12 +36,12 @@ export default function FinancePage() {
 		salesSummary,
 		adjustmentsTotal,
 		finalResult,
-		distributionTotalAmount,
-		distributionTotalPercent,
-		isDistributionReconciled,
+		// distributionTotalAmount,
+		// distributionTotalPercent,
+		// isDistributionReconciled,
 		isReadOnly,
 		isSalesAdjustmentsEditable,
-		isDistributionEditable,
+		// isDistributionEditable,
 		isSaving,
 		savingMessage,
 		loadAllocation,
@@ -42,15 +50,15 @@ export default function FinancePage() {
 		selectAllFiltered,
 		clearSelection,
 		addAdjustment,
-		removeAdjustment,
-		setDistributionMode,
-		updateDistributionEntry,
-		addDistributionEntry,
-		removeDistributionEntry,
-		confirmAllocation,
+		// removeAdjustment,
+		// setDistributionMode,
+		// updateDistributionEntry,
+		// addDistributionEntry,
+		// removeDistributionEntry,
+		// confirmAllocation,
 		saveDraft,
-		enableEdit,
-		distributeAllocation,
+		// enableEdit,
+		// distributeAllocation,
 		setDraftName
 	} = useFinanceAllocation();
 
@@ -72,11 +80,11 @@ export default function FinancePage() {
 		setAddAdjustmentDrawerState(open);
 	}
 
-	const statusActions = {
-		canConfirm: (isNewAllocation || draftAllocation.status === "DRAFT") && !isReadOnly,
-		canEnableEdit: !isNewAllocation && draftAllocation.status === "CONFIRMED" && !editMode,
-		canDistribute: draftAllocation.status === "CONFIRMED"
-	};
+	// const statusActions = {
+	// 	canConfirm: (isNewAllocation || draftAllocation.status === "DRAFT") && !isReadOnly,
+	// 	canEnableEdit: !isNewAllocation && draftAllocation.status === "CONFIRMED" && !editMode,
+	// 	canDistribute: draftAllocation.status === "CONFIRMED"
+	// };
 
 	const showNameField = (isNewAllocation || draftAllocation.status === "DRAFT") && !isReadOnly;
 
@@ -150,7 +158,7 @@ export default function FinancePage() {
 						/>
 					)}
 
-					{currentStep === "ADJUSTMENTS" && (
+					{/* {currentStep === "ADJUSTMENTS" && (
 						<AdjustmentsStep
 							adjustments={draftAllocation.adjustments}
 							onRemoveAdjustment={removeAdjustment}
@@ -159,9 +167,9 @@ export default function FinancePage() {
 							setDrawerState={openAdjustmentDrawer}
 							breakdown={salesBreakdown}
 						/>
-					)}
+					)} */}
 
-					{currentStep === "SUMMARY" && (
+					{/* {currentStep === "SUMMARY" && (
 						<SummaryStep
 							allocation={draftAllocation}
 							finalResult={finalResult}
@@ -179,7 +187,7 @@ export default function FinancePage() {
 							onDistribute={distributeAllocation}
 							breakdown={salesBreakdown}
 						/>
-					)}
+					)} */}
 				</main>
 			</div>
 
