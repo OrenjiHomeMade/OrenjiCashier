@@ -1,30 +1,30 @@
 import { useMemo, useState } from "react";
 import styles from "./AllocationSelector.module.css";
 import StatusBadge from "./StatusBadge";
-import type { TAllocationStatus, TFinanceAllocation } from "../../../Types/finance";
+// import type { TAllocationStatus, TFinanceAllocation } from "../../../Types/finance";
 import Drawer from "../../../Component/Drawer/Drawer";
+import type { TBusinessSettlement, TBusinessSettlementLists, TSettlementStatus } from "../../../Types/settlement";
 
-const STATUS_ORDER: TAllocationStatus[] = ["DRAFT", "CONFIRMED", "DISTRIBUTED"];
-const STATUS_GROUP_LABEL: Record<TAllocationStatus, string> = {
+const STATUS_ORDER: TSettlementStatus[] = ["DRAFT", "CONFIRMED", "SETTLED"];
+const STATUS_GROUP_LABEL: Record<TSettlementStatus, string> = {
 	DRAFT: "Draft",
 	CONFIRMED: "Confirmed",
-	DISTRIBUTED: "Distributed"
+	SETTLED: "Settled"
 };
 
 export type AllocationSelectorButtonProps = {
 	drawerState: boolean;
 	setDrawerState: (state: boolean) => void;
 	isNewAllocation: boolean;
-	selectedAllocation: TFinanceAllocation | null;
+	selectedSettlement: TBusinessSettlement | null;
 };
 
 export type AllocationSelectorDrawerProps = {
-	allocations: TFinanceAllocation[];
-	selectedAllocation: TFinanceAllocation | null;
+	settlements: TBusinessSettlementLists[];
+	selectedSettlement: TBusinessSettlement | null;
 	setDrawerState: (state: boolean) => void;
-	onSelect: (id: string) => void;
+	onSelect: (id: number) => void;
 	onCreateNew: () => void;
-	getTransactionCount: (allocation: TFinanceAllocation) => number;
 };
 
 /**
@@ -35,7 +35,7 @@ export type AllocationSelectorDrawerProps = {
 export function AllocationSelector(props: AllocationSelectorButtonProps) {
 	const triggerLabel = props.isNewAllocation
 		? "New allocation"
-		: props.selectedAllocation?.name || "Select allocation";
+		: props.selectedSettlement?.settlementName || "Select allocation";
 
 	return (
 		<>
@@ -49,41 +49,43 @@ export function AllocationSelector(props: AllocationSelectorButtonProps) {
 					<span className={styles.triggerEyebrow}>Allocation</span>
 					<span className={styles.triggerName}>{triggerLabel}</span>
 				</div>
-				{props.selectedAllocation && !props.isNewAllocation && (
-					<StatusBadge status={props.selectedAllocation.status} />
+				{props.selectedSettlement && !props.isNewAllocation && (
+					<StatusBadge status={props.selectedSettlement.settlementStatus} />
 				)}
 				<span className={styles.chevron} aria-hidden="true">
 					▾
 				</span>
 			</button>
-			{/* {isOpen && <AllocationSelectorDrawer {...props} />} */}
 		</>
 	);
 }
 
 export function AllocationSelectorDrawer({
-	allocations,
-	selectedAllocation,
+	settlements,
+	selectedSettlement,
 	setDrawerState,
 	onSelect,
-	onCreateNew,
-	getTransactionCount
+	onCreateNew
 }: AllocationSelectorDrawerProps) {
 	const [query, setQuery] = useState("");
 
 	const grouped = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 		const filtered = normalizedQuery
-			? allocations.filter((allocation) => allocation.name.toLowerCase().includes(normalizedQuery))
-			: allocations;
+			? settlements.filter((settlement) => settlement.settlementName.toLowerCase().includes(normalizedQuery))
+			: settlements;
 
 		return STATUS_ORDER.map((status) => ({
 			status,
 			items: filtered
-				.filter((allocation) => allocation.status === status)
-				.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+				.filter((allocation) => allocation.settlementStatus === status)
+				.sort((a, b) => {
+					const aDateString = a.settlementLastUpdatedAt || a.settlementCreatedAt;
+					const bDateString = b.settlementLastUpdatedAt || b.settlementCreatedAt;
+					return bDateString.localeCompare(aDateString);
+				})
 		})).filter((group) => group.items.length > 0);
-	}, [allocations, query]);
+	}, [settlements, query]);
 
 	return (
 		<Drawer title="Select allocation" eyebrow="Finance" onClose={() => setDrawerState(false)}>
@@ -122,21 +124,24 @@ export function AllocationSelectorDrawer({
 							<span className={styles.groupCount}>{group.items.length}</span>
 						</p>
 
-						{group.items.map((allocation) => (
+						{group.items.map((settlement) => (
 							<button
 								type="button"
-								key={allocation.id}
-								className={`${styles.item} ${allocation.id === selectedAllocation?.id ? styles.itemActive : ""}`}
+								key={settlement.settlementId}
+								className={`${styles.item} ${settlement.settlementId === selectedSettlement?.settlementId ? styles.itemActive : ""}`}
 								onClick={() => {
-									onSelect(allocation.id);
+									onSelect(settlement.settlementId);
 									setDrawerState(false);
 								}}
 							>
-								<span className={`${styles.dot} ${styles[allocation.status]}`} aria-hidden="true" />
+								<span
+									className={`${styles.dot} ${styles[settlement.settlementStatus]}`}
+									aria-hidden="true"
+								/>
 								<span className={styles.itemText}>
-									<span className={styles.itemName}>{allocation.name}</span>
+									<span className={styles.itemName}>{settlement.settlementName}</span>
 									<span className={styles.itemMeta}>
-										{getTransactionCount(allocation)} transactions
+										{settlement.soldItems} sold items of {settlement.soldCategories} categories
 									</span>
 								</span>
 							</button>

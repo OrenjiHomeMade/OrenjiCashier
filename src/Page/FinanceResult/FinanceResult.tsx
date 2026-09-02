@@ -1,60 +1,64 @@
 import styles from "./FinanceResult.module.css";
-import { useFinanceAllocation } from "../../Hooks/useFinanceAllocation";
+// import { useFinanceAllocation } from "../../Hooks/useFinanceAllocation";
 import { AllocationSelector, AllocationSelectorDrawer } from "./components/AllocationSelector";
-import { ExpensesStep, ExpenseDrawer } from "./components/ExpensesStep";
-import type { TExpenseSection, TBusinessExpense } from "./components/ExpensesStep";
+// import { ExpensesStep, ExpenseDrawer } from "./components/ExpensesStep";
+// import type { TExpenseSection, TBusinessExpense } from "./components/ExpensesStep";
 import { useState } from "react";
-import StepNav from "./components/StepNav";
-import SalesStep from "./components/SalesStep";
-import SummaryStep from "./components/SummaryStep";
-import SalesBreakdown from "./components/SalesBreakdown";
-import Button from "../../Component/Button/Button";
-import LoadingModal from "../../Component/LoadingModal/LoadingModal";
+import { useFinanceSettlementCycle } from "../../Hooks/useFinanceSettlementCycle";
+// import StepNav from "./components/StepNav";
+// import SalesStep from "./components/SalesStep";
+// import SummaryStep from "./components/SummaryStep";
+// import SalesBreakdown from "./components/SalesBreakdown";
+// import Button from "../../Component/Button/Button";
+// import LoadingModal from "../../Component/LoadingModal/LoadingModal";
 
 export default function FinancePage() {
-	const {
-		allocations,
-		selectedAllocation,
-		isNewAllocation,
-		draftAllocation,
-		currentStep,
-		setCurrentStep,
-		editMode,
-		filters,
-		setFilters,
-		categories,
-		productNames,
-		filteredTransactions,
-		selectedTransactions,
-		salesSummary,
-		adjustmentsTotal,
-		finalResult,
-		distributionTotalAmount,
-		distributionTotalPercent,
-		isDistributionReconciled,
-		isReadOnly,
-		isSalesAdjustmentsEditable,
-		isDistributionEditable,
-		isSaving,
-		savingMessage,
-		loadAllocation,
-		startNewAllocation,
-		toggleTransaction,
-		selectAllFiltered,
-		clearSelection,
-		setDistributionMode,
-		updateDistributionEntry,
-		addDistributionEntry,
-		removeDistributionEntry,
-		confirmAllocation,
-		saveDraft,
-		enableEdit,
-		distributeAllocation,
-		setDraftName
-	} = useFinanceAllocation();
+	const { settlement, selectedSettlement, loadSettlement, startNewSettlement, isNewSettlement } =
+		useFinanceSettlementCycle();
+
+	// const {
+	// allocations, // -- replaced by settlement
+	// selectedAllocation, // -- replaced by selectedSettlement
+	// isNewAllocation, // -- replaced by isNewSettlement
+	// draftAllocation,
+	// currentStep,
+	// setCurrentStep,
+	// editMode,
+	// filters,
+	// setFilters,
+	// categories,
+	// productNames,
+	// filteredTransactions,
+	// selectedTransactions,
+	// salesSummary,
+	// adjustmentsTotal,
+	// finalResult,
+	// distributionTotalAmount,
+	// distributionTotalPercent,
+	// isDistributionReconciled,
+	// isReadOnly,
+	// isSalesAdjustmentsEditable,
+	// isDistributionEditable,
+	// isSaving,
+	// savingMessage,
+	// loadAllocation, // -- replaced by loadSettlement
+	// startNewAllocation, // -- replaced by startNewSettlement
+	// toggleTransaction,
+	// selectAllFiltered,
+	// clearSelection,
+	// setDistributionMode,
+	// updateDistributionEntry,
+	// addDistributionEntry,
+	// removeDistributionEntry,
+	// confirmAllocation,
+	// saveDraft,
+	// enableEdit,
+	// distributeAllocation,
+	// setDraftName
+	// } = useFinanceAllocation();
 
 	const [allocationSelectorDrawerState, setAllocationSelectorDrawerState] = useState(false);
-	const [activeExpenseDrawer, setActiveExpenseDrawer] = useState<TExpenseSection | null>(null);
+	// const [activeExpenseDrawer, setActiveExpenseDrawer] = useState<TExpenseSection | null>(null);
 
 	// --- SCAFFOLDING ------------------------------------------------------
 	// Placeholder state so ExpensesStep compiles and is fully interactive.
@@ -62,69 +66,69 @@ export default function FinancePage() {
 	// once Labor/Utilities/Additional are persisted for real — mirrors how
 	// addAdjustment/removeAdjustment work today, just split into two
 	// selection lists instead of one flat array. Delete this block then.
-	const [laborActual, setLaborActual] = useState(0);
-	const [expenses, setExpenses] = useState<TBusinessExpense[]>([]);
-	const [selectedExpenseIds, setSelectedExpenseIds] = useState<string[]>([]);
+	// const [laborActual, setLaborActual] = useState(0);
+	// const [expenses, setExpenses] = useState<TBusinessExpense[]>([]);
+	// const [selectedExpenseIds, setSelectedExpenseIds] = useState<string[]>([]);
 
-	const selectedUtilityIds = selectedExpenseIds.filter((id) =>
-		expenses.some((expense) => expense.id === id && expense.section === "UTILITIES")
-	);
-	const selectedAdditionalIds = selectedExpenseIds.filter((id) =>
-		expenses.some((expense) => expense.id === id && expense.section === "ADDITIONAL")
-	);
+	// const selectedUtilityIds = selectedExpenseIds.filter((id) =>
+	// 	expenses.some((expense) => expense.id === id && expense.section === "UTILITIES")
+	// );
+	// const selectedAdditionalIds = selectedExpenseIds.filter((id) =>
+	// 	expenses.some((expense) => expense.id === id && expense.section === "ADDITIONAL")
+	// );
 
-	function handleToggleExpense(_section: TExpenseSection, id: string) {
-		setSelectedExpenseIds((prev) =>
-			prev.includes(id) ? prev.filter((existing) => existing !== id) : [...prev, id]
-		);
-	}
+	// function handleToggleExpense(_section: TExpenseSection, id: string) {
+	// 	setSelectedExpenseIds((prev) =>
+	// 		prev.includes(id) ? prev.filter((existing) => existing !== id) : [...prev, id]
+	// 	);
+	// }
 
-	function handleAddExpense(
-		section: TExpenseSection,
-		data: Omit<TBusinessExpense, "id" | "section" | "settledAmount">
-	) {
-		const id = `exp-${Date.now()}`;
-		setExpenses((prev) => [...prev, { ...data, id, section, settledAmount: 0 }]);
-		setSelectedExpenseIds((prev) => [...prev, id]);
-	}
+	// function handleAddExpense(
+	// 	section: TExpenseSection,
+	// 	data: Omit<TBusinessExpense, "id" | "section" | "settledAmount">
+	// ) {
+	// 	const id = `exp-${Date.now()}`;
+	// 	setExpenses((prev) => [...prev, { ...data, id, section, settledAmount: 0 }]);
+	// 	setSelectedExpenseIds((prev) => [...prev, id]);
+	// }
 	// --- END SCAFFOLDING ----------------------------------------------------
 
 	// Only one right-side drawer makes sense open at a time — opening one closes the other.
 	function openAllocationDrawer(open: boolean) {
 		if (open) {
-			setActiveExpenseDrawer(null);
+			// setActiveExpenseDrawer(null);
 		}
 		setAllocationSelectorDrawerState(open);
 	}
 
-	function openExpenseDrawer(section: TExpenseSection | null) {
-		if (section) {
-			setAllocationSelectorDrawerState(false);
-		}
-		setActiveExpenseDrawer(section);
-	}
+	// function openExpenseDrawer(section: TExpenseSection | null) {
+	// 	if (section) {
+	// 		setAllocationSelectorDrawerState(false);
+	// 	}
+	// 	setActiveExpenseDrawer(section);
+	// }
 
-	const statusActions = {
-		canConfirm: (isNewAllocation || draftAllocation.status === "DRAFT") && !isReadOnly,
-		canEnableEdit: !isNewAllocation && draftAllocation.status === "CONFIRMED" && !editMode,
-		canDistribute: draftAllocation.status === "CONFIRMED"
-	};
+	// const statusActions = {
+	// 	canConfirm: (isNewAllocation || draftAllocation.status === "DRAFT") && !isReadOnly,
+	// 	canEnableEdit: !isNewAllocation && draftAllocation.status === "CONFIRMED" && !editMode,
+	// 	canDistribute: draftAllocation.status === "CONFIRMED"
+	// };
 
-	const showNameField = (isNewAllocation || draftAllocation.status === "DRAFT") && !isReadOnly;
+	// const showNameField = (isNewAllocation || draftAllocation.status === "DRAFT") && !isReadOnly;
 
 	// Built once, fed by one data source, then handed to whichever step is
 	// currently on screen — SalesStep/ExpensesStep/SummaryStep each just
 	// drop it into their own existing layout slot.
-	const salesBreakdown = (
-		<SalesBreakdown
-			step={currentStep}
-			transactions={selectedTransactions}
-			salesSummary={salesSummary}
-			adjustments={draftAllocation.adjustments}
-			adjustmentsTotal={adjustmentsTotal}
-			finalResult={finalResult}
-		/>
-	);
+	// const salesBreakdown = (
+	// 	<SalesBreakdown
+	// 		step={currentStep}
+	// 		transactions={selectedTransactions}
+	// 		salesSummary={salesSummary}
+	// 		adjustments={draftAllocation.adjustments}
+	// 		adjustmentsTotal={adjustmentsTotal}
+	// 		finalResult={finalResult}
+	// 	/>
+	// );
 
 	return (
 		<div className={`page ${styles.pageRow}`}>
@@ -138,13 +142,13 @@ export default function FinancePage() {
 					<AllocationSelector
 						setDrawerState={openAllocationDrawer}
 						drawerState={allocationSelectorDrawerState}
-						selectedAllocation={isNewAllocation ? null : selectedAllocation}
-						isNewAllocation={isNewAllocation}
+						selectedSettlement={isNewSettlement ? null : selectedSettlement}
+						isNewAllocation={isNewSettlement}
 					/>
 				</header>
 
 				<div className={styles.controlRow}>
-					<StepNav currentStep={currentStep} onStepChange={setCurrentStep} />
+					{/* <StepNav currentStep={currentStep} onStepChange={setCurrentStep} />
 
 					{showNameField && (
 						<div className={styles.nameField}>
@@ -162,11 +166,11 @@ export default function FinancePage() {
 								Cancel
 							</Button>
 						</div>
-					)}
+					)} */}
 				</div>
 
 				<main className={styles.content}>
-					{currentStep === "SALES" && (
+					{/* {currentStep === "SALES" && (
 						<SalesStep
 							transactions={filteredTransactions}
 							filters={filters}
@@ -217,23 +221,22 @@ export default function FinancePage() {
 							onDistribute={distributeAllocation}
 							breakdown={salesBreakdown}
 						/>
-					)}
+					)} */}
 				</main>
 			</div>
 
 			<div className={styles.drawerSection}>
 				{allocationSelectorDrawerState && (
 					<AllocationSelectorDrawer
-						allocations={allocations}
-						selectedAllocation={isNewAllocation ? null : selectedAllocation}
-						onSelect={loadAllocation}
-						onCreateNew={startNewAllocation}
-						getTransactionCount={(allocation) => allocation.transactionIds.length}
+						settlements={settlement}
+						selectedSettlement={isNewSettlement ? null : selectedSettlement}
+						onSelect={loadSettlement}
+						onCreateNew={startNewSettlement}
 						setDrawerState={openAllocationDrawer}
 					/>
 				)}
 
-				{activeExpenseDrawer && (
+				{/* {activeExpenseDrawer && (
 					<ExpenseDrawer
 						section={activeExpenseDrawer}
 						expenses={expenses.filter((expense) => expense.section === activeExpenseDrawer)}
@@ -242,10 +245,10 @@ export default function FinancePage() {
 						onAddExpense={(data) => handleAddExpense(activeExpenseDrawer, data)}
 						onClose={() => setActiveExpenseDrawer(null)}
 					/>
-				)}
+				)} */}
 			</div>
 
-			<LoadingModal isOpen={isSaving}>{savingMessage}</LoadingModal>
+			{/* <LoadingModal isOpen={isSaving}>{savingMessage}</LoadingModal> */}
 		</div>
 	);
 }

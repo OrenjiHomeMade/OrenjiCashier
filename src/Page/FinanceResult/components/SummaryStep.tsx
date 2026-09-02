@@ -6,10 +6,10 @@ import StatusBadge from "./StatusBadge";
 import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
 import { resolveDistributionAmount } from "../../../Utilities/financeCalculations";
-import type { TDistributionMode, TFinanceAllocation } from "../../../Types/finance";
+import type { TDistributionMode, TBusinessSettlement } from "../../../Types/finance";
 
 export type SummaryStepProps = {
-	allocation: TFinanceAllocation;
+	allocation: TBusinessSettlement;
 	finalResult: number;
 	onDistributionModeChange: (mode: TDistributionMode) => void;
 	onUpdateDistributionEntry: (id: string, value: number) => void;

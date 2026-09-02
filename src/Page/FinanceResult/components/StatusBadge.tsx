@@ -1,12 +1,12 @@
 import styles from "./StatusBadge.module.css";
-import type { TAllocationStatus } from "../../../Types/finance";
+import type { TSettlementStatus } from "../../../Types/settlement";
 
-const LABELS: Record<TAllocationStatus, string> = {
+const LABELS: Record<TSettlementStatus, string> = {
 	DRAFT: "Draft",
 	CONFIRMED: "Confirmed",
-	DISTRIBUTED: "Distributed"
+	SETTLED: "Distributed"
 };
 
-export default function StatusBadge({ status }: { status: TAllocationStatus }) {
+export default function StatusBadge({ status }: { status: TSettlementStatus }) {
 	return <span className={`${styles.badge} ${styles[status]}`}>{LABELS[status]}</span>;
 }

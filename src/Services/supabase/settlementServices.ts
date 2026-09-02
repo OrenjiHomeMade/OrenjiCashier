@@ -1,10 +1,20 @@
+import { toast } from "react-toastify";
 import type { Database, Json } from "../../Types/database";
 import { supabase } from "./client";
+
+export async function getBusinessSettlementLists() {
+	const { data, error } = await supabase.rpc("get_business_settlement_lists");
+	if (error) {
+		toast.error("Failed to fetch business settlement lists");
+		throw error;
+	}
+	return data;
+}
 
 /**
  * Get a business settlement by ID.
  */
-export async function getBusinessSettlement(businessSettlementId: number) {
+export async function getBusinessSettlementById(businessSettlementId: number) {
 	const { data, error } = await supabase
 		.from("business_settlement")
 		.select("*")
@@ -12,7 +22,10 @@ export async function getBusinessSettlement(businessSettlementId: number) {
 		.is("deleted_at", null)
 		.single();
 
-	if (error) throw error;
+	if (error) {
+		toast.error("Failed to fetch business settlement");
+		throw error;
+	}
 
 	return data;
 }
@@ -27,7 +40,10 @@ export async function getBusinessSettlements() {
 		.is("deleted_at", null)
 		.order("created_at", { ascending: false });
 
-	if (error) throw error;
+	if (error) {
+		toast.error("Failed to fetch business settlements");
+		throw error;
+	}
 
 	return data;
 }
@@ -41,7 +57,10 @@ export async function getSettlementTransactionItems(businessSettlementId: number
 		.select("*")
 		.eq("business_settlement_id", businessSettlementId);
 
-	if (error) throw error;
+	if (error) {
+		toast.error("Failed to fetch settlement transaction items");
+		throw error;
+	}
 
 	return data;
 }
@@ -61,7 +80,10 @@ export async function getSettlementExpenses(businessSettlementId: number) {
 		.eq("business_settlement_id", businessSettlementId)
 		.is("deleted_at", null);
 
-	if (error) throw error;
+	if (error) {
+		toast.error("Failed to fetch settlement expenses");
+		throw error;
+	}
 
 	return data;
 }
@@ -86,12 +108,14 @@ type SettlementStatus = "DRAFT" | "CONFIRMED" | "SETTLED";
 // -----------------------------------------------------------------------------
 
 export async function createBusinessSettlement(
+	settlementName: string,
 	transactionItemIds: number[],
 	settlementStart: string,
 	settlementEnd: string,
 	settlementAdditionalSelector?: Json | undefined
 ): Promise<BusinessSettlement> {
 	const { data, error } = await supabase.rpc("create_business_settlement", {
+		p_settlement_name: settlementName,
 		p_transaction_item_ids: transactionItemIds,
 		p_settlement_start: settlementStart,
 		p_settlement_end: settlementEnd,
