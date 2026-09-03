@@ -10,8 +10,9 @@ import {
 	calcItemsSoldCount
 } from "../../../Utilities/financeCalculations";
 import type { TAdjustmentBreakdown, TProductBreakdown } from "../../../Utilities/financeCalculations";
-import type { TAdjustment, TFinanceStep, TSalesSummary } from "../../../Types/finance";
+import type { TAdjustment, TSalesSummary } from "../../../Types/finance";
 import type { TTransaction } from "../../../Types/transaction";
+import type { TSettlementStep } from "../../../Types/settlement";
 
 /* =========================================================
    COLORS
@@ -293,17 +294,17 @@ function buildSalesBreakdownOption(summary: TSalesSummary): EChartsOption {
    PROGRESSIVE SECTION VISIBILITY
    ========================================================= */
 
-type TSectionKey = "sales" | "adjustments" | "breakdown";
+type TSectionKey = "sales" | "settlement" | "breakdown";
 
-const SECTION_ORDER: Record<TFinanceStep, TSectionKey[]> = {
+const SECTION_ORDER: Record<TSettlementStep, TSectionKey[]> = {
 	SALES: ["sales"],
-	ADJUSTMENTS: ["sales", "adjustments"],
-	SUMMARY: ["sales", "adjustments", "breakdown"]
+	SETTLEMENT: ["sales", "settlement"],
+	SUMMARY: ["sales", "settlement", "breakdown"]
 };
 
-const FOCUS_SECTION: Record<TFinanceStep, TSectionKey> = {
+const FOCUS_SECTION: Record<TSettlementStep, TSectionKey> = {
 	SALES: "sales",
-	ADJUSTMENTS: "adjustments",
+	SETTLEMENT: "settlement",
 	SUMMARY: "breakdown"
 };
 
@@ -312,7 +313,7 @@ const FOCUS_SECTION: Record<TFinanceStep, TSectionKey> = {
    ========================================================= */
 
 export type SalesBreakdownProps = {
-	step: TFinanceStep;
+	step: TSettlementStep;
 	transactions: TTransaction[];
 	salesSummary: TSalesSummary;
 	adjustments: TAdjustment[];
@@ -348,9 +349,9 @@ export default function SalesBreakdown({
 				/>
 			)}
 
-			{visibleSections.includes("adjustments") && (
+			{visibleSections.includes("settlement") && (
 				<AdjustmentSummarySection
-					focused={focusSection === "adjustments"}
+					focused={focusSection === "settlement"}
 					total={adjustmentsTotal}
 					breakdown={adjustmentBreakdown}
 				/>

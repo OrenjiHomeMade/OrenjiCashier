@@ -1,16 +1,16 @@
 import styles from "./StepNav.module.css";
-import type { TFinanceStep } from "../../../Types/finance";
+import type { TSettlementStep } from "../../../Types/settlement";
 
-const STEPS: { key: TFinanceStep; number: string; label: string }[] = [
+const STEPS: { key: TSettlementStep; number: string; label: string }[] = [
 	{ key: "SALES", number: "1", label: "Sales" },
-	{ key: "ADJUSTMENTS", number: "2", label: "Adjustments" },
+	{ key: "SETTLEMENT", number: "2", label: "Settlement" },
 	{ key: "SUMMARY", number: "3", label: "Summary" }
 ];
 
 export type StepNavProps = {
-	currentStep: TFinanceStep;
-	onStepChange: (step: TFinanceStep) => void;
-	disabledSteps?: TFinanceStep[];
+	currentStep: TSettlementStep;
+	onStepChange: (step: TSettlementStep) => void;
+	disabledSteps?: TSettlementStep[];
 };
 
 export default function StepNav({ currentStep, onStepChange, disabledSteps = [] }: StepNavProps) {

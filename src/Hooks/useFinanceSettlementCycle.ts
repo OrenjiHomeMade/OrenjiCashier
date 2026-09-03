@@ -1,16 +1,56 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { getBusinessSettlementById, getBusinessSettlementLists } from "../Services/supabase/settlementServices";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import type {
 	TBusinessSettlement,
 	TBusinessSettlementLists,
-	TFinanceStep,
+	TSettlementStep,
 	TSettlementStatus
 } from "../Types/settlement";
 import { useState } from "react";
+import {
+	createBusinessSettlement,
+	getBusinessSettlementById,
+	getBusinessSettlementLists,
+	updateBusinessSettlement
+} from "../Services/supabase/settlementServices";
+import { getLocalTimestamp } from "../Utilities/NumberFormater";
+
+const EMPTY_SETTLEMENT: TBusinessSettlement = {
+	settlementStart: null,
+	settlementEnd: null,
+	settlementFilter: null,
+
+	salesRevenue: 0,
+	salesIngredientCost: 0,
+	salesLaborCost: 0,
+	salesPackagingCost: 0,
+	salesUtilityCost: 0,
+	salesMargin: 0,
+
+	settledIngredientCost: 0,
+	settledLaborCost: 0,
+	settledPackagingCost: 0,
+	settledUtilityCost: 0,
+	totalAdditionalExpenses: 0,
+
+	profitDistributed: 0,
+	profitRetained: 0,
+	deficitCovered: 0,
+
+	settlementId: null,
+	settlementName: "",
+	settlementStatus: "DRAFT",
+
+	settlementLastUpdatedAt: null,
+	settlementCreatedAt: null
+};
 
 export const useFinanceSettlementCycle = () => {
+	const queryClient = useQueryClient();
+	// =========================================================
+	// SERVER STATE
+	// =========================================================
 	const {
-		data: settlement,
+		data: settlements,
 		isLoading: isLoadingSettlementList,
 		isError: isErrorSettlementList
 	} = useSuspenseQuery({
@@ -29,46 +69,39 @@ export const useFinanceSettlementCycle = () => {
 		}
 	});
 
-	const [selectedSettlementId, setSelectedSettlementId] = useState<number | null>(settlement[0].settlementId ?? null);
+	// =========================================================
+	// UI STATE
+	// =========================================================
+	const [selectedSettlementId, setSelectedSettlementId] = useState<number | null>(
+		settlements[0]?.settlementId ?? null
+	);
 	const [isNewSettlement, setIsNewSettlement] = useState<boolean>(false);
-	const [currentStep, setCurrentStep] = useState<TFinanceStep>("SUMMARY");
+	const [currentStep, setCurrentStep] = useState<TSettlementStep>("SUMMARY");
 
-	const { data: selectedSettlement } = useSuspenseQuery({
-		queryKey: ["getSettlementsById", selectedSettlementId],
-		queryFn: async (): Promise<TBusinessSettlement> => {
-			const data = selectedSettlementId ? await getBusinessSettlementById(selectedSettlementId) : null;
-			if (!data) {
-				return {
-					settlementStart: null,
-					settlementEnd: null,
-					settlementFilter: null,
+	// =========================================================
+	// DRAFT STATE
+	// =========================================================
+	const [draftSettlement, setDraftSettlement] = useState<TBusinessSettlement | null>(null);
+	const [isEditMade, setIsEditMade] = useState<boolean>(false);
 
-					salesRevenue: 0,
-					salesIngredientCost: 0,
-					salesLaborCost: 0,
-					salesPackagingCost: 0,
-					salesUtilityCost: 0,
-					salesMargin: 0,
-
-					settledIngredientCost: 0,
-					settledLaborCost: 0,
-					settledPackagingCost: 0,
-					settledUtilityCost: 0,
-					totalAdditionalExpenses: 0,
-
-					profitDistributed: 0,
-					profitRetained: 0,
-					deficitCovered: 0,
-
-					settlementId: 0,
-					settlementName: "",
-					settlementStatus: "DRAFT",
-
-					settlementLastUpdatedAt: null,
-					settlementCreatedAt: new Date().toLocaleString()
-				};
+	// =========================================================
+	// SELECTED SETTLEMENT
+	// =========================================================
+	const {
+		data: selectedSettlement
+		// isLoading,
+		// isError
+	} = useQuery({
+		queryKey: ["settlement", selectedSettlementId],
+		enabled: selectedSettlementId !== null,
+		queryFn: async (): Promise<TBusinessSettlement | null> => {
+			if (selectedSettlementId === null) {
+				return null;
 			}
-
+			const data = await getBusinessSettlementById(selectedSettlementId);
+			if (!data) {
+				return null;
+			}
 			return {
 				settlementStart: data.settlement_start,
 				settlementEnd: data.settlement_end,
@@ -96,41 +129,154 @@ export const useFinanceSettlementCycle = () => {
 				settlementStatus: data.settlement_status as TSettlementStatus,
 
 				settlementLastUpdatedAt: data.updated_at,
-				settlementCreatedAt: data.created_at!
+				settlementCreatedAt: data.created_at
 			};
 		}
 	});
 
-	// const [draftSettlement, setDraftSettlement] = useState<TBusinessSettlement | null>(null);
+	// ---------------------------------------------------------
+	// QUERY MUTATION
+	// ---------------------------------------------------------
+	const createNewSettlementMutation = useMutation({
+		mutationFn: createBusinessSettlement,
+		onSuccess: async (data) => {
+			await queryClient.invalidateQueries({
+				queryKey: ["getSettlementsList"]
+			});
+			setSelectedSettlementId(data.business_settlement_id);
+			setIsNewSettlement(false);
+			setDraftSettlement(null);
+			setIsEditMade(false);
+			if (activeSettlement.settlementStatus !== "DRAFT") {
+				setCurrentStep("SUMMARY");
+			}
+		}
+	});
+
+	const updateSettlementMutation = useMutation({
+		mutationFn: updateBusinessSettlement,
+		onSuccess: async () => {
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: ["settlement"]
+				}),
+				queryClient.invalidateQueries({
+					queryKey: ["getSettlementsList"]
+				})
+			]);
+			setIsEditMade(false);
+		}
+	});
+
+	// ---------------------------------------------------------
+	// EFFECTIVE DATA
+	// ---------------------------------------------------------
+	const activeSettlement = draftSettlement ?? selectedSettlement ?? EMPTY_SETTLEMENT;
 
 	const loadSettlement = (settlementId: number) => {
+		setIsEditMade(false);
 		setSelectedSettlementId(settlementId);
 		setIsNewSettlement(false);
+		setDraftSettlement(null);
 		setCurrentStep("SUMMARY");
 	};
 
 	const startNewSettlement = () => {
+		setIsEditMade(false);
 		setSelectedSettlementId(null);
 		setIsNewSettlement(true);
+		setDraftSettlement({ ...EMPTY_SETTLEMENT });
 		setCurrentStep("SALES");
 	};
 
-	const showLoading = isLoadingSettlementList && !settlement;
-	const loadingState = isLoadingSettlementList ? "Loading settlement lists..." : "";
+	const updateDraftSettlement = (changes: Partial<TBusinessSettlement>) => {
+		setIsEditMade(true);
+		setDraftSettlement((current) => {
+			const base = current ?? selectedSettlement;
+
+			if (!base) {
+				return current;
+			}
+
+			return {
+				...base,
+				...changes
+			};
+		});
+	};
+
+	const onSave = () => {
+		console.log(activeSettlement);
+		if (activeSettlement.settlementId === null) {
+			createNewSettlementMutation.mutate({
+				settlementName: activeSettlement.settlementName,
+				settlementStart: activeSettlement.settlementStart || getLocalTimestamp(new Date()),
+				settlementEnd: activeSettlement.settlementEnd || getLocalTimestamp(new Date()),
+				settlementFilter: null,
+				transactionItemIds: []
+			});
+		} else {
+			updateSettlementMutation.mutate({
+				settlementId: activeSettlement.settlementId,
+				changes: activeSettlement
+			});
+		}
+	};
+
+	const onCancel = () => {
+		// Cancel creating a new settlement
+		if (isNewSettlement) {
+			const firstSettlementId = settlements[0]?.settlementId ?? null;
+
+			setSelectedSettlementId(firstSettlementId);
+			setIsNewSettlement(false);
+			setDraftSettlement(null);
+			setIsEditMade(false);
+			return;
+		}
+
+		// Cancel editing an existing settlement
+		setDraftSettlement(null);
+		setIsEditMade(false);
+		if (activeSettlement.settlementStatus !== "DRAFT") {
+			setCurrentStep("SUMMARY");
+		}
+	};
+
+	const _getLoadingState = () => {
+		if (isLoadingSettlementList) {
+			return { showLoading: true, loadingState: "Loading settlement lists..." };
+		} else if (createNewSettlementMutation.isPending) {
+			return { showLoading: true, loadingState: "Saving new settlement..." };
+		} else if (updateSettlementMutation.isPending) {
+			return { showLoading: true, loadingState: "Updating settlement..." };
+		} else {
+			return { showLoading: false, loadingState: "" };
+		}
+	};
+
+	const { showLoading, loadingState } = _getLoadingState();
 	const isError = isErrorSettlementList;
 	const errorState = isErrorSettlementList ? "Failed to load settlement lists." : "";
 
-	console.log(selectedSettlement);
-
 	return {
 		// DATA
-		settlement,
+		settlement: settlements,
 		selectedSettlement,
 		// CALLBACKS
 		loadSettlement,
 		startNewSettlement,
-		// STATE
+		updateDraftSettlement,
+		onSave,
+		onCancel,
+		// STATE & SETTER
 		currentStep,
+		setCurrentStep,
+		isEditMade,
+		setIsEditMade,
+		// DERIVED DATA
+		activeSettlement,
+		// ONLY STATE
 		isNewSettlement,
 		// QUERY STATE
 		showLoading,

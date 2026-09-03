@@ -1,12 +1,20 @@
 export type TSettlementStatus = "DRAFT" | "CONFIRMED" | "SETTLED";
-export type TFinanceStep = "SALES" | "SETTLEMENT" | "SUMMARY";
+export type TSettlementStep = "SALES" | "SETTLEMENT" | "SUMMARY";
+
+export type TBusinessSettlementEssential = {
+	settlementName: string;
+	settlementStart: string | null;
+	settlementEnd: string | null;
+	settlementFilter: Json | null;
+	settlementStatus: TSettlementStatus;
+};
 
 export type TBusinessSettlementLists = {
-	settlementId: number;
+	settlementId: number | null;
 	settlementName: string;
 	settlementStatus: TSettlementStatus;
 	settlementLastUpdatedAt: string | null;
-	settlementCreatedAt: string;
+	settlementCreatedAt: string | null;
 	soldItems?: number;
 	soldCategories?: number;
 };

@@ -1,6 +1,6 @@
 import type { TPaymentMethod, TTransaction, TTransactionItem } from "../Types/transaction";
 import type { TProductProfile } from "../Types/product";
-import type { TBusinessSettlement } from "../Types/finance";
+import type { TFinanceAllocation } from "../Types/finance";
 
 /* =========================================================
    PRODUCTS
@@ -499,7 +499,7 @@ export const mockTransactions: TTransaction[] = [
    FINANCE ALLOCATIONS
    ========================================================= */
 
-export const mockAllocations: TBusinessSettlement[] = [
+export const mockAllocations: TFinanceAllocation[] = [
 	{
 		id: "alloc-aug-2026-regular",
 		name: "August 2026 — Regular Operations",

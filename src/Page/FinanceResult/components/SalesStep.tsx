@@ -18,7 +18,6 @@ export type SalesStepProps = {
 	onSelectAll: () => void;
 	onClearSelection: () => void;
 	readOnly: boolean;
-	/** Built once in FinanceResult and shared across all 3 steps — see SalesBreakdown. */
 	breakdown: ReactNode;
 };
 

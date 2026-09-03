@@ -82,6 +82,9 @@ export function AllocationSelectorDrawer({
 				.sort((a, b) => {
 					const aDateString = a.settlementLastUpdatedAt || a.settlementCreatedAt;
 					const bDateString = b.settlementLastUpdatedAt || b.settlementCreatedAt;
+					if (!aDateString && !bDateString) return 0;
+					if (!aDateString) return 1;
+					if (!bDateString) return -1;
 					return bDateString.localeCompare(aDateString);
 				})
 		})).filter((group) => group.items.length > 0);
@@ -130,7 +133,7 @@ export function AllocationSelectorDrawer({
 								key={settlement.settlementId}
 								className={`${styles.item} ${settlement.settlementId === selectedSettlement?.settlementId ? styles.itemActive : ""}`}
 								onClick={() => {
-									onSelect(settlement.settlementId);
+									onSelect(settlement.settlementId!);
 									setDrawerState(false);
 								}}
 							>

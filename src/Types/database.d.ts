@@ -554,10 +554,10 @@ export type Database = {
       create_business_settlement: {
         Args: {
           p_settlement_additional_selector?: Json
-          p_settlement_end: string
+          p_settlement_end?: string
           p_settlement_name: string
-          p_settlement_start: string
-          p_transaction_item_ids: number[]
+          p_settlement_start?: string
+          p_transaction_item_ids?: number[]
         }
         Returns: {
           business_settlement_id: number

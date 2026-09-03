@@ -1,7 +1,13 @@
 import { toast } from "react-toastify";
 import type { Database, Json } from "../../Types/database";
 import { supabase } from "./client";
+import type { TBusinessSettlementEssential } from "../../Types/settlement";
+import { getLocalTimestamp } from "../../Utilities/NumberFormater";
 
+/**
+ * Get business settlement lists.
+ * USED IN: FinanceResult.tsx
+ */
 export async function getBusinessSettlementLists() {
 	const { data, error } = await supabase.rpc("get_business_settlement_lists");
 	if (error) {
@@ -13,6 +19,7 @@ export async function getBusinessSettlementLists() {
 
 /**
  * Get a business settlement by ID.
+ * USED IN: FinanceResult.tsx
  */
 export async function getBusinessSettlementById(businessSettlementId: number) {
 	const { data, error } = await supabase
@@ -93,7 +100,7 @@ export async function getSettlementExpenses(businessSettlementId: number) {
 // -----------------------------------------------------------------------------
 
 type BusinessSettlement = Database["public"]["Tables"]["business_settlement"]["Row"];
-
+// type BusinessSettlementUpdate = Database["public"]["Tables"]["business_settlement"]["Update"];
 type BusinessSettlementExpense = Database["public"]["Tables"]["business_settlement_expense"]["Row"];
 
 type SettlementExpenseInput = {
@@ -103,23 +110,26 @@ type SettlementExpenseInput = {
 
 type SettlementStatus = "DRAFT" | "CONFIRMED" | "SETTLED";
 
-// -----------------------------------------------------------------------------
-// CREATE
-// -----------------------------------------------------------------------------
-
-export async function createBusinessSettlement(
-	settlementName: string,
-	transactionItemIds: number[],
-	settlementStart: string,
-	settlementEnd: string,
-	settlementAdditionalSelector?: Json | undefined
-): Promise<BusinessSettlement> {
+type createBusinessSettlementParam = Omit<TBusinessSettlementEssential, "settlementStatus"> & {
+	transactionItemIds: number[];
+};
+/**
+ * Create a new business settlement.
+ * USED IN: FinanceResult.tsx
+ */
+export async function createBusinessSettlement({
+	settlementName,
+	transactionItemIds,
+	settlementStart,
+	settlementEnd,
+	settlementFilter
+}: createBusinessSettlementParam): Promise<BusinessSettlement> {
 	const { data, error } = await supabase.rpc("create_business_settlement", {
 		p_settlement_name: settlementName,
 		p_transaction_item_ids: transactionItemIds,
-		p_settlement_start: settlementStart,
-		p_settlement_end: settlementEnd,
-		p_settlement_additional_selector: settlementAdditionalSelector
+		p_settlement_start: settlementStart!,
+		p_settlement_end: settlementEnd!,
+		p_settlement_additional_selector: settlementFilter
 	});
 
 	if (error) {
@@ -128,6 +138,41 @@ export async function createBusinessSettlement(
 
 	return data;
 }
+
+type updateBussinesSettlementParam = {
+	settlementId: number;
+	changes: Partial<TBusinessSettlementEssential>;
+};
+
+export const updateBusinessSettlement = async ({ settlementId, changes }: updateBussinesSettlementParam) => {
+	const { data, error } = await supabase
+		.from("business_settlement")
+		.update({
+			...(changes.settlementName !== undefined && {
+				settlement_name: changes.settlementName
+			}),
+			...(changes.settlementStart !== undefined && {
+				settlement_start: changes.settlementStart
+			}),
+			...(changes.settlementEnd !== undefined && {
+				settlement_end: changes.settlementEnd
+			}),
+			...(changes.settlementFilter !== undefined && {
+				settlement_additional_selector: changes.settlementFilter
+			}),
+			...(changes.settlementStatus !== undefined && {
+				settlement_status: changes.settlementStatus
+			}),
+			updated_at: getLocalTimestamp(new Date())
+		})
+		.eq("business_settlement_id", settlementId)
+		.select()
+		.single();
+
+	if (error) throw error;
+
+	return data;
+};
 
 // -----------------------------------------------------------------------------
 // UPDATE SALES SELECTION

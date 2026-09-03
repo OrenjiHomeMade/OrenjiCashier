@@ -6,10 +6,10 @@ import StatusBadge from "./StatusBadge";
 import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
 import { resolveDistributionAmount } from "../../../Utilities/financeCalculations";
-import type { TDistributionMode, TBusinessSettlement } from "../../../Types/finance";
+import type { TDistributionMode, TFinanceAllocation } from "../../../Types/finance";
 
 export type SummaryStepProps = {
-	allocation: TBusinessSettlement;
+	allocation: TFinanceAllocation;
 	finalResult: number;
 	onDistributionModeChange: (mode: TDistributionMode) => void;
 	onUpdateDistributionEntry: (id: string, value: number) => void;
@@ -57,7 +57,8 @@ export default function SummaryStep({
 					<p className={styles.eyebrow}>Allocation</p>
 					<h2 className={styles.name}>{allocation.name || "Untitled allocation"}</h2>
 				</div>
-				<StatusBadge status={allocation.status} />
+				<StatusBadge status={"DRAFT"} />
+				{/* TODO: EDIT HERE */}
 			</section>
 
 			{breakdown}
