@@ -4,15 +4,15 @@ import styles from "./SalesBreakdown.module.css";
 import CurrencyStat from "./CurrencyStat";
 import EChart from "../../../Component/Echart/Echart";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
-import {
-	aggregateAdjustmentsByCategory,
-	aggregateSalesByProduct,
-	calcItemsSoldCount
-} from "../../../Utilities/financeCalculations";
-import type { TAdjustmentBreakdown, TProductBreakdown } from "../../../Utilities/financeCalculations";
-import type { TAdjustment, TSalesSummary } from "../../../Types/finance";
-import type { TTransaction } from "../../../Types/transaction";
-import type { TSettlementStep } from "../../../Types/settlement";
+// import {
+// aggregateAdjustmentsByCategory,
+// aggregateSalesByProduct,
+// calcItemsSoldCount
+// } from "../../../Utilities/financeCalculations";
+import type { /*TAdjustmentBreakdown,*/ TProductBreakdown } from "../../../Utilities/financeCalculations";
+// import type { /*TAdjustment,*/ TSalesSummary } from "../../../Types/finance";
+// import type { TTransaction } from "../../../Types/transaction";
+import type { TBusinessSettlement, TSalesSummary, TSettlementStep } from "../../../Types/settlement";
 
 /* =========================================================
    COLORS
@@ -27,14 +27,14 @@ const COLOR = {
 	profitNegative: "#ec2c5c"
 };
 
-const ADJUSTMENT_COLORS: Record<string, string> = {
-	Utilities: "#8e97ca",
-	"Team Meal": "#79a354",
-	Transportation: "#de9155",
-	"Event Expense": "#b25e34",
-	Bonus: "#efac32",
-	"Other Expense": "#d14957"
-};
+// const ADJUSTMENT_COLORS: Record<string, string> = {
+// 	Utilities: "#8e97ca",
+// 	"Team Meal": "#79a354",
+// 	Transportation: "#de9155",
+// 	"Event Expense": "#b25e34",
+// 	Bonus: "#efac32",
+// 	"Other Expense": "#d14957"
+// };
 
 function compactRupiah(value: number): string {
 	const abs = Math.abs(value);
@@ -172,52 +172,52 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 	};
 }
 
-function buildAdjustmentBreakdownOption(data: TAdjustmentBreakdown[]): EChartsOption {
-	return {
-		tooltip: {
-			trigger: "item",
-			valueFormatter: (value) => formatRupiah(Number(value))
-		},
+// function buildAdjustmentBreakdownOption(data: TAdjustmentBreakdown[]): EChartsOption {
+// 	return {
+// 		tooltip: {
+// 			trigger: "item",
+// 			valueFormatter: (value) => formatRupiah(Number(value))
+// 		},
 
-		legend: {
-			bottom: 0,
-			textStyle: {
-				color: "#756d67",
-				fontSize: 11
-			},
-			itemWidth: 10,
-			itemHeight: 10
-		},
+// 		legend: {
+// 			bottom: 0,
+// 			textStyle: {
+// 				color: "#756d67",
+// 				fontSize: 11
+// 			},
+// 			itemWidth: 10,
+// 			itemHeight: 10
+// 		},
 
-		series: [
-			{
-				type: "pie",
-				radius: ["45%", "72%"],
-				center: ["50%", "42%"],
-				avoidLabelOverlap: true,
+// 		series: [
+// 			{
+// 				type: "pie",
+// 				radius: ["45%", "72%"],
+// 				center: ["50%", "42%"],
+// 				avoidLabelOverlap: true,
 
-				itemStyle: {
-					borderColor: "#fefcfa",
-					borderWidth: 2
-				},
+// 				itemStyle: {
+// 					borderColor: "#fefcfa",
+// 					borderWidth: 2
+// 				},
 
-				label: {
-					formatter: "{b}\n{d}%",
-					color: "#583f16",
-					fontSize: 11
-				},
+// 				label: {
+// 					formatter: "{b}\n{d}%",
+// 					color: "#583f16",
+// 					fontSize: 11
+// 				},
 
-				data: data.map((entry) => ({
-					name: entry.category,
-					value: entry.amount,
-					itemStyle: {
-						color: ADJUSTMENT_COLORS[entry.category] ?? COLOR.other
-					}
-				}))
-			}
-		]
-	};
-}
+// 				data: data.map((entry) => ({
+// 					name: entry.category,
+// 					value: entry.amount,
+// 					itemStyle: {
+// 						color: ADJUSTMENT_COLORS[entry.category] ?? COLOR.other
+// 					}
+// 				}))
+// 			}
+// 		]
+// 	};
+// }
 
 /* =========================================================
    SALES BREAKDOWN
@@ -225,70 +225,70 @@ function buildAdjustmentBreakdownOption(data: TAdjustmentBreakdown[]): EChartsOp
    Revenue = COGS + Labor + Other Costs + Margin
    ========================================================= */
 
-function buildSalesBreakdownOption(summary: TSalesSummary): EChartsOption {
-	const data = [
-		{
-			name: "COGS",
-			value: summary.cogs,
-			itemStyle: { color: COLOR.ingredient }
-		},
-		{
-			name: "Labor",
-			value: summary.labor,
-			itemStyle: { color: COLOR.labor }
-		},
-		{
-			name: "Other costs",
-			value: summary.otherCosts,
-			itemStyle: { color: COLOR.other }
-		},
-		{
-			name: "Margin",
-			value: summary.margin,
-			itemStyle: { color: COLOR.margin }
-		}
-	];
+// function buildSalesBreakdownOption(summary: TSalesSummary): EChartsOption {
+// 	const data = [
+// 		{
+// 			name: "COGS",
+// 			value: summary.cogs,
+// 			itemStyle: { color: COLOR.ingredient }
+// 		},
+// 		{
+// 			name: "Labor",
+// 			value: summary.labor,
+// 			itemStyle: { color: COLOR.labor }
+// 		},
+// 		{
+// 			name: "Other costs",
+// 			value: summary.otherCosts,
+// 			itemStyle: { color: COLOR.other }
+// 		},
+// 		{
+// 			name: "Margin",
+// 			value: summary.margin,
+// 			itemStyle: { color: COLOR.margin }
+// 		}
+// 	];
 
-	return {
-		tooltip: {
-			trigger: "item",
-			valueFormatter: (value) => formatRupiah(Number(value))
-		},
+// 	return {
+// 		tooltip: {
+// 			trigger: "item",
+// 			valueFormatter: (value) => formatRupiah(Number(value))
+// 		},
 
-		legend: {
-			bottom: 0,
-			textStyle: {
-				color: "#756d67",
-				fontSize: 11
-			},
-			itemWidth: 10,
-			itemHeight: 10
-		},
+// 		legend: {
+// 			bottom: 0,
+// 			textStyle: {
+// 				color: "#756d67",
+// 				fontSize: 11
+// 			},
+// 			itemWidth: 10,
+// 			itemHeight: 10
+// 		},
 
-		series: [
-			{
-				name: "Revenue allocation",
-				type: "pie",
-				radius: ["45%", "72%"],
-				center: ["50%", "42%"],
-				avoidLabelOverlap: true,
+// 		series: [
+// 			{
+// 				name: "Revenue allocation",
+// 				type: "pie",
+// 				radius: ["45%", "72%"],
+// 				center: ["50%", "42%"],
+// 				avoidLabelOverlap: true,
 
-				itemStyle: {
-					borderColor: "#fefcfa",
-					borderWidth: 2
-				},
+// 				itemStyle: {
+// 					borderColor: "#fefcfa",
+// 					borderWidth: 2
+// 				},
 
-				label: {
-					formatter: "{b}\n{d}%",
-					color: "#583f16",
-					fontSize: 11
-				},
+// 				label: {
+// 					formatter: "{b}\n{d}%",
+// 					color: "#583f16",
+// 					fontSize: 11
+// 				},
 
-				data
-			}
-		]
-	};
-}
+// 				data
+// 			}
+// 		]
+// 	};
+// }
 
 /* =========================================================
    PROGRESSIVE SECTION VISIBILITY
@@ -314,29 +314,55 @@ const FOCUS_SECTION: Record<TSettlementStep, TSectionKey> = {
 
 export type SalesBreakdownProps = {
 	step: TSettlementStep;
-	transactions: TTransaction[];
-	salesSummary: TSalesSummary;
-	adjustments: TAdjustment[];
-	adjustmentsTotal: number;
-	finalResult: number;
+	// transactions: TTransaction[];
+	settlement: TBusinessSettlement;
+	// adjustments: TAdjustment[];
+	// adjustmentsTotal: number;
+	// finalResult: number;
 };
 
 export default function SalesBreakdown({
 	step,
-	transactions,
-	salesSummary,
-	adjustments,
-	adjustmentsTotal,
-	finalResult
+	// transactions,
+	settlement
+	// adjustments,
+	// adjustmentsTotal,
+	// finalResult
 }: SalesBreakdownProps) {
 	const visibleSections = SECTION_ORDER[step];
 	const focusSection = FOCUS_SECTION[step];
 
-	const itemsSold = useMemo(() => calcItemsSoldCount(transactions), [transactions]);
+	let remain = 0;
+	if (settlement.profitDistributed) {
+		remain += settlement.profitDistributed;
+	}
+	if (settlement.profitRetained) {
+		remain += settlement.profitRetained;
+	}
+	if (settlement.deficitCovered) {
+		remain += settlement.deficitCovered;
+	}
+	if (remain === 0) {
+		remain = settlement.salesMargin;
+	}
 
-	const productBreakdown = useMemo(() => aggregateSalesByProduct(transactions), [transactions]);
+	const remainLabel = remain > 0 ? "Profit" : remain < 0 ? "Deficit" : "Even";
 
-	const adjustmentBreakdown = useMemo(() => aggregateAdjustmentsByCategory(adjustments), [adjustments]);
+	const salesSummary: TSalesSummary = {
+		itemSold: settlement.soldItems || 0,
+		revenue: settlement.salesRevenue,
+		labor: settlement.settledLaborCost || settlement.salesLaborCost,
+		ingredient: settlement.settledIngredientCost || settlement.salesIngredientCost,
+		packing: settlement.settledPackagingCost || settlement.salesPackagingCost,
+		utility: settlement.settledUtilityCost || settlement.salesUtilityCost,
+		otherCosts: settlement.totalAdditionalExpenses || 0,
+		remain: remain
+	};
+	// const itemsSold = useMemo(() => calcItemsSoldCount(transactions), [transactions]);
+
+	// const productBreakdown = useMemo(() => aggregateSalesByProduct(transactions), [transactions]);
+
+	// const adjustmentBreakdown = useMemo(() => aggregateAdjustmentsByCategory(adjustments), [adjustments]);
 
 	return (
 		<aside className={`${styles.panel} card`}>
@@ -344,12 +370,13 @@ export default function SalesBreakdown({
 				<SalesSummarySection
 					focused={focusSection === "sales"}
 					summary={salesSummary}
-					itemsSold={itemsSold}
-					productBreakdown={productBreakdown}
+					itemsSold={settlement.soldItems || 0}
+					productBreakdown={[]}
+					salesStatus={remainLabel}
 				/>
 			)}
 
-			{visibleSections.includes("settlement") && (
+			{/* {visibleSections.includes("settlement") && (
 				<AdjustmentSummarySection
 					focused={focusSection === "settlement"}
 					total={adjustmentsTotal}
@@ -363,7 +390,7 @@ export default function SalesBreakdown({
 					adjustmentsTotal={adjustmentsTotal}
 					finalResult={finalResult}
 				/>
-			)}
+			)} */}
 		</aside>
 	);
 }
@@ -376,12 +403,14 @@ function SalesSummarySection({
 	focused,
 	summary,
 	itemsSold,
-	productBreakdown
+	productBreakdown,
+	salesStatus
 }: {
 	focused: boolean;
 	summary: TSalesSummary;
 	itemsSold: number;
 	productBreakdown: TProductBreakdown[];
+	salesStatus: string;
 }) {
 	const [isExpanded, setIsExpanded] = useState(focused);
 
@@ -416,7 +445,7 @@ function SalesSummarySection({
 			<div className={focused ? styles.statGrid : styles.statRow}>
 				<CurrencyStat
 					label="Transactions"
-					value={summary.transactionCount}
+					value={summary.itemSold}
 					format="number"
 					tone="muted"
 					size={focused ? "md" : "sm"}
@@ -434,13 +463,17 @@ function SalesSummarySection({
 
 				{focused && (
 					<>
-						<CurrencyStat label="COGS" value={summary.cogs} tone="muted" />
+						<CurrencyStat
+							label="COGS"
+							value={summary.labor + summary.ingredient + summary.utility}
+							tone="muted"
+						/>
 
 						<CurrencyStat label="Labor" value={summary.labor} tone="muted" />
 
 						<CurrencyStat label="Other costs" value={summary.otherCosts} tone="muted" />
 
-						<CurrencyStat label="Margin" value={summary.margin} tone="positive" />
+						<CurrencyStat label={salesStatus} value={summary.remain} tone="positive" />
 					</>
 				)}
 			</div>
@@ -462,59 +495,59 @@ function SalesSummarySection({
    SECTION: Adjustment Summary
    ========================================================= */
 
-function AdjustmentSummarySection({
-	focused,
-	total,
-	breakdown
-}: {
-	focused: boolean;
-	total: number;
-	breakdown: TAdjustmentBreakdown[];
-}) {
-	const [isExpanded, setIsExpanded] = useState(focused);
+// function AdjustmentSummarySection({
+// 	focused,
+// 	total,
+// 	breakdown
+// }: {
+// 	focused: boolean;
+// 	total: number;
+// 	breakdown: TAdjustmentBreakdown[];
+// }) {
+// 	const [isExpanded, setIsExpanded] = useState(focused);
 
-	const chartOption = useMemo(() => buildAdjustmentBreakdownOption(breakdown), [breakdown]);
+// 	const chartOption = useMemo(() => buildAdjustmentBreakdownOption(breakdown), [breakdown]);
 
-	return (
-		<section className={`${styles.section} ${focused ? styles.sectionFocused : styles.sectionCompact}`}>
-			<div className={styles.sectionHeader}>
-				<h3 className={styles.sectionTitle}>
-					<span className={`${styles.dot} ${styles.dotAdjustment}`} aria-hidden="true" />
-					Adjustment summary
-				</h3>
+// 	return (
+// 		<section className={`${styles.section} ${focused ? styles.sectionFocused : styles.sectionCompact}`}>
+// 			<div className={styles.sectionHeader}>
+// 				<h3 className={styles.sectionTitle}>
+// 					<span className={`${styles.dot} ${styles.dotAdjustment}`} aria-hidden="true" />
+// 					Adjustment summary
+// 				</h3>
 
-				{breakdown.length > 0 && (
-					<button
-						type="button"
-						className={styles.expandButton}
-						onClick={() => setIsExpanded((value) => !value)}
-					>
-						{isExpanded ? "Hide" : "By category"}
+// 				{breakdown.length > 0 && (
+// 					<button
+// 						type="button"
+// 						className={styles.expandButton}
+// 						onClick={() => setIsExpanded((value) => !value)}
+// 					>
+// 						{isExpanded ? "Hide" : "By category"}
 
-						<span
-							className={`${styles.chevron} ${isExpanded ? styles.chevronOpen : ""}`}
-							aria-hidden="true"
-						>
-							⌄
-						</span>
-					</button>
-				)}
-			</div>
+// 						<span
+// 							className={`${styles.chevron} ${isExpanded ? styles.chevronOpen : ""}`}
+// 							aria-hidden="true"
+// 						>
+// 							⌄
+// 						</span>
+// 					</button>
+// 				)}
+// 			</div>
 
-			<div className={focused ? styles.statGrid : styles.statRow}>
-				<CurrencyStat label="Total adjustments" value={total} tone="negative" size={focused ? "lg" : "md"} />
-			</div>
+// 			<div className={focused ? styles.statGrid : styles.statRow}>
+// 				<CurrencyStat label="Total adjustments" value={total} tone="negative" size={focused ? "lg" : "md"} />
+// 			</div>
 
-			{isExpanded && breakdown.length > 0 && (
-				<div className={styles.chartWrap}>
-					<EChart option={chartOption} height={220} />
-				</div>
-			)}
+// 			{isExpanded && breakdown.length > 0 && (
+// 				<div className={styles.chartWrap}>
+// 					<EChart option={chartOption} height={220} />
+// 				</div>
+// 			)}
 
-			{breakdown.length === 0 && focused && <p className={styles.emptyNote}>No adjustments added yet.</p>}
-		</section>
-	);
-}
+// 			{breakdown.length === 0 && focused && <p className={styles.emptyNote}>No adjustments added yet.</p>}
+// 		</section>
+// 	);
+// }
 
 /* =========================================================
    SECTION: Sales Breakdown
@@ -525,39 +558,39 @@ function AdjustmentSummarySection({
    applied after the initial revenue allocation.
    ========================================================= */
 
-function FinalBreakdownSection({
-	summary,
-	adjustmentsTotal,
-	finalResult
-}: {
-	summary: TSalesSummary;
-	adjustmentsTotal: number;
-	finalResult: number;
-}) {
-	const chartOption = useMemo(() => buildSalesBreakdownOption(summary), [summary]);
+// function FinalBreakdownSection({
+// 	summary,
+// 	adjustmentsTotal,
+// 	finalResult
+// }: {
+// 	summary: TSalesSummary;
+// 	adjustmentsTotal: number;
+// 	finalResult: number;
+// }) {
+// 	const chartOption = useMemo(() => buildSalesBreakdownOption(summary), [summary]);
 
-	return (
-		<section className={`${styles.section} ${styles.sectionFocused} ${styles.sectionBreakdown}`}>
-			<div className={styles.sectionHeader}>
-				<h3 className={styles.sectionTitle}>
-					<span className={`${styles.dot} ${styles.dotBreakdown}`} aria-hidden="true" />
-					Sales breakdown
-				</h3>
-			</div>
+// 	return (
+// 		<section className={`${styles.section} ${styles.sectionFocused} ${styles.sectionBreakdown}`}>
+// 			<div className={styles.sectionHeader}>
+// 				<h3 className={styles.sectionTitle}>
+// 					<span className={`${styles.dot} ${styles.dotBreakdown}`} aria-hidden="true" />
+// 					Sales breakdown
+// 				</h3>
+// 			</div>
 
-			<div className={styles.chartWrap}>
-				<EChart option={chartOption} height={240} />
-			</div>
+// 			<div className={styles.chartWrap}>
+// 				<EChart option={chartOption} height={240} />
+// 			</div>
 
-			<div className={styles.finalRow}>
-				<div>
-					<span>Profit after {formatRupiah(adjustmentsTotal)} adjustment</span>
-				</div>
+// 			<div className={styles.finalRow}>
+// 				<div>
+// 					<span>Profit after {formatRupiah(adjustmentsTotal)} adjustment</span>
+// 				</div>
 
-				<span className={finalResult < 0 ? styles.negativeBig : styles.positiveBig}>
-					{formatRupiah(finalResult)}
-				</span>
-			</div>
-		</section>
-	);
-}
+// 				<span className={finalResult < 0 ? styles.negativeBig : styles.positiveBig}>
+// 					{formatRupiah(finalResult)}
+// 				</span>
+// 			</div>
+// 		</section>
+// 	);
+// }

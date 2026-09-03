@@ -189,20 +189,7 @@ export const getTransactionById = async (transactionId: number): Promise<TTransa
 	};
 };
 
-type GetTransactionItemParams = Database["public"]["Functions"]["get_flattened_transaction_items"]["Args"];
-// the types are
-//  {
-//  p_cashier?: string | undefined;
-//  p_end_date?: string | undefined;
-//  p_max_amount?: number | undefined;
-//  p_min_amount?: number | undefined;
-//  p_page?: number | undefined;
-//  p_page_size?: number | undefined;
-//  p_payment_method?: string | undefined;
-//  p_product_category?: string | undefined;
-//  p_search?: string | undefined;
-//  p_start_date?: string | undefined;
-// }
+export type GetTransactionItemParams = Database["public"]["Functions"]["get_flattened_transaction_items"]["Args"];
 
 export const getTransactionsPerItem = async (
 	params: GetTransactionItemParams
@@ -232,10 +219,22 @@ export const getTransactionsPerItem = async (
 	}));
 };
 
+export const getTransactionItemsBySettlementId = async (bussinesSettlementId: number): Promise<number[]> => {
+	const { data, error } = await supabase
+		.from("transaction_items")
+		.select("transaction_item_id")
+		.eq("business_settlement_id", bussinesSettlementId);
+	if (error) {
+		console.error(`Failed to get selected transactions item by settlement id ${bussinesSettlementId}: `, error);
+		toast.error(
+			`Failed to get selected transactions item by settlement id ${bussinesSettlementId}: ${error.message}`
+		);
+		throw error;
+	}
+	return data.map((tr) => tr.transaction_item_id);
+};
+
 type SalesSummaryParams = Database["public"]["Functions"]["get_transaction_items_settlement_summary"]["Args"];
-// type SalesSummaryParams = {
-//  p_transaction_item_ids: number[];
-// }
 
 export const getSalesSummaryOnTransactionItems = async (
 	params: SalesSummaryParams
@@ -258,10 +257,6 @@ export const getSalesSummaryOnTransactionItems = async (
 };
 
 type SalesBreakdownParams = Database["public"]["Functions"]["get_transaction_items_settlement_breakdown"]["Args"];
-// type SalesBreakdownParams = {
-//  p_group_by?: string | undefined;
-//  p_transaction_item_ids: number[];
-// }
 
 export const getSalesBreakdownOnTransactionItems = async (
 	params: SalesBreakdownParams

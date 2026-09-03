@@ -5,10 +5,11 @@ import { AllocationSelector, AllocationSelectorDrawer } from "./components/Alloc
 // import type { TExpenseSection, TBusinessExpense } from "./components/ExpensesStep";
 import { useState } from "react";
 import { useFinanceSettlementCycle } from "../../Hooks/useFinanceSettlementCycle";
+import { useSettlementSales } from "../../Hooks/useSettlementSales";
 import StepNav from "./components/StepNav";
-// import SalesStep from "./components/SalesStep";
+import SalesStep from "./components/SalesStep";
 // import SummaryStep from "./components/SummaryStep";
-// import SalesBreakdown from "./components/SalesBreakdown";
+import SalesBreakdown from "./components/SalesBreakdown";
 import Button from "../../Component/Button/Button";
 import LoadingModal from "../../Component/LoadingModal/LoadingModal";
 
@@ -16,37 +17,84 @@ type FinancePageDrawers = {
 	type: "SETTLEMENT_SELECTOR";
 } | null;
 
+type LoadingState = {
+	isLoading: boolean;
+	loadingState: string;
+};
+
+const consolidateLoadingState = (statesLoading: LoadingState[]) => {
+	statesLoading.forEach((state) => {
+		if (state.isLoading) {
+			return { showLoading: state.isLoading, loadingState: state.loadingState };
+		}
+	});
+	return {
+		showLoading: false,
+		loadingState: ""
+	};
+};
+
 export default function FinancePage() {
-	const {
-		// data
-		settlement,
-		selectedSettlement,
-		activeSettlement,
-		// functions
-		loadSettlement,
-		startNewSettlement,
-		updateDraftSettlement,
-		onSave,
-		onCancel,
-		// states
-		isNewSettlement,
-		isEditMade,
-		currentStep,
-		setCurrentStep,
-		// ui state
-		showLoading,
-		loadingState
-	} = useFinanceSettlementCycle();
+	// CYCLE HOOKS
+	const cycleControl = useFinanceSettlementCycle();
+	// settlements data
+	const { settlements, selectedSettlement, activeSettlement } = cycleControl;
+	// settlements functions
+	const { loadSettlement, startNewSettlement, updateDraftSettlement, onSave, onCancel } = cycleControl;
+	// settlements states
+	const { isNewSettlement, isEditMade, currentStep, setCurrentStep } = cycleControl;
+	// settlements loading state
+	const { showLoading: cycleLoading, loadingState: cycleLoadingMessage } = cycleControl;
 
-	const [drawerState, setDrawerState] = useState<FinancePageDrawers>(null);
-
-	const allocationSelectorDrawerState = drawerState?.type === "SETTLEMENT_SELECTOR";
-
+	// settlements DERIVATION
 	const isReadOnly = activeSettlement.settlementStatus === "SETTLED";
 	const isConfirmed = activeSettlement.settlementStatus === "CONFIRMED";
 	const isDraft = activeSettlement.settlementStatus === "DRAFT";
 	const showNameField = (isNewSettlement || activeSettlement.settlementStatus === "DRAFT") && !isReadOnly;
 	const readyToSave = isEditMade || isNewSettlement;
+
+	// SALES STEP HOOKS
+	const salesControl = useSettlementSales(isReadOnly, currentStep === "SALES", activeSettlement.settlementId);
+	// sales data
+	const { productNames, productsCategories, transactionItems, selectedTransactionItems } = salesControl;
+	// sales functions
+	const { toggleTransaction, selectAllFiltered, clearSelection } = salesControl;
+	// sales step stated & ui states
+	const { salesFilter, setSalesFilter } = salesControl;
+
+	const [drawerState, setDrawerState] = useState<FinancePageDrawers>(null);
+
+	const allocationSelectorDrawerState = drawerState?.type === "SETTLEMENT_SELECTOR";
+
+	const { showLoading, loadingState } = consolidateLoadingState([
+		{ isLoading: cycleLoading, loadingState: cycleLoadingMessage }
+	]);
+
+	console.log(activeSettlement);
+	// {
+	//     "settlementStart": "2026-09-02T17:54:47",
+	//     "settlementEnd": "2026-09-02T17:54:47",
+	//     "settlementFilter": null,
+	//     "salesRevenue": 0,
+	//     "salesIngredientCost": 0,
+	//     "salesLaborCost": 0,
+	//     "salesPackagingCost": 0,
+	//     "salesUtilityCost": 0,
+	//     "salesMargin": 0,
+	//     "settledIngredientCost": null,
+	//     "settledLaborCost": null,
+	//     "settledPackagingCost": null,
+	//     "settledUtilityCost": null,
+	//     "totalAdditionalExpenses": 0,
+	//     "profitDistributed": 0,
+	//     "profitRetained": 0,
+	//     "deficitCovered": 0,
+	//     "settlementId": 6,
+	//     "settlementName": "Test Again Ok Really",
+	//     "settlementStatus": "DRAFT",
+	//     "settlementLastUpdatedAt": "2026-09-02T18:02:01",
+	//     "settlementCreatedAt": "2026-09-02T10:54:48.448026"
+	// }
 
 	// --- handler ------------------------------------------------------
 	function openAllocationDrawer(open: boolean) {
@@ -132,16 +180,17 @@ export default function FinancePage() {
 	// Built once, fed by one data source, then handed to whichever step is
 	// currently on screen — SalesStep/ExpensesStep/SummaryStep each just
 	// drop it into their own existing layout slot.
-	// const salesBreakdown = (
-	// 	<SalesBreakdown
-	// 		step={currentStep}
-	// 		transactions={selectedTransactions}
-	// 		salesSummary={salesSummary}
-	// 		adjustments={draftAllocation.adjustments}
-	// 		adjustmentsTotal={adjustmentsTotal}
-	// 		finalResult={finalResult}
-	// 	/>
-	// );
+	const salesBreakdown = (
+		<SalesBreakdown
+			step={currentStep}
+			settlement={activeSettlement}
+			// transactions={selectedTransactions}
+			// salesSummary={salesSummary}
+			// adjustments={draftAllocation.adjustments}
+			// adjustmentsTotal={adjustmentsTotal}
+			// finalResult={finalResult}
+		/>
+	);
 
 	return (
 		<div className={`page ${styles.pageRow}`}>
@@ -200,20 +249,19 @@ export default function FinancePage() {
 
 				<main className={styles.content}>
 					{currentStep === "SALES" && (
-						<div></div>
-						// <SalesStep
-						// 	transactions={filteredTransactions}
-						// 	filters={filters}
-						// 	onFiltersChange={setFilters}
-						// 	categories={categories}
-						// 	products={productNames}
-						// 	selectedTransactionIds={draftAllocation.transactionIds}
-						// 	onToggleTransaction={toggleTransaction}
-						// 	onSelectAll={selectAllFiltered}
-						// 	onClearSelection={clearSelection}
-						// 	readOnly={!isSalesAdjustmentsEditable}
-						// 	breakdown={salesBreakdown}
-						// />
+						<SalesStep
+							filters={salesFilter}
+							onFiltersChange={setSalesFilter}
+							categories={productsCategories}
+							transactionsItems={transactionItems || []}
+							products={productNames}
+							selectedTransactionIds={selectedTransactionItems}
+							onToggleTransaction={toggleTransaction}
+							onSelectAll={selectAllFiltered}
+							onClearSelection={clearSelection}
+							readOnly={!isDraft}
+							breakdown={salesBreakdown}
+						/>
 					)}
 
 					{/* {currentStep === "ADJUSTMENTS" && (
@@ -258,7 +306,7 @@ export default function FinancePage() {
 			<div className={styles.drawerSection}>
 				{allocationSelectorDrawerState && (
 					<AllocationSelectorDrawer
-						settlements={settlement}
+						settlements={settlements}
 						selectedSettlement={isNewSettlement ? null : activeSettlement}
 						onSelect={loadSettlement}
 						onCreateNew={startNewSettlement}

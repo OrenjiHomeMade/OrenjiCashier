@@ -3,9 +3,10 @@ import type {
 	TAdjustment,
 	TAdjustmentCategory,
 	TDistributionEntry,
-	TDistributionMode,
-	TSalesSummary
+	TDistributionMode
+	// TSalesSummary
 } from "../Types/finance";
+import type { TSalesSummary } from "../Types/settlement";
 
 /** Per-item cost breakdown, multiplied out by quantity. */
 export function calcItemCosts(item: TTransactionItem) {
@@ -40,12 +41,14 @@ export function calcSalesSummary(transactions: TTransaction[]): TSalesSummary {
 	}
 
 	return {
-		transactionCount: transactions.length,
+		itemSold: transactions.length,
 		revenue,
-		cogs,
+		utility: 0,
+		packing: 0,
+		ingredient: 0,
 		labor,
 		otherCosts,
-		margin: revenue - cogs - labor - otherCosts
+		remain: revenue - cogs - labor - otherCosts
 	};
 }
 

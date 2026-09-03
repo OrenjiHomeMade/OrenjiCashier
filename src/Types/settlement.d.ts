@@ -1,12 +1,20 @@
 export type TSettlementStatus = "DRAFT" | "CONFIRMED" | "SETTLED";
 export type TSettlementStep = "SALES" | "SETTLEMENT" | "SUMMARY";
 
-export type TBusinessSettlementEssential = {
-	settlementName: string;
+export type TBusinessSettlementItemFilter = {
 	settlementStart: string | null;
 	settlementEnd: string | null;
 	settlementFilter: Json | null;
+};
+
+export type TBusinessSettlementEssential = {
+	settlementName: string;
 	settlementStatus: TSettlementStatus;
+} & TBusinessSettlementItemFilter;
+
+export type TBusinessItemsAggregate = {
+	soldItems?: number;
+	soldCategories?: number;
 };
 
 export type TBusinessSettlementLists = {
@@ -15,15 +23,9 @@ export type TBusinessSettlementLists = {
 	settlementStatus: TSettlementStatus;
 	settlementLastUpdatedAt: string | null;
 	settlementCreatedAt: string | null;
-	soldItems?: number;
-	soldCategories?: number;
-};
+} & TBusinessItemsAggregate;
 
-export type TBusinessSettlement = TBusinessSettlementLists & {
-	settlementStart: string | null;
-	settlementEnd: string | null;
-	settlementFilter: Json | null;
-
+export type TBusinessSettlementCosts = {
 	salesRevenue: number;
 	salesIngredientCost: number;
 	salesLaborCost: number;
@@ -40,4 +42,30 @@ export type TBusinessSettlement = TBusinessSettlementLists & {
 	profitDistributed: number | null;
 	profitRetained: number | null;
 	deficitCovered: number | null;
+};
+
+export type TBusinessSettlement = TBusinessSettlementLists &
+	TBusinessSettlementItemFilter &
+	TBusinessSettlementCosts &
+	Partial<TBusinessItemsAggregate>;
+
+export type TSalesSummary = {
+	itemSold: number;
+	revenue: number;
+	labor: number;
+	ingredient: number;
+	packing: number;
+	utility: number;
+	otherCosts: number;
+	remain: number;
+};
+
+export type TSalesFilter = {
+	settlementId?: number;
+	isReadOnly: boolean;
+	startDate?: string;
+	endDate?: string;
+	category?: string;
+	productName?: string;
+	page?: number;
 };

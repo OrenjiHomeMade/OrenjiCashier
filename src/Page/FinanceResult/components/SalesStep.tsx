@@ -4,19 +4,22 @@ import styles from "./SalesStep.module.css";
 import Button from "../../../Component/Button/Button";
 import Drawer from "../../../Component/Drawer/Drawer";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
-import type { TSalesFilter } from "../../../Types/finance";
-import type { TTransaction } from "../../../Types/transaction";
+import type { TSalesFilter } from "../../../Types/settlement";
+import type { TTransactionPerItem } from "../../../Types/transaction";
 
 export type SalesStepProps = {
-	transactions: TTransaction[];
+	transactionsItems: TTransactionPerItem[];
 	filters: TSalesFilter;
 	onFiltersChange: (filters: TSalesFilter) => void;
+
 	categories: string[];
 	products: string[];
-	selectedTransactionIds: number[];
+
+	selectedTransactionIds: Set<number>;
 	onToggleTransaction: (id: number) => void;
 	onSelectAll: () => void;
 	onClearSelection: () => void;
+
 	readOnly: boolean;
 	breakdown: ReactNode;
 };
@@ -24,7 +27,7 @@ export type SalesStepProps = {
 function FilterFields({
 	filters,
 	onFiltersChange,
-	categories,
+	categories, // --- ready
 	products
 }: {
 	filters: TSalesFilter;
@@ -86,7 +89,7 @@ function FilterFields({
 }
 
 export default function SalesStep({
-	transactions,
+	transactionsItems,
 	filters,
 	onFiltersChange,
 	categories,
@@ -136,41 +139,39 @@ export default function SalesStep({
 			<section className={styles.listCard}>
 				<div className={styles.listHeader}>
 					<h3 className={styles.cardTitle}>Transactions</h3>
-					<span className={styles.listCount}>{transactions.length} results</span>
+					<span className={styles.listCount}>{transactionsItems.length} results</span>
 				</div>
 
 				<div className={styles.list}>
-					{transactions.length === 0 && (
+					{transactionsItems.length === 0 && (
 						<p className={styles.emptyState}>No transactions match these filters.</p>
 					)}
 
-					{transactions.map((transaction) => {
-						const isSelected = selectedTransactionIds.includes(transaction.transactionId);
+					{transactionsItems.map((item) => {
+						const isSelected = selectedTransactionIds.has(item.transactionItemId);
 						return (
 							<label
-								key={transaction.transactionId}
+								key={item.transactionItemId}
 								className={`${styles.row} ${isSelected ? styles.rowSelected : ""} ${readOnly ? styles.rowReadOnly : ""}`}
 							>
 								{!readOnly && (
 									<input
 										type="checkbox"
 										checked={isSelected}
-										onChange={() => onToggleTransaction(transaction.transactionId)}
+										onChange={() => onToggleTransaction(item.transactionItemId)}
 									/>
 								)}
 								<div className={styles.rowMain}>
-									<span className={styles.rowCode}>{transaction.transactionCode}</span>
+									<span className={styles.rowCode}>{item.transactionCode}</span>
 									<span className={styles.rowMeta}>
-										{transaction.transactionDate.toLocaleDateString("id-ID", {
-											day: "2-digit",
-											month: "short",
-											year: "numeric"
-										})}{" "}
-										· {transaction.cashier} · {transaction.paymentMethod}
+										{item.transactionTime} · {item.cashier} · {item.paymentMethod}
 									</span>
 								</div>
-								<span className={styles.rowItems}>{transaction.transactionItems.length} items</span>
-								<span className={styles.rowAmount}>{formatRupiah(transaction.transactionAmount)}</span>
+								<span className={styles.rowItems}>{item.productName}</span>
+								<span className={styles.rowItems}>
+									{item.quantity} x {item.unitPrice}
+								</span>
+								<span className={styles.rowAmount}>{formatRupiah(item.subtotal)}</span>
 							</label>
 						);
 					})}

@@ -41,7 +41,10 @@ const EMPTY_SETTLEMENT: TBusinessSettlement = {
 	settlementStatus: "DRAFT",
 
 	settlementLastUpdatedAt: null,
-	settlementCreatedAt: null
+	settlementCreatedAt: null,
+
+	soldItems: 0,
+	soldCategories: 0
 };
 
 export const useFinanceSettlementCycle = () => {
@@ -92,7 +95,7 @@ export const useFinanceSettlementCycle = () => {
 		// isLoading,
 		// isError
 	} = useQuery({
-		queryKey: ["settlement", selectedSettlementId],
+		queryKey: ["settlement", selectedSettlementId, settlements],
 		enabled: selectedSettlementId !== null,
 		queryFn: async (): Promise<TBusinessSettlement | null> => {
 			if (selectedSettlementId === null) {
@@ -102,6 +105,7 @@ export const useFinanceSettlementCycle = () => {
 			if (!data) {
 				return null;
 			}
+			const { soldItems, soldCategories } = settlements.filter((e) => e.settlementId === selectedSettlementId)[0];
 			return {
 				settlementStart: data.settlement_start,
 				settlementEnd: data.settlement_end,
@@ -129,7 +133,10 @@ export const useFinanceSettlementCycle = () => {
 				settlementStatus: data.settlement_status as TSettlementStatus,
 
 				settlementLastUpdatedAt: data.updated_at,
-				settlementCreatedAt: data.created_at
+				settlementCreatedAt: data.created_at,
+
+				soldItems: soldItems,
+				soldCategories: soldCategories
 			};
 		}
 	});
@@ -261,7 +268,7 @@ export const useFinanceSettlementCycle = () => {
 
 	return {
 		// DATA
-		settlement: settlements,
+		settlements,
 		selectedSettlement,
 		// CALLBACKS
 		loadSettlement,

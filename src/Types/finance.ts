@@ -75,19 +75,3 @@ export type TFinanceAllocation = {
 /* =========================================================
    FILTERS & DERIVED RESULTS
    ========================================================= */
-
-export type TSalesFilter = {
-	startDate?: string;
-	endDate?: string;
-	category?: string;
-	productName?: string;
-};
-
-export type TSalesSummary = {
-	transactionCount: number;
-	revenue: number;
-	cogs: number;
-	labor: number;
-	otherCosts: number;
-	margin: number;
-};

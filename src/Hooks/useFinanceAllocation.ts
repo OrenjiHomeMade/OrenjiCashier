@@ -356,8 +356,8 @@ export function useFinanceAdjustments(
 	);
 
 	const finalResult = useMemo(
-		() => calcAdjustedResult(salesSummary.margin, adjustmentsTotal),
-		[salesSummary.margin, adjustmentsTotal]
+		() => calcAdjustedResult(salesSummary.remain, adjustmentsTotal),
+		[salesSummary.remain, adjustmentsTotal]
 	);
 
 	function addAdjustment(adjustment: Omit<TAdjustment, "id">) {
