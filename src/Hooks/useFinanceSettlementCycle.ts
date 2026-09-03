@@ -213,7 +213,7 @@ export const useFinanceSettlementCycle = () => {
 	};
 
 	const onSave = () => {
-		console.log(activeSettlement);
+		// console.log(activeSettlement);
 		if (activeSettlement.settlementId === null) {
 			createNewSettlementMutation.mutate({
 				settlementName: activeSettlement.settlementName,

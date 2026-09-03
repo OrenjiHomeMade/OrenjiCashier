@@ -9,6 +9,7 @@ import {
 } from "../Services/supabase/transactionService";
 
 export const useSettlementSales = (isReadOnly: boolean, enabled: boolean, selectedTransactionId: number | null) => {
+	console.log(selectedTransactionId);
 	const { data: productsCategories = [], isLoading: isLoadingProductCategory } = useQuery({
 		queryKey: ["category"],
 		queryFn: () => getProductCategories(),
@@ -27,14 +28,25 @@ export const useSettlementSales = (isReadOnly: boolean, enabled: boolean, select
 		isReadOnly: isReadOnly
 	});
 
-	const { data: transactionItems = [], isLoading: isLoadingTransactionItem } = useQuery({
-		queryKey: ["transactionItems", salesFilter],
+	const { data: transactionResult, isLoading: isLoadingTransactionItem } = useQuery({
+		queryKey: ["transactionItems", salesFilter, selectedTransactionId],
 		queryFn: () => {
-			const filter = { isReadOnly: isReadOnly, filter: salesFilter };
+			// console.log(`transactionItems runs with ${selectedTransactionId}`);
+			const filter: TSalesFilter = {
+				...salesFilter,
+				isReadOnly: isReadOnly,
+				settlementId: selectedTransactionId ?? undefined
+			};
+			console.table(filter);
 			return getTransactionItemByFilter(filter);
-		},
-		enabled: enabled
+		}
+		// enabled: enabled
 	});
+
+	const transactionItems = transactionResult?.data ?? [];
+	const totalCount = transactionResult?.totalCount ?? 0;
+	const totalPages = transactionResult?.totalPages ?? 1;
+	const itemPerPage = transactionResult?.pageSize ?? 20;
 
 	const { data: selectedTransactionItemsQRes = [], isLoading: isLoadingSelectedTransactionItem } = useQuery({
 		queryKey: ["selectedTransactionItems", selectedTransactionId],
@@ -106,6 +118,10 @@ export const useSettlementSales = (isReadOnly: boolean, enabled: boolean, select
 		toggleTransaction,
 		selectAllFiltered,
 		clearSelection,
+		// pagination
+		totalCount,
+		totalPages,
+		itemPerPage,
 		// states
 		selectedTransactionItems,
 		setSelectedTransactionItems,

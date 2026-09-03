@@ -4,7 +4,7 @@ import type {
 	TPaymentMethod,
 	TTransaction,
 	TTransactionFilter,
-	TTransactionPerItem,
+	TTransactionItemResult,
 	TTransactionResult,
 	TTransactionSalesSummary,
 	TTrasnasctionSalesBreakdown
@@ -191,9 +191,7 @@ export const getTransactionById = async (transactionId: number): Promise<TTransa
 
 export type GetTransactionItemParams = Database["public"]["Functions"]["get_flattened_transaction_items"]["Args"];
 
-export const getTransactionsPerItem = async (
-	params: GetTransactionItemParams
-): Promise<TTransactionPerItem[] | null> => {
+export const getTransactionsPerItem = async (params: GetTransactionItemParams): Promise<TTransactionItemResult> => {
 	const { data, error } = await supabase.rpc("get_flattened_transaction_items", params);
 	if (error) {
 		console.error("Failed to get transactions per item:", error);
@@ -201,7 +199,7 @@ export const getTransactionsPerItem = async (
 		throw error;
 	}
 
-	return data.map((dat) => ({
+	const rows = data.map((dat) => ({
 		cashier: dat.cashier,
 		paymentMethod: dat.payment_method,
 		productCategory: dat.product_category,
@@ -217,6 +215,16 @@ export const getTransactionsPerItem = async (
 		transactionTime: dat.transaction_time,
 		unitPrice: dat.unit_price
 	}));
+
+	const totalCount = rows.length > 0 ? Number(rows[0].totalCount) : 0;
+
+	return {
+		data: rows,
+		totalCount: totalCount,
+		page: params.p_page || 1,
+		pageSize: params.p_page_size || 20,
+		totalPages: Math.max(1, Math.ceil(totalCount / (params.p_page_size || 20)))
+	};
 };
 
 export const getTransactionItemsBySettlementId = async (bussinesSettlementId: number): Promise<number[]> => {

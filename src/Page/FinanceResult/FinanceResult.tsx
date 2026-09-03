@@ -59,8 +59,16 @@ export default function FinancePage() {
 	const { productNames, productsCategories, transactionItems, selectedTransactionItems } = salesControl;
 	// sales functions
 	const { toggleTransaction, selectAllFiltered, clearSelection } = salesControl;
+	// sales pagination
+	const { totalCount, totalPages, itemPerPage } = salesControl;
 	// sales step stated & ui states
 	const { salesFilter, setSalesFilter } = salesControl;
+
+	// sales DERIVATION
+	const salesCurrentPage = salesFilter.page || 1;
+	const safeCurrentPage = Math.min(salesCurrentPage, totalPages);
+	const firstItem = totalCount === 0 ? 0 : (safeCurrentPage - 1) * itemPerPage + 1;
+	const lastItem = Math.min(safeCurrentPage * itemPerPage, totalCount);
 
 	const [drawerState, setDrawerState] = useState<FinancePageDrawers>(null);
 
@@ -70,7 +78,7 @@ export default function FinancePage() {
 		{ isLoading: cycleLoading, loadingState: cycleLoadingMessage }
 	]);
 
-	console.log(activeSettlement);
+	// console.log(activeSettlement);
 	// {
 	//     "settlementStart": "2026-09-02T17:54:47",
 	//     "settlementEnd": "2026-09-02T17:54:47",
@@ -261,6 +269,13 @@ export default function FinancePage() {
 							onClearSelection={clearSelection}
 							readOnly={!isDraft}
 							breakdown={salesBreakdown}
+							pageData={{
+								firstItem: firstItem,
+								lastItem: lastItem,
+								totalCount: totalCount,
+								totalPages: totalPages,
+								currentPage: salesCurrentPage || 1
+							}}
 						/>
 					)}
 

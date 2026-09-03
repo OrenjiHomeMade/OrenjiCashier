@@ -140,3 +140,11 @@ export type TTransactionResult = {
 	page: number;
 	pageSize: number;
 };
+
+export type TTransactionItemResult = {
+	data: TTransactionPerItem[];
+	totalCount: number;
+	totalPages: number;
+	page: number;
+	pageSize: number;
+};

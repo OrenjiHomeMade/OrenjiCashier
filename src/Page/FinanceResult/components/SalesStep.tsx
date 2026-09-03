@@ -6,6 +6,7 @@ import Drawer from "../../../Component/Drawer/Drawer";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
 import type { TSalesFilter } from "../../../Types/settlement";
 import type { TTransactionPerItem } from "../../../Types/transaction";
+import ChevronIcon from "../../../Component/MediaComponent/ChevronIcon";
 
 export type SalesStepProps = {
 	transactionsItems: TTransactionPerItem[];
@@ -19,6 +20,14 @@ export type SalesStepProps = {
 	onToggleTransaction: (id: number) => void;
 	onSelectAll: () => void;
 	onClearSelection: () => void;
+
+	pageData: {
+		firstItem: number;
+		lastItem: number;
+		totalCount: number;
+		currentPage: number;
+		totalPages: number;
+	};
 
 	readOnly: boolean;
 	breakdown: ReactNode;
@@ -95,9 +104,12 @@ export default function SalesStep({
 	categories,
 	products,
 	selectedTransactionIds,
+
 	onToggleTransaction,
 	onSelectAll,
 	onClearSelection,
+	pageData,
+
 	readOnly,
 	breakdown
 }: SalesStepProps) {
@@ -108,6 +120,8 @@ export default function SalesStep({
 		event.preventDefault();
 		setFilterDrawerOpen(false);
 	}
+
+	const { firstItem, lastItem, totalCount, currentPage, totalPages } = pageData;
 
 	return (
 		<div className={styles.layout}>
@@ -138,8 +152,8 @@ export default function SalesStep({
 
 			<section className={styles.listCard}>
 				<div className={styles.listHeader}>
-					<h3 className={styles.cardTitle}>Transactions</h3>
-					<span className={styles.listCount}>{transactionsItems.length} results</span>
+					<h3 className={styles.cardTitle}>Sold Items</h3>
+					<span className={styles.listCount}>{totalCount} results</span>
 				</div>
 
 				<div className={styles.list}>
@@ -162,19 +176,54 @@ export default function SalesStep({
 									/>
 								)}
 								<div className={styles.rowMain}>
-									<span className={styles.rowCode}>{item.transactionCode}</span>
+									<span className={styles.rowCode}>
+										{item.productName}: {item.quantity} x {formatRupiah(item.unitPrice)}
+									</span>
 									<span className={styles.rowMeta}>
-										{item.transactionTime} · {item.cashier} · {item.paymentMethod}
+										{item.transactionTime} · {item.cashier} · {item.paymentMethod.toUpperCase()}
 									</span>
 								</div>
-								<span className={styles.rowItems}>{item.productName}</span>
-								<span className={styles.rowItems}>
-									{item.quantity} x {item.unitPrice}
-								</span>
 								<span className={styles.rowAmount}>{formatRupiah(item.subtotal)}</span>
 							</label>
 						);
 					})}
+				</div>
+
+				<div className={styles.pagination}>
+					<span className={styles.paginationInfo}>
+						Showing {firstItem} - {lastItem} of {totalCount}
+					</span>
+					<div className={styles.paginationControls}>
+						<Button
+							variant="secondary"
+							size="sm"
+							type="button"
+							onClick={() => {
+								onFiltersChange({
+									...filters,
+									page: filters.page ? filters.page - 1 : 1
+								});
+							}}
+						>
+							<ChevronIcon direction="left" />
+						</Button>
+						<div className={styles.currentPage}>
+							{currentPage} / {totalPages}
+						</div>
+						<Button
+							variant="secondary"
+							size="sm"
+							type="button"
+							onClick={() => {
+								onFiltersChange({
+									...filters,
+									page: filters.page ? filters.page + 1 : 1
+								});
+							}}
+						>
+							<ChevronIcon direction="right" />
+						</Button>
+					</div>
 				</div>
 			</section>
 
