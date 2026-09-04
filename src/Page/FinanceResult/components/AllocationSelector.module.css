@@ -142,14 +142,25 @@
 	padding: 0.55rem 0.5rem;
 	border-radius: var(--radius-md);
 	text-align: left;
+	/* border: none; */
+	margin: 5px;
 }
 
 .item:hover {
-	background: var(--cream-soft);
+	background: var(--orange-light);
 }
 
 .itemActive {
-	background: rgba(239, 172, 50, 0.12);
+	background: var(--orange-dark);
+}
+
+.itemActive .itemName {
+	color: white;
+	font-weight: 700;
+}
+
+.itemActive .itemMeta {
+	color: white;
 }
 
 .dot {

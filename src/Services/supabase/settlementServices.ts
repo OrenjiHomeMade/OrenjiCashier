@@ -113,6 +113,7 @@ type SettlementStatus = "DRAFT" | "CONFIRMED" | "SETTLED";
 type createBusinessSettlementParam = Omit<TBusinessSettlementEssential, "settlementStatus"> & {
 	transactionItemIds: number[];
 };
+
 /**
  * Create a new business settlement.
  * USED IN: FinanceResult.tsx
@@ -127,8 +128,8 @@ export async function createBusinessSettlement({
 	const { data, error } = await supabase.rpc("create_business_settlement", {
 		p_settlement_name: settlementName,
 		p_transaction_item_ids: transactionItemIds,
-		p_settlement_start: settlementStart!,
-		p_settlement_end: settlementEnd!,
+		p_settlement_start: getLocalTimestamp(settlementStart!),
+		p_settlement_end: getLocalTimestamp(settlementEnd!),
 		p_settlement_additional_selector: settlementFilter
 	});
 
@@ -152,10 +153,10 @@ export const updateBusinessSettlement = async ({ settlementId, changes }: update
 				settlement_name: changes.settlementName
 			}),
 			...(changes.settlementStart !== undefined && {
-				settlement_start: changes.settlementStart
+				settlement_start: getLocalTimestamp(changes.settlementStart!)
 			}),
 			...(changes.settlementEnd !== undefined && {
-				settlement_end: changes.settlementEnd
+				settlement_end: getLocalTimestamp(changes.settlementEnd!)
 			}),
 			...(changes.settlementFilter !== undefined && {
 				settlement_additional_selector: changes.settlementFilter

@@ -1,0 +1,95 @@
+.overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	background: rgba(0, 0, 0, 0.45);
+	backdrop-filter: blur(2px);
+}
+
+/* =========================
+   Modal
+========================= */
+
+.modal {
+	min-width: 220px;
+	max-width: 80vw;
+
+	padding: 30px 36px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 18px;
+
+	background: var(--white);
+	border-radius: 16px;
+
+	box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+
+	animation: modalAppear 180ms ease-out;
+}
+
+/* =========================
+   Spinner
+========================= */
+
+.spinner {
+	width: 64px;
+	height: 64px;
+
+	box-sizing: border-box;
+
+	border: 0.5rem solid rgba(0, 0, 0, 0.12);
+	border-top: 0.5rem solid var(--orange-dark);
+
+	border-radius: 50%;
+
+	animation: spinnerRotate 0.8s linear infinite;
+}
+
+/* =========================
+   Message
+========================= */
+
+.message {
+	margin: 0;
+
+	color: var(--text-dark);
+
+	font-size: 24px;
+	font-weight: 600;
+
+	text-align: center;
+}
+
+/* =========================
+   Animations
+========================= */
+
+@keyframes spinnerRotate {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes modalAppear {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}

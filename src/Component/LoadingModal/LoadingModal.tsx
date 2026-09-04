@@ -1,4 +1,5 @@
 // IMPORT STYLES
+import Modal from "../ModalOverlay/Modal";
 import style from "./LoadingModal.module.css";
 
 type LoadingModalProps = {
@@ -12,13 +13,15 @@ const LoadingModal = ({ isOpen, children }: LoadingModalProps) => {
 	}
 
 	return (
-		<div className={style.overlay}>
-			<div className={style.modal} role="status" aria-live="polite">
-				<div className={style.spinner} />
+		// <div className={style.overlay}>
+		// 	<div className={style.modal} role="status" aria-live="polite">
+		<Modal isOpen={isOpen}>
+			<div className={style.spinner} />
 
-				{children && <p className={style.message}>{children}</p>}
-			</div>
-		</div>
+			{children && <p className={style.message}>{children}</p>}
+		</Modal>
+		// 	</div>
+		// </div>
 	);
 };
 

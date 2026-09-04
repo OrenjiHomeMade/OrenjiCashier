@@ -80,12 +80,12 @@ export function AllocationSelectorDrawer({
 			items: filtered
 				.filter((allocation) => allocation.settlementStatus === status)
 				.sort((a, b) => {
-					const aDateString = a.settlementLastUpdatedAt || a.settlementCreatedAt;
-					const bDateString = b.settlementLastUpdatedAt || b.settlementCreatedAt;
-					if (!aDateString && !bDateString) return 0;
-					if (!aDateString) return 1;
-					if (!bDateString) return -1;
-					return bDateString.localeCompare(aDateString);
+					const aDate = a.settlementLastUpdatedAt || a.settlementCreatedAt;
+					const bDate = b.settlementLastUpdatedAt || b.settlementCreatedAt;
+					if (!aDate && !bDate) return 0;
+					if (!aDate) return 1;
+					if (!bDate) return -1;
+					return bDate.getTime() - aDate.getTime();
 				})
 		})).filter((group) => group.items.length > 0);
 	}, [settlements, query]);

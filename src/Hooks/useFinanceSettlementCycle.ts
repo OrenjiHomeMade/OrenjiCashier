@@ -12,7 +12,6 @@ import {
 	getBusinessSettlementLists,
 	updateBusinessSettlement
 } from "../Services/supabase/settlementServices";
-import { getLocalTimestamp } from "../Utilities/NumberFormater";
 
 const EMPTY_SETTLEMENT: TBusinessSettlement = {
 	settlementStart: null,
@@ -66,8 +65,8 @@ export const useFinanceSettlementCycle = () => {
 				settlementStatus: settlement.settlement_status as TSettlementStatus,
 				soldItems: settlement.transaction_item_count,
 				soldCategories: settlement.product_category_count,
-				settlementLastUpdatedAt: settlement.updated_at,
-				settlementCreatedAt: settlement.created_at
+				settlementLastUpdatedAt: settlement.updated_at ? new Date(settlement.updated_at) : null,
+				settlementCreatedAt: new Date(settlement.created_at)
 			}));
 		}
 	});
@@ -107,8 +106,8 @@ export const useFinanceSettlementCycle = () => {
 			}
 			const { soldItems, soldCategories } = settlements.filter((e) => e.settlementId === selectedSettlementId)[0];
 			return {
-				settlementStart: data.settlement_start,
-				settlementEnd: data.settlement_end,
+				settlementStart: new Date(data.settlement_start!),
+				settlementEnd: new Date(data.settlement_end!),
 				settlementFilter: data.settlement_additional_selector,
 
 				salesRevenue: data.sales_revenue,
@@ -132,8 +131,8 @@ export const useFinanceSettlementCycle = () => {
 				settlementName: data.settlement_name,
 				settlementStatus: data.settlement_status as TSettlementStatus,
 
-				settlementLastUpdatedAt: data.updated_at,
-				settlementCreatedAt: data.created_at,
+				settlementLastUpdatedAt: data.updated_at ? new Date(data.updated_at) : null,
+				settlementCreatedAt: new Date(data.created_at!),
 
 				soldItems: soldItems,
 				soldCategories: soldCategories
@@ -217,8 +216,8 @@ export const useFinanceSettlementCycle = () => {
 		if (activeSettlement.settlementId === null) {
 			createNewSettlementMutation.mutate({
 				settlementName: activeSettlement.settlementName,
-				settlementStart: activeSettlement.settlementStart || getLocalTimestamp(new Date()),
-				settlementEnd: activeSettlement.settlementEnd || getLocalTimestamp(new Date()),
+				settlementStart: activeSettlement.settlementStart!,
+				settlementEnd: activeSettlement.settlementEnd!,
 				settlementFilter: null,
 				transactionItemIds: []
 			});

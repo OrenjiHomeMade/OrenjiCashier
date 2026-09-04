@@ -632,12 +632,14 @@ export type Database = {
           p_is_readonly?: boolean
           p_page?: number
           p_page_size?: number
-          p_product_category?: string
+          p_product_category?: string[]
+          p_product_name?: string[]
           p_search?: string
           p_settlement_id?: number
           p_start_date?: string
         }
         Returns: {
+          baseline_selected: boolean
           business_settlement_id: number
           cashier: string
           item_created_at: string
@@ -649,6 +651,7 @@ export type Database = {
           quantity: number
           subtotal: number
           total_count: number
+          total_selected: number
           transaction_amount: number
           transaction_code: string
           transaction_id: number

@@ -77,6 +77,7 @@ export type TCreateTransactionInput = TTransactionBase & {
 };
 
 export type TTransactionPerItem = {
+	transactionItemId: number;
 	cashier: string;
 	paymentMethod: string;
 	productCategory: string;
@@ -84,13 +85,14 @@ export type TTransactionPerItem = {
 	productName: string;
 	quantity: number;
 	subtotal: number;
-	totalCount: number;
 	transactionAmount: number;
 	transactionCode: string;
 	transactionId: number;
-	transactionItemId: number;
-	transactionTime: string;
+	transactionTime: Date;
 	unitPrice: number;
+	baselineSelected: boolean;
+	totalCount: number;
+	totalSelected: number;
 };
 
 export type TTransactionSalesSummary = {
@@ -144,6 +146,7 @@ export type TTransactionResult = {
 export type TTransactionItemResult = {
 	data: TTransactionPerItem[];
 	totalCount: number;
+	totalSelected: number;
 	totalPages: number;
 	page: number;
 	pageSize: number;

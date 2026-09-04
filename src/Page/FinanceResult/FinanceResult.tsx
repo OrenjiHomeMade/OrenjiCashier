@@ -54,18 +54,18 @@ export default function FinancePage() {
 	const readyToSave = isEditMade || isNewSettlement;
 
 	// SALES STEP HOOKS
-	const salesControl = useSettlementSales(isReadOnly, currentStep === "SALES", activeSettlement.settlementId);
+	const salesControl = useSettlementSales(isReadOnly, currentStep === "SALES", activeSettlement);
 	// sales data
-	const { productNames, productsCategories, transactionItems, selectedTransactionItems } = salesControl;
+	const { productNames, productsCategories, transactionItems, checkIsEffectivelySelected } = salesControl;
 	// sales functions
-	const { toggleTransaction, selectAllFiltered, clearSelection } = salesControl;
+	const { toggleTransaction, selectAllFiltered, clearSelection, resetSelection } = salesControl;
 	// sales pagination
-	const { totalCount, totalPages, itemPerPage } = salesControl;
+	const { totalCount, totalSelected, totalPages, itemPerPage } = salesControl;
 	// sales step stated & ui states
-	const { salesFilter, setSalesFilter } = salesControl;
+	const { salesFilter, updateSalesFilter, toggledTransactionItems, preventRefilter } = salesControl;
 
 	// sales DERIVATION
-	const salesCurrentPage = salesFilter.page || 1;
+	const salesCurrentPage = salesFilter.page;
 	const safeCurrentPage = Math.min(salesCurrentPage, totalPages);
 	const firstItem = totalCount === 0 ? 0 : (safeCurrentPage - 1) * itemPerPage + 1;
 	const lastItem = Math.min(safeCurrentPage * itemPerPage, totalCount);
@@ -258,23 +258,28 @@ export default function FinancePage() {
 				<main className={styles.content}>
 					{currentStep === "SALES" && (
 						<SalesStep
+							activeSettlement={activeSettlement}
 							filters={salesFilter}
-							onFiltersChange={setSalesFilter}
+							onFiltersChange={updateSalesFilter}
+							isFilterAllowed={!preventRefilter}
 							categories={productsCategories}
 							transactionsItems={transactionItems || []}
 							products={productNames}
-							selectedTransactionIds={selectedTransactionItems}
+							checkSelection={checkIsEffectivelySelected}
 							onToggleTransaction={toggleTransaction}
+							toggeledItems={toggledTransactionItems}
 							onSelectAll={selectAllFiltered}
 							onClearSelection={clearSelection}
+							onResetSelection={resetSelection}
 							readOnly={!isDraft}
 							breakdown={salesBreakdown}
 							pageData={{
 								firstItem: firstItem,
 								lastItem: lastItem,
 								totalCount: totalCount,
+								totalSelected: totalSelected,
 								totalPages: totalPages,
-								currentPage: salesCurrentPage || 1
+								currentPage: salesCurrentPage
 							}}
 						/>
 					)}
@@ -342,6 +347,7 @@ export default function FinancePage() {
 			</div>
 
 			<LoadingModal isOpen={showLoading}>{loadingState}</LoadingModal>
+			{/* <Warners></Warners> */}
 		</div>
 	);
 }

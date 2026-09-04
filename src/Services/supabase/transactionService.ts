@@ -5,6 +5,7 @@ import type {
 	TTransaction,
 	TTransactionFilter,
 	TTransactionItemResult,
+	TTransactionPerItem,
 	TTransactionResult,
 	TTransactionSalesSummary,
 	TTrasnasctionSalesBreakdown
@@ -29,7 +30,7 @@ export const createTransaction = async (transaction: TCreateTransactionInput): P
 			unit_cost_packaging: item.unitCostPackaging
 		}))
 	};
-	console.log(transactionEntry);
+	// console.log(transactionEntry);
 	const { data, error } = await supabase.rpc("create_transaction", transactionEntry);
 
 	if (error) {
@@ -199,7 +200,7 @@ export const getTransactionsPerItem = async (params: GetTransactionItemParams): 
 		throw error;
 	}
 
-	const rows = data.map((dat) => ({
+	const rows: TTransactionPerItem[] = data.map((dat) => ({
 		cashier: dat.cashier,
 		paymentMethod: dat.payment_method,
 		productCategory: dat.product_category,
@@ -208,19 +209,23 @@ export const getTransactionsPerItem = async (params: GetTransactionItemParams): 
 		quantity: dat.quantity,
 		subtotal: dat.subtotal,
 		totalCount: dat.total_count,
+		totalSelected: dat.total_selected,
 		transactionAmount: dat.transaction_amount,
 		transactionCode: dat.transaction_code,
 		transactionId: dat.transaction_id,
 		transactionItemId: dat.transaction_item_id,
-		transactionTime: dat.transaction_time,
-		unitPrice: dat.unit_price
+		transactionTime: new Date(dat.transaction_time),
+		unitPrice: dat.unit_price,
+		baselineSelected: dat.baseline_selected
 	}));
 
 	const totalCount = rows.length > 0 ? Number(rows[0].totalCount) : 0;
+	const totalSelected = rows.length > 0 ? Number(rows[0].totalSelected) : 0;
 
 	return {
 		data: rows,
 		totalCount: totalCount,
+		totalSelected: totalSelected,
 		page: params.p_page || 1,
 		pageSize: params.p_page_size || 20,
 		totalPages: Math.max(1, Math.ceil(totalCount / (params.p_page_size || 20)))

@@ -2,8 +2,8 @@ export type TSettlementStatus = "DRAFT" | "CONFIRMED" | "SETTLED";
 export type TSettlementStep = "SALES" | "SETTLEMENT" | "SUMMARY";
 
 export type TBusinessSettlementItemFilter = {
-	settlementStart: string | null;
-	settlementEnd: string | null;
+	settlementStart: Date | null;
+	settlementEnd: Date | null;
 	settlementFilter: Json | null;
 };
 
@@ -21,8 +21,8 @@ export type TBusinessSettlementLists = {
 	settlementId: number | null;
 	settlementName: string;
 	settlementStatus: TSettlementStatus;
-	settlementLastUpdatedAt: string | null;
-	settlementCreatedAt: string | null;
+	settlementLastUpdatedAt: Date | null;
+	settlementCreatedAt: Date | null;
 } & TBusinessItemsAggregate;
 
 export type TBusinessSettlementCosts = {
@@ -65,7 +65,7 @@ export type TSalesFilter = {
 	isReadOnly: boolean;
 	startDate?: string;
 	endDate?: string;
-	category?: string;
-	productName?: string;
-	page?: number;
+	category?: Array<string>;
+	productName?: Array<string>;
+	page: number;
 };

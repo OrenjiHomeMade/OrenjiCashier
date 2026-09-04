@@ -13,9 +13,16 @@ import type {
 import { supabase } from "./client";
 import { toast } from "react-toastify";
 
-export const getProducts = async (activeProduct: boolean | null = null): Promise<TProductWithQty[]> => {
+export const getProducts = async (
+	activeProduct: boolean | null = null,
+	categories: string[] = []
+): Promise<TProductWithQty[]> => {
 	const isActiveFilter = activeProduct !== null ? [activeProduct] : [true, false];
-
+	const categoryFilter = categories.length > 0 ? categories.join(",") : "NULL";
+	const orFilter =
+		categories.length > 0
+			? `product_id.gt.${categories.length} , product_category.in.(${categoryFilter})`
+			: "product_id.gt.0,product_id.gt.0";
 	const { data, error } = await supabase
 		.from("products")
 		.select(
@@ -38,6 +45,7 @@ export const getProducts = async (activeProduct: boolean | null = null): Promise
 		)
 		.in("is_active", isActiveFilter)
 		.is("deleted_at", null)
+		.or(orFilter)
 		.order("is_active", { ascending: false })
 		.order("product_name");
 
