@@ -672,7 +672,19 @@ export type Database = {
       }
       get_sales_summary: { Args: { report_date: string }; Returns: Json }
       get_transaction_items_settlement_breakdown: {
-        Args: { p_group_by?: string; p_transaction_item_ids: number[] }
+        Args: {
+          p_add_ids?: number[]
+          p_business_settlement_id?: number
+          p_group_by?: string
+          p_product_category?: string[]
+          p_product_name?: string[]
+          p_remove_ids?: number[]
+          p_selection_mode?: string
+          p_settlement_additional_selector?: Json
+          p_settlement_end?: string
+          p_settlement_name?: string
+          p_settlement_start?: string
+        }
         Returns: {
           ingredient_cost: number
           labor_cost: number
@@ -688,7 +700,17 @@ export type Database = {
         }[]
       }
       get_transaction_items_settlement_summary: {
-        Args: { p_transaction_item_ids: number[] }
+        Args: {
+          p_add_ids?: number[]
+          p_business_settlement_id?: number
+          p_product_category?: string[]
+          p_product_name?: string[]
+          p_remove_ids?: number[]
+          p_selection_mode?: string
+          p_settlement_end?: string
+          p_settlement_name?: string
+          p_settlement_start?: string
+        }
         Returns: {
           sales_ingredient_cost: number
           sales_labor_cost: number

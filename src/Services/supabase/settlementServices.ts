@@ -296,6 +296,8 @@ export async function updateBusinessSettlementStatus(
 	});
 
 	if (error) {
+		toast(`ERROR DELETING SETTLEMENT ${error.message}`);
+		console.error(error);
 		throw error;
 	}
 
@@ -316,8 +318,73 @@ export async function deleteBusinessSettlement({
 	});
 
 	if (error) {
-		toast(`ERROR DELETING SETTLEMENT %{error}`);
+		toast(`ERROR DELETING SETTLEMENT ${error.message}`);
+		console.error(error);
+		throw error;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// GET REPORT VALUE
+// -----------------------------------------------------------------------------
+
+type GetTransactionItemsSettlementReportParam = {
+	businessSettlementId: number | null;
+	selectionMode: "ALL" | "MANUAL" | "CLEAR";
+	idToAdds: number[];
+	idToRemoves: number[];
+	settlementStart: Date | null;
+	settlementEnd: Date | null;
+};
+
+export async function getTransactionItemsSettlementBreakdown({
+	businessSettlementId,
+	selectionMode,
+	idToAdds,
+	idToRemoves,
+	settlementStart,
+	settlementEnd,
+	breakdownType
+}: GetTransactionItemsSettlementReportParam & { breakdownType: "PRODUCT" | "CATEGORY" }) {
+	const { data, error } = await supabase.rpc("get_transaction_items_settlement_breakdown", {
+		p_business_settlement_id: businessSettlementId || undefined,
+		p_selection_mode: selectionMode,
+		p_add_ids: idToAdds,
+		p_remove_ids: idToRemoves,
+		p_settlement_start: getLocalTimestamp(settlementStart!),
+		p_settlement_end: getLocalTimestamp(settlementEnd!),
+		p_group_by: breakdownType
+	});
+
+	if (error) {
+		toast(`Error Fetching Settlement Breakdown ${error.message}`);
 		console.error(error.message);
 		throw error;
 	}
+	return data;
+}
+
+export async function getTransactionItemsSettlementSummary({
+	businessSettlementId,
+	selectionMode,
+	idToAdds,
+	idToRemoves,
+	settlementStart,
+	settlementEnd
+}: GetTransactionItemsSettlementReportParam) {
+	const { data, error } = await supabase.rpc("get_transaction_items_settlement_breakdown", {
+		p_business_settlement_id: businessSettlementId || undefined,
+		p_selection_mode: selectionMode,
+		p_add_ids: idToAdds,
+		p_remove_ids: idToRemoves,
+		p_settlement_start: getLocalTimestamp(settlementStart!),
+		p_settlement_end: getLocalTimestamp(settlementEnd!)
+	});
+
+	if (error) {
+		toast(`Error Fetching Settlement Summary ${error.message}`);
+		console.error(error.message);
+		throw error;
+	}
+	return data;
 }

@@ -229,12 +229,12 @@ export default function FinancePage() {
 							{readyToSave && (
 								<>
 									<Button
-										disabled={showLoading || activeSettlement.settlementName === ""}
+										disabled={showLoading || activeSettlement.settlementName === "" || isEditMade}
 										variant="primary"
 										size="md"
 										onClick={handleSaving}
 									>
-										Save
+										Save as Draft
 									</Button>
 									<Button disabled={showLoading} variant="danger" size="md" onClick={handleCancle}>
 										Cancel
