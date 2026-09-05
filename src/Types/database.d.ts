@@ -553,11 +553,15 @@ export type Database = {
       }
       create_business_settlement: {
         Args: {
+          p_add_ids?: number[]
+          p_exclude_ids?: number[]
+          p_product_category?: string[]
+          p_product_name?: string[]
+          p_selection_mode: string
           p_settlement_additional_selector?: Json
           p_settlement_end?: string
           p_settlement_name: string
           p_settlement_start?: string
-          p_transaction_item_ids?: number[]
         }
         Returns: {
           business_settlement_id: number
@@ -721,6 +725,18 @@ export type Database = {
         }[]
       }
       is_username_available: { Args: { p_username: string }; Returns: boolean }
+      resolve_settlement_candidate_ids: {
+        Args: {
+          p_business_settlement_id?: number
+          p_end_date?: string
+          p_product_category?: string[]
+          p_product_name?: string[]
+          p_start_date?: string
+        }
+        Returns: {
+          transaction_item_id: number
+        }[]
+      }
       sync_products: {
         Args: never
         Returns: {
@@ -806,11 +822,16 @@ export type Database = {
       }
       update_business_settlement_selection: {
         Args: {
+          p_add_ids?: number[]
           p_business_settlement_id: number
+          p_product_category?: string[]
+          p_product_name?: string[]
+          p_remove_ids?: number[]
+          p_selection_mode: string
           p_settlement_additional_selector?: Json
-          p_settlement_end: string
-          p_settlement_start: string
-          p_transaction_item_ids: number[]
+          p_settlement_end?: string
+          p_settlement_name?: string
+          p_settlement_start?: string
         }
         Returns: {
           business_settlement_id: number

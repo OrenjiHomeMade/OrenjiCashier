@@ -4,9 +4,14 @@ import { useEffect, useState } from "react";
 import type { TBusinessSettlement, TSalesFilter } from "../Types/settlement";
 import { getTransactionsPerItem, type GetTransactionItemParams } from "../Services/supabase/transactionService";
 import type { TTransactionPerItem } from "../Types/transaction";
-import { dateStringInputFormat } from "../Utilities/NumberFormater";
+import { dateStringInputFormat, getDate30DaysAgo } from "../Utilities/NumberFormater";
 
-export const useSettlementSales = (isReadOnly: boolean, enabled: boolean, activeSettlement: TBusinessSettlement) => {
+export const useSettlementSales = (
+	isReadOnly: boolean,
+	enabled: boolean,
+	activeSettlement: TBusinessSettlement,
+	setIsEditMade: (value: boolean) => void
+) => {
 	const selectedTransactionId: number | null = activeSettlement.settlementId;
 
 	const { data: productsCategories = [], isLoading: isLoadingProductCategory } = useQuery({
@@ -37,16 +42,16 @@ export const useSettlementSales = (isReadOnly: boolean, enabled: boolean, active
 					activeSettlement.settlementStart &&
 					activeSettlement.settlementStart.getTime() !== new Date(0).getTime()
 						? dateStringInputFormat(activeSettlement.settlementStart)
-						: undefined,
+						: dateStringInputFormat(getDate30DaysAgo()),
 				endDate:
 					activeSettlement.settlementEnd && activeSettlement.settlementEnd.getTime() !== new Date(0).getTime()
 						? dateStringInputFormat(activeSettlement.settlementEnd)
-						: undefined
+						: dateStringInputFormat(new Date())
 			};
 		});
 	}, [activeSettlement.settlementStart, activeSettlement.settlementEnd]);
 
-	console.log(salesFilter.category);
+	// console.log(salesFilter.category);
 	const updateSalesFilter = (changes: Partial<TSalesFilter>) => {
 		setSalesFilter((current) => {
 			const base = current;
@@ -76,20 +81,21 @@ export const useSettlementSales = (isReadOnly: boolean, enabled: boolean, active
 	const totalPages = transactionResult?.totalPages ?? 1;
 	const itemPerPage = transactionResult?.pageSize ?? 20;
 
-	const [bulkIntent, setBulkIntent] = useState<"all" | "clear" | null>(null);
-	const [toggledTransactionItems, setToggledTransactionItems] = useState<Set<number>>(new Set());
+	const [bulkIntent, setBulkIntent] = useState<"ALL" | "CLEAR" | "MANUAL">("MANUAL");
+	const [toggledTransactionItems, setToggledTransactionItems] = useState<Map<number, boolean>>(new Map());
 	const [preventRefilter, setPreventRefilter] = useState<boolean>(false);
 
-	const toggleTransaction = (id: number) => {
+	const toggleTransaction = (row: { id: number; baselineSelected: boolean }) => {
 		if (!preventRefilter) {
+			setIsEditMade(true);
 			setPreventRefilter(true);
 		}
 		setToggledTransactionItems((current) => {
-			const next = new Set(current);
-			if (current.has(id)) {
-				next.delete(id);
+			const next = new Map(current);
+			if (next.has(row.id)) {
+				next.delete(row.id);
 			} else {
-				next.add(id);
+				next.set(row.id, row.baselineSelected);
 			}
 			return next;
 		});
@@ -98,26 +104,30 @@ export const useSettlementSales = (isReadOnly: boolean, enabled: boolean, active
 	// BULK_INTENT : NULL --> flip all toggledTransactionItems
 	// BULK_INTENT : ALL --> set all transaction but exclude the toggledTransactionItems (exceptions)
 	// BULK_INTENT : CLEAR --> unset all transaction but set the toggledTransactionItems (exceptions)
-	const selectAllFiltered = () => {
-		setBulkIntent("all");
-		setToggledTransactionItems(new Set());
-	};
-
 	const totalEffectiveSelected = () => {
-		if (bulkIntent === null) {
-			return toggledTransactionItems.size === 0 ? totalSelected : toggledTransactionItems.size;
-		}
-		if (bulkIntent === "all") {
+		if (bulkIntent === "ALL") {
 			return totalCount - toggledTransactionItems.size;
 		}
-		if (bulkIntent === "clear") {
+		if (bulkIntent === "CLEAR") {
 			return toggledTransactionItems.size;
 		}
+		let delta = 0;
+		for (const wasSelected of toggledTransactionItems.values()) {
+			delta += wasSelected ? -1 : +1;
+		}
+		return totalSelected + delta;
+	};
+
+	const selectAllFiltered = () => {
+		setBulkIntent("ALL");
+		setIsEditMade(true);
+		setToggledTransactionItems(new Map());
 	};
 
 	const clearSelection = () => {
-		setBulkIntent("clear");
-		setToggledTransactionItems(new Set());
+		setBulkIntent("CLEAR");
+		setIsEditMade(true);
+		setToggledTransactionItems(new Map());
 	};
 
 	const resetSelection = () => {
@@ -133,17 +143,74 @@ export const useSettlementSales = (isReadOnly: boolean, enabled: boolean, active
 					? dateStringInputFormat(activeSettlement.settlementEnd)
 					: undefined
 		});
-		setBulkIntent(null);
-		setToggledTransactionItems(new Set());
+		setBulkIntent("MANUAL");
+		setToggledTransactionItems(new Map());
 		setPreventRefilter(false);
 	};
+
+	// const savingSales = () => {
+	// 	setPreventRefilter(false);
+
+	// 	if (bulkIntent === "ALL") {
+	// 		return {
+	// 			selectionMode: bulkIntent,
+	// 			idToSave: [],
+	// 			idToDelete: Array.from(toggledTransactionItems.keys()),
+	// 			salesFilter
+	// 		};
+	// 	}
+
+	// 	if (bulkIntent === "CLEAR") {
+	// 		return {
+	// 			selectionMode: bulkIntent,
+	// 			idToSave: Array.from(toggledTransactionItems.keys()),
+	// 			idToDelete: [],
+	// 			salesFilter
+	// 		};
+	// 	}
+
+	// 	const idToSave: Array<number> = Array.from(toggledTransactionItems.entries()).flatMap(([k, v]) =>
+	// 		!v ? [k] : []
+	// 	);
+	// 	const idToDelete: Array<number> = Array.from(toggledTransactionItems.entries()).flatMap(([k, v]) =>
+	// 		v ? [k] : []
+	// 	);
+	// 	return {
+	// 		idToSave,
+	// 		idToDelete,
+	// 		salesFilter,
+	// 		selectionMode: bulkIntent
+	// 	};
+	// };
 
 	const savingSales = () => {
 		setPreventRefilter(false);
+
+		const toggledIds = Array.from(toggledTransactionItems.keys());
+
+		let idToSave: number[] = [];
+		let idToDelete: number[] = [];
+
+		if (bulkIntent === "ALL") {
+			idToDelete = toggledIds;
+		} else if (bulkIntent === "CLEAR") {
+			idToSave = toggledIds;
+		} else {
+			for (const [id, isDeleted] of toggledTransactionItems) {
+				(isDeleted ? idToDelete : idToSave).push(id);
+			}
+		}
+
+		return {
+			selectionMode: bulkIntent,
+			idToSave,
+			idToDelete,
+			salesFilter
+		};
 	};
 
 	const checkIsEffectivelySelected = ({ transactionItemId, baselineSelected }: TTransactionPerItem) => {
-		const base = bulkIntent === "all" ? true : bulkIntent === "clear" ? false : baselineSelected;
+		const base = bulkIntent === "ALL" ? true : bulkIntent === "CLEAR" ? false : baselineSelected;
 		return toggledTransactionItems.has(transactionItemId) ? !base : base;
 	};
 
@@ -162,7 +229,7 @@ export const useSettlementSales = (isReadOnly: boolean, enabled: boolean, active
 	// const errorState = isErrorSettlementList ? "Failed to load settlement lists." : "";
 
 	return {
-		effectiveSelected: totalEffectiveSelected,
+		totalEffectiveSelected,
 		productsCategories,
 		productNames,
 		transactionItems,

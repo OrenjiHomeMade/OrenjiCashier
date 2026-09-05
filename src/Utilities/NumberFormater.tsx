@@ -91,3 +91,9 @@ export const formatDate = (date: string): string => {
 		year: "numeric"
 	}).format(localDate);
 };
+
+export const getDate30DaysAgo = (entryDate: Date | null = null) => {
+	const date = entryDate ? new Date(entryDate) : new Date();
+	date.setDate(date.getDate() - 30);
+	return date;
+};

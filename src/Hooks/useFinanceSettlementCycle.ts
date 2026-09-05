@@ -1,16 +1,18 @@
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import type {
 	TBusinessSettlement,
 	TBusinessSettlementLists,
 	TSettlementStep,
-	TSettlementStatus
+	TSettlementStatus,
+	TSalesFilter
 } from "../Types/settlement";
 import { useState } from "react";
 import {
 	createBusinessSettlement,
+	deleteBusinessSettlement,
 	getBusinessSettlementById,
 	getBusinessSettlementLists,
-	updateBusinessSettlement
+	updateBusinessSettlementSelection
 } from "../Services/supabase/settlementServices";
 
 const EMPTY_SETTLEMENT: TBusinessSettlement = {
@@ -47,7 +49,7 @@ const EMPTY_SETTLEMENT: TBusinessSettlement = {
 };
 
 export const useFinanceSettlementCycle = () => {
-	const queryClient = useQueryClient();
+	// const queryClient = useQueryClient();
 	// =========================================================
 	// SERVER STATE
 	// =========================================================
@@ -90,8 +92,8 @@ export const useFinanceSettlementCycle = () => {
 	// SELECTED SETTLEMENT
 	// =========================================================
 	const {
-		data: selectedSettlement
-		// isLoading,
+		data: selectedSettlement,
+		isLoading: selectSettlementLoading
 		// isError
 	} = useQuery({
 		queryKey: ["settlement", selectedSettlementId, settlements],
@@ -146,31 +148,53 @@ export const useFinanceSettlementCycle = () => {
 	const createNewSettlementMutation = useMutation({
 		mutationFn: createBusinessSettlement,
 		onSuccess: async (data) => {
-			await queryClient.invalidateQueries({
-				queryKey: ["getSettlementsList"]
-			});
+			// await queryClient.invalidateQueries({
+			// 	queryKey: ["getSettlementsList", "settlement", "transactionItems"]
+			// });
 			setSelectedSettlementId(data.business_settlement_id);
-			setIsNewSettlement(false);
-			setDraftSettlement(null);
-			setIsEditMade(false);
-			if (activeSettlement.settlementStatus !== "DRAFT") {
-				setCurrentStep("SUMMARY");
-			}
+			// setIsNewSettlement(false);
+			// setDraftSettlement(null);
+			// setIsEditMade(false);
+			// if (activeSettlement.settlementStatus !== "DRAFT") {
+			// 	setCurrentStep("SUMMARY");
+			// }
+			window.location.reload();
+		},
+
+		onError: (error) => {
+			console.error("createNewSettlementMutation ERROR", error);
 		}
 	});
 
 	const updateSettlementMutation = useMutation({
-		mutationFn: updateBusinessSettlement,
+		mutationFn: updateBusinessSettlementSelection,
 		onSuccess: async () => {
-			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: ["settlement"]
-				}),
-				queryClient.invalidateQueries({
-					queryKey: ["getSettlementsList"]
-				})
-			]);
-			setIsEditMade(false);
+			// await Promise.all([
+			// 	queryClient.invalidateQueries({
+			// 		queryKey: ["getSettlementsList"]
+			// 	}),
+			// 	queryClient.invalidateQueries({
+			// 		queryKey: ["settlement"]
+			// 	})
+			// ]);
+			// setIsEditMade(false);
+			window.location.reload();
+		}
+	});
+
+	const deleteSettlementMutation = useMutation({
+		mutationFn: deleteBusinessSettlement,
+		onSuccess: async () => {
+			// // await Promise.all([
+			// await queryClient.invalidateQueries({
+			// 	queryKey: ["getSettlementsList", "settlement", "transactionItems"]
+			// });
+			// // 	// queryClient.invalidateQueries({
+			// // 	// 	queryKey: ["settlement"]
+			// // 	// })
+			// // ]);
+			// setIsEditMade(false);
+			window.location.reload();
 		}
 	});
 
@@ -211,20 +235,42 @@ export const useFinanceSettlementCycle = () => {
 		});
 	};
 
-	const onSave = () => {
-		// console.log(activeSettlement);
-		if (activeSettlement.settlementId === null) {
+	const onSave = (salesSection: {
+		idToSave: number[];
+		idToDelete: number[];
+		salesFilter: TSalesFilter;
+		selectionMode: "ALL" | "CLEAR" | "MANUAL";
+	}) => {
+		const { idToSave, idToDelete, salesFilter, selectionMode } = salesSection;
+
+		const lastSettlementState = {
+			...activeSettlement,
+			...(salesFilter.startDate && { settlementStart: new Date(salesFilter.startDate) }),
+			...(salesFilter.endDate && { settlementEnd: new Date(salesFilter.endDate) })
+		};
+
+		if (lastSettlementState.settlementId === null) {
+			console.log("TEST CREATION");
+			console.log("mutate prep start: ", lastSettlementState.settlementStart);
+			console.log("mutate prep end: ", lastSettlementState.settlementEnd);
 			createNewSettlementMutation.mutate({
-				settlementName: activeSettlement.settlementName,
-				settlementStart: activeSettlement.settlementStart!,
-				settlementEnd: activeSettlement.settlementEnd!,
+				settlementName: lastSettlementState.settlementName,
+				settlementStart: lastSettlementState.settlementStart,
+				settlementEnd: lastSettlementState.settlementEnd,
 				settlementFilter: null,
-				transactionItemIds: []
+				idToAdds: idToSave,
+				idToExclude: idToDelete,
+				selectionMode: selectionMode
 			});
 		} else {
 			updateSettlementMutation.mutate({
-				settlementId: activeSettlement.settlementId,
-				changes: activeSettlement
+				businessSettlementId: lastSettlementState.settlementId,
+				selectionMode: selectionMode,
+				idToAdds: idToSave,
+				idToRemoves: idToDelete,
+				settlementStart: lastSettlementState.settlementStart,
+				settlementEnd: lastSettlementState.settlementEnd,
+				settlementAdditionalSelector: null
 			});
 		}
 	};
@@ -249,13 +295,26 @@ export const useFinanceSettlementCycle = () => {
 		}
 	};
 
+	const onDelete = () => {
+		if (activeSettlement.settlementId) {
+			deleteSettlementMutation.mutate({ businessSettlementId: activeSettlement.settlementId });
+		}
+	};
+
 	const _getLoadingState = () => {
 		if (isLoadingSettlementList) {
 			return { showLoading: true, loadingState: "Loading settlement lists..." };
+		} else if (selectSettlementLoading) {
+			return {
+				showLoading: true,
+				loadingState: `Loading settlement with id ${activeSettlement.settlementId}...`
+			};
 		} else if (createNewSettlementMutation.isPending) {
 			return { showLoading: true, loadingState: "Saving new settlement..." };
 		} else if (updateSettlementMutation.isPending) {
 			return { showLoading: true, loadingState: "Updating settlement..." };
+		} else if (deleteSettlementMutation.isPending) {
+			return { showLoading: true, loadingState: "Deleting settlement..." };
 		} else {
 			return { showLoading: false, loadingState: "" };
 		}
@@ -275,6 +334,7 @@ export const useFinanceSettlementCycle = () => {
 		updateDraftSettlement,
 		onSave,
 		onCancel,
+		onDelete,
 		// STATE & SETTER
 		currentStep,
 		setCurrentStep,

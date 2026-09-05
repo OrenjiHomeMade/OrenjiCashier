@@ -48,6 +48,7 @@ export async function getBusinessSettlements() {
 		.order("created_at", { ascending: false });
 
 	if (error) {
+		console.error("Failed to fetch business settlements", error);
 		toast.error("Failed to fetch business settlements");
 		throw error;
 	}
@@ -111,7 +112,9 @@ type SettlementExpenseInput = {
 type SettlementStatus = "DRAFT" | "CONFIRMED" | "SETTLED";
 
 type createBusinessSettlementParam = Omit<TBusinessSettlementEssential, "settlementStatus"> & {
-	transactionItemIds: number[];
+	idToAdds: number[];
+	idToExclude: number[];
+	selectionMode: "ALL" | "MANUAL" | "CLEAR";
 };
 
 /**
@@ -120,20 +123,26 @@ type createBusinessSettlementParam = Omit<TBusinessSettlementEssential, "settlem
  */
 export async function createBusinessSettlement({
 	settlementName,
-	transactionItemIds,
+	selectionMode,
+	idToAdds,
+	idToExclude,
 	settlementStart,
 	settlementEnd,
 	settlementFilter
 }: createBusinessSettlementParam): Promise<BusinessSettlement> {
 	const { data, error } = await supabase.rpc("create_business_settlement", {
 		p_settlement_name: settlementName,
-		p_transaction_item_ids: transactionItemIds,
+		p_selection_mode: selectionMode,
+		p_add_ids: idToAdds,
+		p_exclude_ids: idToExclude,
 		p_settlement_start: getLocalTimestamp(settlementStart!),
 		p_settlement_end: getLocalTimestamp(settlementEnd!),
 		p_settlement_additional_selector: settlementFilter
 	});
 
 	if (error) {
+		console.error("Failed to create new settlement", error.message);
+		toast(`Failed to create new settlement ${error}`);
 		throw error;
 	}
 
@@ -179,22 +188,38 @@ export const updateBusinessSettlement = async ({ settlementId, changes }: update
 // UPDATE SALES SELECTION
 // -----------------------------------------------------------------------------
 
-export async function updateBusinessSettlementSelection(
-	businessSettlementId: number,
-	transactionItemIds: number[],
-	settlementStart: string,
-	settlementEnd: string,
-	settlementAdditionalSelector?: Json | undefined
-): Promise<BusinessSettlement> {
+type UpdateBusinessSettlementSelectionParam = {
+	businessSettlementId: number;
+	selectionMode: "ALL" | "MANUAL" | "CLEAR";
+	idToAdds: number[];
+	idToRemoves: number[];
+	settlementStart: Date | null;
+	settlementEnd: Date | null;
+	settlementAdditionalSelector?: Json | undefined;
+};
+
+export async function updateBusinessSettlementSelection({
+	businessSettlementId,
+	selectionMode,
+	idToAdds,
+	idToRemoves,
+	settlementStart,
+	settlementEnd,
+	settlementAdditionalSelector
+}: UpdateBusinessSettlementSelectionParam): Promise<BusinessSettlement> {
 	const { data, error } = await supabase.rpc("update_business_settlement_selection", {
 		p_business_settlement_id: businessSettlementId,
-		p_transaction_item_ids: transactionItemIds,
-		p_settlement_start: settlementStart,
-		p_settlement_end: settlementEnd,
+		p_selection_mode: selectionMode,
+		p_add_ids: idToAdds,
+		p_remove_ids: idToRemoves,
+		p_settlement_start: getLocalTimestamp(settlementStart!),
+		p_settlement_end: getLocalTimestamp(settlementEnd!),
 		p_settlement_additional_selector: settlementAdditionalSelector ?? null
 	});
 
 	if (error) {
+		console.error("Failed updating business settlement", error);
+		toast(`Failed updating business settlement. ${error.message}`);
 		throw error;
 	}
 
@@ -281,12 +306,18 @@ export async function updateBusinessSettlementStatus(
 // DELETE
 // -----------------------------------------------------------------------------
 
-export async function deleteBusinessSettlement(businessSettlementId: number): Promise<void> {
+export async function deleteBusinessSettlement({
+	businessSettlementId
+}: {
+	businessSettlementId: number;
+}): Promise<void> {
 	const { error } = await supabase.rpc("delete_business_settlement", {
 		p_business_settlement_id: businessSettlementId
 	});
 
 	if (error) {
+		toast(`ERROR DELETING SETTLEMENT %{error}`);
+		console.error(error.message);
 		throw error;
 	}
 }

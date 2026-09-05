@@ -40,11 +40,13 @@ export default function FinancePage() {
 	// settlements data
 	const { settlements, selectedSettlement, activeSettlement } = cycleControl;
 	// settlements functions
-	const { loadSettlement, startNewSettlement, updateDraftSettlement, onSave, onCancel } = cycleControl;
+	const { loadSettlement, startNewSettlement, updateDraftSettlement } = cycleControl;
 	// settlements states
-	const { isNewSettlement, isEditMade, currentStep, setCurrentStep } = cycleControl;
+	const { isNewSettlement, isEditMade, setIsEditMade, currentStep, setCurrentStep } = cycleControl;
 	// settlements loading state
 	const { showLoading: cycleLoading, loadingState: cycleLoadingMessage } = cycleControl;
+	// settlement result control
+	const { onSave, onCancel, onDelete } = cycleControl;
 
 	// settlements DERIVATION
 	const isReadOnly = activeSettlement.settlementStatus === "SETTLED";
@@ -54,15 +56,18 @@ export default function FinancePage() {
 	const readyToSave = isEditMade || isNewSettlement;
 
 	// SALES STEP HOOKS
-	const salesControl = useSettlementSales(isReadOnly, currentStep === "SALES", activeSettlement);
+	const salesControl = useSettlementSales(isReadOnly, currentStep === "SALES", activeSettlement, setIsEditMade);
 	// sales data
-	const { productNames, productsCategories, transactionItems, checkIsEffectivelySelected } = salesControl;
+	const { productNames, productsCategories, transactionItems, checkIsEffectivelySelected, totalEffectiveSelected } =
+		salesControl;
 	// sales functions
-	const { toggleTransaction, selectAllFiltered, clearSelection, resetSelection } = salesControl;
+	const { toggleTransaction, savingSales, selectAllFiltered, clearSelection, resetSelection } = salesControl;
 	// sales pagination
 	const { totalCount, totalSelected, totalPages, itemPerPage } = salesControl;
 	// sales step stated & ui states
-	const { salesFilter, updateSalesFilter, toggledTransactionItems, preventRefilter } = salesControl;
+	const { salesFilter, updateSalesFilter, preventRefilter } = salesControl;
+	// sales loading state
+	const { showLoading: salesLoading, loadingState: salesLoadingMessage } = salesControl;
 
 	// sales DERIVATION
 	const salesCurrentPage = salesFilter.page;
@@ -75,42 +80,32 @@ export default function FinancePage() {
 	const allocationSelectorDrawerState = drawerState?.type === "SETTLEMENT_SELECTOR";
 
 	const { showLoading, loadingState } = consolidateLoadingState([
-		{ isLoading: cycleLoading, loadingState: cycleLoadingMessage }
+		{ isLoading: cycleLoading, loadingState: cycleLoadingMessage },
+		{ isLoading: salesLoading, loadingState: salesLoadingMessage }
 	]);
-
-	// console.log(activeSettlement);
-	// {
-	//     "settlementStart": "2026-09-02T17:54:47",
-	//     "settlementEnd": "2026-09-02T17:54:47",
-	//     "settlementFilter": null,
-	//     "salesRevenue": 0,
-	//     "salesIngredientCost": 0,
-	//     "salesLaborCost": 0,
-	//     "salesPackagingCost": 0,
-	//     "salesUtilityCost": 0,
-	//     "salesMargin": 0,
-	//     "settledIngredientCost": null,
-	//     "settledLaborCost": null,
-	//     "settledPackagingCost": null,
-	//     "settledUtilityCost": null,
-	//     "totalAdditionalExpenses": 0,
-	//     "profitDistributed": 0,
-	//     "profitRetained": 0,
-	//     "deficitCovered": 0,
-	//     "settlementId": 6,
-	//     "settlementName": "Test Again Ok Really",
-	//     "settlementStatus": "DRAFT",
-	//     "settlementLastUpdatedAt": "2026-09-02T18:02:01",
-	//     "settlementCreatedAt": "2026-09-02T10:54:48.448026"
-	// }
 
 	// --- handler ------------------------------------------------------
 	function openAllocationDrawer(open: boolean) {
 		setDrawerState(open ? { type: "SETTLEMENT_SELECTOR" } : null);
 	}
 
+	function handleSaving() {
+		const salesPortion = savingSales();
+		onSave(salesPortion);
+	}
+
+	function handleCancle() {
+		resetSelection();
+		onCancel();
+	}
+
+	function handleDelete() {
+		onDelete();
+	}
+
+	// function handleConfirmation() {}
+
 	// const {
-	// draftAllocation, -- replaced kinda
 	// editMode,
 	// filters,
 	// setFilters,
@@ -233,16 +228,21 @@ export default function FinancePage() {
 							)}
 							{readyToSave && (
 								<>
-									<Button disabled={showLoading} variant="primary" size="md" onClick={onSave}>
+									<Button
+										disabled={showLoading || activeSettlement.settlementName === ""}
+										variant="primary"
+										size="md"
+										onClick={handleSaving}
+									>
 										Save
 									</Button>
-									<Button disabled={showLoading} variant="danger" size="md" onClick={onCancel}>
+									<Button disabled={showLoading} variant="danger" size="md" onClick={handleCancle}>
 										Cancel
 									</Button>
 								</>
 							)}
-							{isDraft && (
-								<Button variant="danger" size="md">
+							{isDraft && !isNewSettlement && (
+								<Button variant="danger" size="md" onClick={handleDelete}>
 									Delete
 								</Button>
 							)}
@@ -267,7 +267,8 @@ export default function FinancePage() {
 							products={productNames}
 							checkSelection={checkIsEffectivelySelected}
 							onToggleTransaction={toggleTransaction}
-							toggeledItems={toggledTransactionItems}
+							// toggeledItems={toggledTransactionItems}
+							totalEffectiveSelected={totalEffectiveSelected()}
 							onSelectAll={selectAllFiltered}
 							onClearSelection={clearSelection}
 							onResetSelection={resetSelection}
@@ -328,8 +329,29 @@ export default function FinancePage() {
 					<AllocationSelectorDrawer
 						settlements={settlements}
 						selectedSettlement={isNewSettlement ? null : activeSettlement}
-						onSelect={loadSettlement}
-						onCreateNew={startNewSettlement}
+						onSelect={(id) => {
+							if (preventRefilter) {
+								const confirmed = window.confirm(
+									"You have some changed in the sales selection, are you really want to go to other settlement without saving?"
+								);
+								if (!confirmed) {
+									return;
+								}
+							}
+							loadSettlement(id);
+							resetSelection();
+						}}
+						onCreateNew={() => {
+							if (preventRefilter) {
+								const confirmed = window.confirm(
+									"You have some changed in the sales selection, are you really want to go to other settlement without saving?"
+								);
+								if (!confirmed) {
+									return;
+								}
+							}
+							startNewSettlement();
+						}}
 						setDrawerState={openAllocationDrawer}
 					/>
 				)}
@@ -351,3 +373,16 @@ export default function FinancePage() {
 		</div>
 	);
 }
+
+/*
+	if (isAllowed) {
+		action();
+		return;
+	}
+
+	const confirmed = window.confirm(message);
+
+	if (!confirmed) {
+		return;
+	}
+*/

@@ -19,12 +19,13 @@ export type SalesStepProps = {
 	products: string[];
 
 	checkSelection: (item: TTransactionPerItem) => boolean;
-	onToggleTransaction: (id: number) => void;
+	onToggleTransaction: (row: { id: number; baselineSelected: boolean }) => void;
 	onSelectAll: () => void;
 	onClearSelection: () => void;
 	onResetSelection: () => void;
 
-	toggeledItems: Set<number>;
+	// toggeledItems: Map<number, boolean>;
+	totalEffectiveSelected: number;
 
 	pageData: {
 		firstItem: number;
@@ -143,7 +144,7 @@ export default function SalesStep({
 	onSelectAll,
 	onClearSelection,
 	onResetSelection,
-	toggeledItems,
+	totalEffectiveSelected,
 	pageData,
 	readOnly,
 	breakdown
@@ -156,8 +157,7 @@ export default function SalesStep({
 		setFilterDrawerOpen(false);
 	}
 
-	const { firstItem, lastItem, totalCount, totalSelected, currentPage, totalPages } = pageData;
-	const effectiveSelected = toggeledItems.size === 0 ? totalSelected : toggeledItems.size;
+	const { firstItem, lastItem, totalCount, currentPage, totalPages } = pageData;
 
 	const renderFilterSection = (inDrawer: boolean) => (
 		<>
@@ -221,7 +221,9 @@ export default function SalesStep({
 				<div className={styles.listHeader}>
 					<h3 className={styles.cardTitle}>Sold Items</h3>
 					<span className={styles.listCount}>
-						{readOnly ? `${totalCount} results` : `selected ${effectiveSelected} of ${totalCount} results`}
+						{readOnly
+							? `${totalCount} results`
+							: `selected ${totalEffectiveSelected} of ${totalCount} results`}
 					</span>
 				</div>
 
@@ -241,7 +243,12 @@ export default function SalesStep({
 									<input
 										type="checkbox"
 										checked={isSelected}
-										onChange={() => onToggleTransaction(item.transactionItemId)}
+										onChange={() =>
+											onToggleTransaction({
+												id: item.transactionItemId,
+												baselineSelected: item.baselineSelected
+											})
+										}
 									/>
 								)}
 								<div className={styles.rowMain}>
