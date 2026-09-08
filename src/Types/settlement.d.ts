@@ -69,3 +69,27 @@ export type TSalesFilter = {
 	productName?: Array<string>;
 	page: number;
 };
+
+export type TProductBreakdown = {
+	productId: number;
+	productName: string;
+	productCategory: string;
+	quantity: number;
+	revenue: number;
+	margin: number;
+	ingredientCost: number;
+	laborCost: number;
+	utilityCost: number;
+	packagingCost: number;
+	totalCogs: number;
+};
+
+export type TQSalesSummary = {
+	salesIngredientCost: number;
+	salesLaborCost: number;
+	salesMargin: number;
+	salesPackagingCost: number;
+	salesRevenue: number;
+	salesUtilityCost: number;
+	selectedItemCount: number;
+} | null;

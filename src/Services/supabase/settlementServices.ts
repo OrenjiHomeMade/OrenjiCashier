@@ -1,7 +1,7 @@
 import { toast } from "react-toastify";
 import type { Database, Json } from "../../Types/database";
 import { supabase } from "./client";
-import type { TBusinessSettlementEssential } from "../../Types/settlement";
+import type { TBusinessSettlementEssential, TProductBreakdown, TQSalesSummary } from "../../Types/settlement";
 import { getLocalTimestamp } from "../../Utilities/NumberFormater";
 
 /**
@@ -345,7 +345,7 @@ export async function getTransactionItemsSettlementBreakdown({
 	settlementStart,
 	settlementEnd,
 	breakdownType
-}: GetTransactionItemsSettlementReportParam & { breakdownType: "PRODUCT" | "CATEGORY" }) {
+}: GetTransactionItemsSettlementReportParam & { breakdownType: "PRODUCT" | "CATEGORY" }): Promise<TProductBreakdown[]> {
 	const { data, error } = await supabase.rpc("get_transaction_items_settlement_breakdown", {
 		p_business_settlement_id: businessSettlementId || undefined,
 		p_selection_mode: selectionMode,
@@ -361,7 +361,19 @@ export async function getTransactionItemsSettlementBreakdown({
 		console.error(error.message);
 		throw error;
 	}
-	return data;
+	return data.map((d) => ({
+		productId: d.product_id,
+		productName: d.product_name,
+		productCategory: d.product_category,
+		quantity: d.quantity,
+		revenue: d.revenue,
+		margin: d.margin,
+		ingredientCost: d.ingredient_cost,
+		laborCost: d.labor_cost,
+		packagingCost: d.packaging_cost,
+		utilityCost: d.utility_cost,
+		totalCogs: d.total_cogs
+	}));
 }
 
 export async function getTransactionItemsSettlementSummary({
@@ -371,20 +383,35 @@ export async function getTransactionItemsSettlementSummary({
 	idToRemoves,
 	settlementStart,
 	settlementEnd
-}: GetTransactionItemsSettlementReportParam) {
-	const { data, error } = await supabase.rpc("get_transaction_items_settlement_breakdown", {
-		p_business_settlement_id: businessSettlementId || undefined,
-		p_selection_mode: selectionMode,
-		p_add_ids: idToAdds,
-		p_remove_ids: idToRemoves,
-		p_settlement_start: getLocalTimestamp(settlementStart!),
-		p_settlement_end: getLocalTimestamp(settlementEnd!)
-	});
+}: GetTransactionItemsSettlementReportParam): Promise<TQSalesSummary> {
+	const { data, error } = await supabase
+		.rpc("get_transaction_items_settlement_summary", {
+			p_business_settlement_id: businessSettlementId || undefined,
+			p_selection_mode: selectionMode,
+			p_add_ids: idToAdds,
+			p_remove_ids: idToRemoves,
+			p_settlement_start: getLocalTimestamp(settlementStart!),
+			p_settlement_end: getLocalTimestamp(settlementEnd!)
+		})
+		.single();
 
 	if (error) {
 		toast(`Error Fetching Settlement Summary ${error.message}`);
 		console.error(error.message);
 		throw error;
 	}
-	return data;
+
+	if (data === null) {
+		return null;
+	}
+
+	return {
+		salesIngredientCost: data.sales_ingredient_cost,
+		salesLaborCost: data.sales_labor_cost,
+		salesMargin: data.sales_margin,
+		salesPackagingCost: data.sales_packaging_cost,
+		salesRevenue: data.sales_revenue,
+		salesUtilityCost: data.sales_utility_cost,
+		selectedItemCount: data.selected_item_count
+	};
 }

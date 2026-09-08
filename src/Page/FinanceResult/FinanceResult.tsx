@@ -58,8 +58,14 @@ export default function FinancePage() {
 	// SALES STEP HOOKS
 	const salesControl = useSettlementSales(isReadOnly, currentStep === "SALES", activeSettlement, setIsEditMade);
 	// sales data
-	const { productNames, productsCategories, transactionItems, checkIsEffectivelySelected, totalEffectiveSelected } =
-		salesControl;
+	const {
+		productNames,
+		productsCategories,
+		transactionItems,
+		productBreakdown,
+		checkIsEffectivelySelected,
+		totalEffectiveSelected
+	} = salesControl;
 	// sales functions
 	const { toggleTransaction, savingSales, selectAllFiltered, clearSelection, resetSelection } = salesControl;
 	// sales pagination
@@ -187,6 +193,7 @@ export default function FinancePage() {
 		<SalesBreakdown
 			step={currentStep}
 			settlement={activeSettlement}
+			productBreakdown={productBreakdown || []}
 			// transactions={selectedTransactions}
 			// salesSummary={salesSummary}
 			// adjustments={draftAllocation.adjustments}

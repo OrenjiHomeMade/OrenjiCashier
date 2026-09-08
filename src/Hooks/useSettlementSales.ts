@@ -1,10 +1,33 @@
 import { useQuery } from "@tanstack/react-query";
 import { getProductCategories, getProducts } from "../Services/supabase/productService";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { TBusinessSettlement, TSalesFilter } from "../Types/settlement";
 import { getTransactionsPerItem, type GetTransactionItemParams } from "../Services/supabase/transactionService";
 import type { TTransactionPerItem } from "../Types/transaction";
 import { dateStringInputFormat, getDate30DaysAgo } from "../Utilities/NumberFormater";
+import {
+	getTransactionItemsSettlementBreakdown,
+	getTransactionItemsSettlementSummary
+} from "../Services/supabase/settlementServices";
+
+// Pure — shared by savingSales() and the live breakdown query below.
+function computeSelectionDelta(bulkIntent: "ALL" | "CLEAR" | "MANUAL", toggled: Map<number, boolean>) {
+	const toggledIds = Array.from(toggled.keys());
+	let idToSave: number[] = [];
+	let idToDelete: number[] = [];
+
+	if (bulkIntent === "ALL") {
+		idToDelete = toggledIds;
+	} else if (bulkIntent === "CLEAR") {
+		idToSave = toggledIds;
+	} else {
+		for (const [id, isDeleted] of toggled) {
+			(isDeleted ? idToDelete : idToSave).push(id);
+		}
+	}
+
+	return { idToSave, idToDelete };
+}
 
 export const useSettlementSales = (
 	isReadOnly: boolean,
@@ -51,7 +74,6 @@ export const useSettlementSales = (
 		});
 	}, [activeSettlement.settlementStart, activeSettlement.settlementEnd]);
 
-	// console.log(salesFilter.category);
 	const updateSalesFilter = (changes: Partial<TSalesFilter>) => {
 		setSalesFilter((current) => {
 			const base = current;
@@ -101,9 +123,6 @@ export const useSettlementSales = (
 		});
 	};
 
-	// BULK_INTENT : NULL --> flip all toggledTransactionItems
-	// BULK_INTENT : ALL --> set all transaction but exclude the toggledTransactionItems (exceptions)
-	// BULK_INTENT : CLEAR --> unset all transaction but set the toggledTransactionItems (exceptions)
 	const totalEffectiveSelected = () => {
 		if (bulkIntent === "ALL") {
 			return totalCount - toggledTransactionItems.size;
@@ -148,58 +167,10 @@ export const useSettlementSales = (
 		setPreventRefilter(false);
 	};
 
-	// const savingSales = () => {
-	// 	setPreventRefilter(false);
-
-	// 	if (bulkIntent === "ALL") {
-	// 		return {
-	// 			selectionMode: bulkIntent,
-	// 			idToSave: [],
-	// 			idToDelete: Array.from(toggledTransactionItems.keys()),
-	// 			salesFilter
-	// 		};
-	// 	}
-
-	// 	if (bulkIntent === "CLEAR") {
-	// 		return {
-	// 			selectionMode: bulkIntent,
-	// 			idToSave: Array.from(toggledTransactionItems.keys()),
-	// 			idToDelete: [],
-	// 			salesFilter
-	// 		};
-	// 	}
-
-	// 	const idToSave: Array<number> = Array.from(toggledTransactionItems.entries()).flatMap(([k, v]) =>
-	// 		!v ? [k] : []
-	// 	);
-	// 	const idToDelete: Array<number> = Array.from(toggledTransactionItems.entries()).flatMap(([k, v]) =>
-	// 		v ? [k] : []
-	// 	);
-	// 	return {
-	// 		idToSave,
-	// 		idToDelete,
-	// 		salesFilter,
-	// 		selectionMode: bulkIntent
-	// 	};
-	// };
-
 	const savingSales = () => {
 		setPreventRefilter(false);
 
-		const toggledIds = Array.from(toggledTransactionItems.keys());
-
-		let idToSave: number[] = [];
-		let idToDelete: number[] = [];
-
-		if (bulkIntent === "ALL") {
-			idToDelete = toggledIds;
-		} else if (bulkIntent === "CLEAR") {
-			idToSave = toggledIds;
-		} else {
-			for (const [id, isDeleted] of toggledTransactionItems) {
-				(isDeleted ? idToDelete : idToSave).push(id);
-			}
-		}
+		const { idToSave, idToDelete } = computeSelectionDelta(bulkIntent, toggledTransactionItems);
 
 		return {
 			selectionMode: bulkIntent,
@@ -214,11 +185,71 @@ export const useSettlementSales = (
 		return toggledTransactionItems.has(transactionItemId) ? !base : base;
 	};
 
+	// --- LIVE PRODUCT BREAKDOWN (drives the bar chart in SalesBreakdown) ---
+	const { idToSave: liveAdds, idToDelete: liveRemoves } = useMemo(
+		() => computeSelectionDelta(bulkIntent, toggledTransactionItems),
+		[bulkIntent, toggledTransactionItems]
+	);
+
+	const breakdownStart = salesFilter.startDate ? new Date(salesFilter.startDate) : activeSettlement.settlementStart;
+	const breakdownEnd = salesFilter.endDate ? new Date(salesFilter.endDate) : activeSettlement.settlementEnd;
+
+	const { data: productBreakdown, isLoading: isLoadingBreakdown } = useQuery({
+		queryKey: [
+			"settlementBreakdown",
+			"PRODUCT",
+			selectedTransactionId,
+			bulkIntent,
+			liveAdds,
+			liveRemoves,
+			salesFilter.startDate,
+			salesFilter.endDate
+		],
+		queryFn: () =>
+			getTransactionItemsSettlementBreakdown({
+				businessSettlementId: selectedTransactionId,
+				selectionMode: bulkIntent,
+				idToAdds: liveAdds,
+				idToRemoves: liveRemoves,
+				settlementStart: breakdownStart!,
+				settlementEnd: breakdownEnd!,
+				breakdownType: "PRODUCT"
+			}),
+		enabled: enabled && !!breakdownStart && !!breakdownEnd
+	});
+
+	const { data: settlementSummary, isLoading: isLoadingSettlementSummary } = useQuery({
+		queryKey: [
+			"settlementSummary",
+			selectedTransactionId,
+			bulkIntent,
+			liveAdds,
+			liveRemoves,
+			salesFilter.startDate,
+			salesFilter.endDate
+		],
+		queryFn: () =>
+			getTransactionItemsSettlementSummary({
+				businessSettlementId: selectedTransactionId,
+				selectionMode: bulkIntent,
+				idToAdds: liveAdds,
+				idToRemoves: liveRemoves,
+				settlementStart: breakdownStart!,
+				settlementEnd: breakdownEnd!
+			})
+	});
+
+	// const productBreakdown = useMemo(productBreakdownRaw, [productBreakdownRaw]);
+
 	const _getLoadingState = () => {
 		if (isLoadingProductCategory) {
 			return { showLoading: true, loadingState: "Loading product category item..." };
 		} else if (isLoadingTransactionItem) {
 			return { showLoading: true, loadingState: "Loading transaction items..." };
+		} else if (isLoadingBreakdown) {
+			return { showLoading: true, loadingState: "Loading sales breakdown..." };
+		} else if (isLoadingSettlementSummary) {
+			return { showLoading: true, loadingState: "Loading settlement summary..." };
 		} else {
 			return { showLoading: false, loadingState: "" };
 		}
@@ -233,6 +264,8 @@ export const useSettlementSales = (
 		productsCategories,
 		productNames,
 		transactionItems,
+		productBreakdown,
+		settlementSummary,
 		// functions
 		savingSales,
 		// filter related

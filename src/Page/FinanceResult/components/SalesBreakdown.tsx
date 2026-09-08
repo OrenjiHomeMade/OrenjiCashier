@@ -4,15 +4,13 @@ import styles from "./SalesBreakdown.module.css";
 import CurrencyStat from "./CurrencyStat";
 import EChart from "../../../Component/Echart/Echart";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
-// import {
-// aggregateAdjustmentsByCategory,
-// aggregateSalesByProduct,
-// calcItemsSoldCount
-// } from "../../../Utilities/financeCalculations";
-import type { /*TAdjustmentBreakdown,*/ TProductBreakdown } from "../../../Utilities/financeCalculations";
-// import type { /*TAdjustment,*/ TSalesSummary } from "../../../Types/finance";
-// import type { TTransaction } from "../../../Types/transaction";
-import type { TBusinessSettlement, TSalesSummary, TSettlementStep } from "../../../Types/settlement";
+import type {
+	TBusinessSettlement,
+	TProductBreakdown,
+	// TQSalesSummary,
+	TSalesSummary,
+	TSettlementStep
+} from "../../../Types/settlement";
 
 /* =========================================================
    COLORS
@@ -21,7 +19,8 @@ import type { TBusinessSettlement, TSalesSummary, TSettlementStep } from "../../
 const COLOR = {
 	ingredient: "#b25e34",
 	labor: "#8e97ca",
-	other: "#de9155",
+	packing: "#de9155",
+	utility: "#cfff0e",
 	adjustment: "#d14957",
 	margin: "#efac32",
 	profitNegative: "#ec2c5c"
@@ -133,31 +132,40 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 
 		series: [
 			{
-				name: "Ingredient (COGS)",
-				type: "bar",
-				stack: "total",
-				itemStyle: {
-					color: COLOR.ingredient
-				},
-				data: data.map((p) => p.ingredient)
-			},
-			{
 				name: "Labor",
 				type: "bar",
 				stack: "total",
 				itemStyle: {
 					color: COLOR.labor
 				},
-				data: data.map((p) => p.labor)
+				data: data.map((p) => p.laborCost)
 			},
 			{
-				name: "Other costs",
+				name: "Ingredient",
 				type: "bar",
 				stack: "total",
 				itemStyle: {
-					color: COLOR.other
+					color: COLOR.ingredient
 				},
-				data: data.map((p) => p.utility + p.packaging)
+				data: data.map((p) => p.ingredientCost)
+			},
+			{
+				name: "Packing Cost",
+				type: "bar",
+				stack: "total",
+				itemStyle: {
+					color: COLOR.packing
+				},
+				data: data.map((p) => p.packagingCost)
+			},
+			{
+				name: "Utility Cost",
+				type: "bar",
+				stack: "total",
+				itemStyle: {
+					color: COLOR.utility
+				},
+				data: data.map((p) => p.utilityCost)
 			},
 			{
 				name: "Margin",
@@ -167,6 +175,15 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 					color: COLOR.margin
 				},
 				data: data.map((p) => p.margin)
+			},
+			{
+				name: "Qty",
+				type: "bar",
+				stack: "quantity",
+				itemStyle: {
+					color: COLOR.margin
+				},
+				data: data.map((p) => p.quantity)
 			}
 		]
 	};
@@ -316,6 +333,8 @@ export type SalesBreakdownProps = {
 	step: TSettlementStep;
 	// transactions: TTransaction[];
 	settlement: TBusinessSettlement;
+	productBreakdown: TProductBreakdown[];
+	// settlementSumary: TQSalesSummary;
 	// adjustments: TAdjustment[];
 	// adjustmentsTotal: number;
 	// finalResult: number;
@@ -324,7 +343,9 @@ export type SalesBreakdownProps = {
 export default function SalesBreakdown({
 	step,
 	// transactions,
-	settlement
+	settlement,
+	productBreakdown
+	// settlementSummary
 	// adjustments,
 	// adjustmentsTotal,
 	// finalResult
@@ -371,7 +392,7 @@ export default function SalesBreakdown({
 					focused={focusSection === "sales"}
 					summary={salesSummary}
 					itemsSold={settlement.soldItems || 0}
-					productBreakdown={[]}
+					productBreakdown={productBreakdown}
 					salesStatus={remainLabel}
 				/>
 			)}
