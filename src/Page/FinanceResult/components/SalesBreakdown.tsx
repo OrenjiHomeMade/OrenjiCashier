@@ -7,6 +7,7 @@ import { formatRupiah } from "../../../Utilities/NumberFormater";
 import type {
 	TBusinessSettlement,
 	TProductBreakdown,
+	TQSalesSummary,
 	// TQSalesSummary,
 	TSalesSummary,
 	TSettlementStep
@@ -23,7 +24,8 @@ const COLOR = {
 	utility: "#cfff0e",
 	adjustment: "#d14957",
 	margin: "#efac32",
-	profitNegative: "#ec2c5c"
+	profitNegative: "#ec2c5c",
+	qty: "#583f16"
 };
 
 // const ADJUSTMENT_COLORS: Record<string, string> = {
@@ -53,14 +55,21 @@ function compactRupiah(value: number): string {
    CHART OPTION BUILDERS
    ========================================================= */
 
-function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
-	const products = data.map((p) => p.productName);
-	const hasZoom = products.length > 20;
+type TBreakdownGroupBy = "PRODUCT" | "CATEGORY";
+
+function getGroupLabel(row: TProductBreakdown, groupBy: TBreakdownGroupBy): string {
+	if (groupBy === "CATEGORY") return row.productCategory || row.productName;
+	return row.productName || row.productCategory;
+}
+
+function buildProductBreakdownOption(data: TProductBreakdown[], groupBy: TBreakdownGroupBy): EChartsOption {
+	const labels = data.map((row) => getGroupLabel(row, groupBy));
+	const hasZoom = labels.length > 20;
 
 	return {
 		grid: {
 			left: 8,
-			right: 28,
+			right: 48,
 			top: 8,
 			bottom: hasZoom ? 56 : 42,
 			containLabel: true
@@ -69,7 +78,17 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 		tooltip: {
 			trigger: "axis",
 			axisPointer: { type: "shadow" },
-			valueFormatter: (value) => formatRupiah(Number(value))
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			formatter: (params: any) => {
+				const items = Array.isArray(params) ? params : [params];
+				const label = items[0]?.name ?? "";
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const lines = items.map((item: any) => {
+					const value = item.seriesName === "Qty" ? `${item.value}` : formatRupiah(Number(item.value));
+					return `${item.marker} ${item.seriesName}: ${value}`;
+				});
+				return [label, ...lines].join("<br/>");
+			}
 		},
 
 		legend: {
@@ -84,27 +103,39 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 
 		xAxis: {
 			type: "category",
-			data: products,
+			data: labels,
 			axisLabel: {
 				color: "#583f16",
 				fontSize: 11,
 				interval: 0,
-				rotate: products.length > 8 ? 35 : 0
+				rotate: labels.length > 8 ? 35 : 0
 			}
 		},
 
-		yAxis: {
-			type: "value",
-			axisLabel: {
-				formatter: (value: number) => compactRupiah(value),
-				color: "#756d67"
-			},
-			splitLine: {
-				lineStyle: {
-					color: "#efd8b5"
+		yAxis: [
+			{
+				type: "value",
+				name: "Amount",
+				nameTextStyle: { color: "#756d67", fontSize: 10 },
+				axisLabel: {
+					formatter: (value: number) => compactRupiah(value),
+					color: "#756d67"
+				},
+				splitLine: {
+					lineStyle: {
+						color: "#efd8b5"
+					}
 				}
+			},
+			{
+				type: "value",
+				name: "Qty",
+				position: "right",
+				nameTextStyle: { color: "#756d67", fontSize: 10 },
+				axisLabel: { color: "#756d67" },
+				splitLine: { show: false }
 			}
-		},
+		],
 
 		dataZoom: hasZoom
 			? [
@@ -135,6 +166,7 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 				name: "Labor",
 				type: "bar",
 				stack: "total",
+				yAxisIndex: 0,
 				itemStyle: {
 					color: COLOR.labor
 				},
@@ -144,6 +176,7 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 				name: "Ingredient",
 				type: "bar",
 				stack: "total",
+				yAxisIndex: 0,
 				itemStyle: {
 					color: COLOR.ingredient
 				},
@@ -153,6 +186,7 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 				name: "Packing Cost",
 				type: "bar",
 				stack: "total",
+				yAxisIndex: 0,
 				itemStyle: {
 					color: COLOR.packing
 				},
@@ -162,6 +196,7 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 				name: "Utility Cost",
 				type: "bar",
 				stack: "total",
+				yAxisIndex: 0,
 				itemStyle: {
 					color: COLOR.utility
 				},
@@ -171,6 +206,7 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 				name: "Margin",
 				type: "bar",
 				stack: "total",
+				yAxisIndex: 0,
 				itemStyle: {
 					color: COLOR.margin
 				},
@@ -180,12 +216,14 @@ function buildProductBreakdownOption(data: TProductBreakdown[]): EChartsOption {
 				name: "Qty",
 				type: "bar",
 				stack: "quantity",
+				yAxisIndex: 1,
+				symbolSize: 6,
 				itemStyle: {
 					color: COLOR.margin
 				},
 				data: data.map((p) => p.quantity)
 			}
-		]
+		] as EChartsOption["series"]
 	};
 }
 
@@ -334,7 +372,9 @@ export type SalesBreakdownProps = {
 	// transactions: TTransaction[];
 	settlement: TBusinessSettlement;
 	productBreakdown: TProductBreakdown[];
-	// settlementSumary: TQSalesSummary;
+	settlementSummary: TQSalesSummary;
+	breakdownGroupBy: TBreakdownGroupBy;
+	onBreakdownGroupByChange: (groupBy: TBreakdownGroupBy) => void;
 	// adjustments: TAdjustment[];
 	// adjustmentsTotal: number;
 	// finalResult: number;
@@ -344,8 +384,10 @@ export default function SalesBreakdown({
 	step,
 	// transactions,
 	settlement,
-	productBreakdown
-	// settlementSummary
+	productBreakdown,
+	settlementSummary,
+	breakdownGroupBy,
+	onBreakdownGroupByChange
 	// adjustments,
 	// adjustmentsTotal,
 	// finalResult
@@ -354,29 +396,27 @@ export default function SalesBreakdown({
 	const focusSection = FOCUS_SECTION[step];
 
 	let remain = 0;
-	if (settlement.profitDistributed) {
-		remain += settlement.profitDistributed;
-	}
-	if (settlement.profitRetained) {
-		remain += settlement.profitRetained;
-	}
-	if (settlement.deficitCovered) {
-		remain += settlement.deficitCovered;
-	}
+	if (settlement.profitDistributed) remain += settlement.profitDistributed;
+	if (settlement.profitRetained) remain += settlement.profitRetained;
+	if (settlement.deficitCovered) remain += settlement.deficitCovered;
 	if (remain === 0) {
-		remain = settlement.salesMargin;
+		remain = settlementSummary?.salesMargin ?? settlement.salesMargin;
 	}
 
 	const remainLabel = remain > 0 ? "Profit" : remain < 0 ? "Deficit" : "Even";
 
 	const salesSummary: TSalesSummary = {
-		itemSold: settlement.soldItems || 0,
-		revenue: settlement.salesRevenue,
-		labor: settlement.settledLaborCost || settlement.salesLaborCost,
-		ingredient: settlement.settledIngredientCost || settlement.salesIngredientCost,
-		packing: settlement.settledPackagingCost || settlement.salesPackagingCost,
-		utility: settlement.settledUtilityCost || settlement.salesUtilityCost,
-		otherCosts: settlement.totalAdditionalExpenses || 0,
+		itemSold: settlementSummary?.selectedItemCount ?? settlement.soldItems ?? 0,
+		revenue: settlementSummary?.salesRevenue ?? settlement.salesRevenue,
+		labor: settlement.settledLaborCost ?? settlementSummary?.salesLaborCost ?? settlement.salesLaborCost,
+		ingredient:
+			settlement.settledIngredientCost ??
+			settlementSummary?.salesIngredientCost ??
+			settlement.salesIngredientCost,
+		packing:
+			settlement.settledPackagingCost ?? settlementSummary?.salesPackagingCost ?? settlement.salesPackagingCost,
+		utility: settlement.settledUtilityCost ?? settlementSummary?.salesUtilityCost ?? settlement.salesUtilityCost,
+		otherCosts: settlement.totalAdditionalExpenses ?? 0,
 		remain: remain
 	};
 	// const itemsSold = useMemo(() => calcItemsSoldCount(transactions), [transactions]);
@@ -391,9 +431,11 @@ export default function SalesBreakdown({
 				<SalesSummarySection
 					focused={focusSection === "sales"}
 					summary={salesSummary}
-					itemsSold={settlement.soldItems || 0}
+					itemsSold={salesSummary.itemSold}
 					productBreakdown={productBreakdown}
 					salesStatus={remainLabel}
+					breakdownGroupBy={breakdownGroupBy}
+					onBreakdownGroupByChange={onBreakdownGroupByChange}
 				/>
 			)}
 
@@ -425,17 +467,24 @@ function SalesSummarySection({
 	summary,
 	itemsSold,
 	productBreakdown,
-	salesStatus
+	salesStatus,
+	breakdownGroupBy,
+	onBreakdownGroupByChange
 }: {
 	focused: boolean;
 	summary: TSalesSummary;
 	itemsSold: number;
 	productBreakdown: TProductBreakdown[];
 	salesStatus: string;
+	breakdownGroupBy: TBreakdownGroupBy;
+	onBreakdownGroupByChange: (groupBy: TBreakdownGroupBy) => void;
 }) {
 	const [isExpanded, setIsExpanded] = useState(focused);
 
-	const chartOption = useMemo(() => buildProductBreakdownOption(productBreakdown), [productBreakdown]);
+	const chartOption = useMemo(
+		() => buildProductBreakdownOption(productBreakdown, breakdownGroupBy),
+		[productBreakdown, breakdownGroupBy]
+	);
 
 	return (
 		<section className={`${styles.section} ${focused ? styles.sectionFocused : styles.sectionCompact}`}>
@@ -445,22 +494,42 @@ function SalesSummarySection({
 					Sales summary
 				</h3>
 
-				{productBreakdown.length > 0 && (
-					<button
-						type="button"
-						className={styles.expandButton}
-						onClick={() => setIsExpanded((value) => !value)}
-					>
-						{isExpanded ? "Hide" : "By product"}
+				<div className={styles.sectionHeaderActions}>
+					{isExpanded && productBreakdown.length > 0 && (
+						<div className={styles.groupToggle} role="group" aria-label="Group breakdown by">
+							<button
+								type="button"
+								className={breakdownGroupBy === "PRODUCT" ? styles.groupActive : styles.groupInactive}
+								onClick={() => onBreakdownGroupByChange("PRODUCT")}
+							>
+								Product
+							</button>
+							<button
+								type="button"
+								className={breakdownGroupBy === "CATEGORY" ? styles.groupActive : styles.groupInactive}
+								onClick={() => onBreakdownGroupByChange("CATEGORY")}
+							>
+								Category
+							</button>
+						</div>
+					)}
 
-						<span
-							className={`${styles.chevron} ${isExpanded ? styles.chevronOpen : ""}`}
-							aria-hidden="true"
+					{productBreakdown.length > 0 && (
+						<button
+							type="button"
+							className={styles.expandButton}
+							onClick={() => setIsExpanded((value) => !value)}
 						>
-							⌄
-						</span>
-					</button>
-				)}
+							{isExpanded ? "Hide" : `By ${breakdownGroupBy.toLowerCase()}`}
+							<span
+								className={`${styles.chevron} ${isExpanded ? styles.chevronOpen : ""}`}
+								aria-hidden="true"
+							>
+								⌄
+							</span>
+						</button>
+					)}
+				</div>
 			</div>
 
 			<div className={focused ? styles.statGrid : styles.statRow}>
@@ -486,14 +555,11 @@ function SalesSummarySection({
 					<>
 						<CurrencyStat
 							label="COGS"
-							value={summary.labor + summary.ingredient + summary.utility}
+							value={summary.labor + summary.ingredient + summary.utility + summary.packing}
 							tone="muted"
 						/>
-
 						<CurrencyStat label="Labor" value={summary.labor} tone="muted" />
-
 						<CurrencyStat label="Other costs" value={summary.otherCosts} tone="muted" />
-
 						<CurrencyStat label={salesStatus} value={summary.remain} tone="positive" />
 					</>
 				)}

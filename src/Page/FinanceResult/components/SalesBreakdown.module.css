@@ -150,6 +150,32 @@
 	color: var(--danger);
 }
 
+.sectionHeaderActions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.groupToggle {
+	display: flex;
+	border-radius: 999px;
+	overflow: hidden;
+	border: 1px solid var(--border-color, #e8d9c0);
+}
+.groupActive {
+	padding: 4px 10px;
+	font-size: 11px;
+	background: var(--accent, #b25e34);
+	color: #fff;
+	border: none;
+}
+.groupInactive {
+	padding: 4px 10px;
+	font-size: 11px;
+	background: transparent;
+	color: #756d67;
+	border: none;
+}
+
 @media (max-width: 800px) {
 	.panel {
 		position: static;

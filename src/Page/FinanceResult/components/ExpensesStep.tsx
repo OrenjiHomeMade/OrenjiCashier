@@ -1,45 +1,24 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { ReactNode, SubmitEvent } from "react";
 import styles from "./ExpensesStep.module.css";
 import Button from "../../../Component/Button/Button";
 import Drawer from "../../../Component/Drawer/Drawer";
 import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
-import type { TTransaction } from "../../../Types/transaction";
+import type { TBusinessExpense, TExpenseSection, TExpenseStatus } from "../../../Types/expense";
+import type { TSalesEstimate } from "../../../Utilities/resolveSalesEstimate";
+import {
+	CATEGORY_OPTIONS_BY_SECTION,
+	type BusinessExpenseCategory
+} from "../../../Services/supabase/businessExpensesServices";
 
-/* =========================================================
-   WIRING NOTES for useFinanceAllocation.ts
-   -------------------------------------------------------
-   This file assumes the hook grows to expose:
-     - laborActual: number              (persisted on the allocation)
-     - onLaborActualChange(value)
-     - expenses: TBusinessExpense[]     (new pool, same idea as `adjustments`
-                                          today but with settledAmount tracking)
-     - selectedUtilityIds / selectedAdditionalIds: string[]
-     - onToggleExpense(section, id)
-     - onAddExpense(section, data) -> inserts + auto-selects, mirrors
-                                       addAdjustment()
-   Everything below is fully controlled — no data assumptions are baked in
-   beyond the shapes declared here. Swap the mock defaults at the bottom
-   for real hook state whenever you're ready; the UI won't need to change.
-   ========================================================= */
-
-/* =========================================================
-   TYPES — candidates to promote into Types/finance.ts later
-   ========================================================= */
-
-export type TExpenseSection = "UTILITIES" | "ADDITIONAL";
-export type TExpenseStatus = "UNSETTLED" | "PARTIAL" | "SETTLED";
-
-export type TBusinessExpense = {
-	id: string;
-	section: TExpenseSection;
-	description: string;
-	category: string;
-	originalAmount: number;
-	/** Already recognized in OTHER settlements — drives the remaining/available amount. */
-	settledAmount: number;
-};
+function buildEmptyExpenseForm(section: TExpenseSection) {
+	return {
+		description: "",
+		category: CATEGORY_OPTIONS_BY_SECTION[section][0],
+		amount: ""
+	};
+}
 
 function getExpenseRemaining(expense: TBusinessExpense) {
 	return Math.max(expense.originalAmount - expense.settledAmount, 0);
@@ -51,27 +30,10 @@ function getExpenseStatus(expense: TBusinessExpense): TExpenseStatus {
 	return "UNSETTLED";
 }
 
-type TCostField = "unitCostLabor" | "unitCostIngredient" | "unitCostUtilities" | "unitCostPackaging";
-
-/** Sums a per-unit cost field across every item in the selected sales transactions. */
-function sumUnitCost(transactions: TTransaction[], field: TCostField) {
-	return transactions.reduce(
-		(sum, transaction) =>
-			sum + transaction.transactionItems.reduce((itemSum, item) => itemSum + item[field] * item.quantity, 0),
-		0
-	);
-}
-
-/* =========================================================
-   MAIN STEP — five settlement-basis sections. No Drawer here;
-   it only asks the parent (FinanceResult) to open one, same
-   convention as AllocationSelector / AdjustmentsStep.
-   ========================================================= */
-
 export type ExpensesStepProps = {
-	transactions: TTransaction[];
+	salesEstimate: TSalesEstimate;
 	readOnly: boolean;
-	/** Built once in FinanceResult and shared across all 3 steps — see SalesBreakdown. */
+
 	breakdown: ReactNode;
 
 	laborActual: number;
@@ -87,7 +49,7 @@ export type ExpensesStepProps = {
 };
 
 export function ExpensesStep({
-	transactions,
+	salesEstimate,
 	readOnly,
 	breakdown,
 	laborActual,
@@ -98,13 +60,8 @@ export function ExpensesStep({
 	activeDrawer,
 	setActiveDrawer
 }: ExpensesStepProps) {
-	const laborEstimate = useMemo(() => sumUnitCost(transactions, "unitCostLabor"), [transactions]);
-	const utilitiesEstimate = useMemo(() => sumUnitCost(transactions, "unitCostUtilities"), [transactions]);
-	const packagingRecognized = useMemo(() => sumUnitCost(transactions, "unitCostPackaging"), [transactions]);
-	const ingredientRecognized = useMemo(() => sumUnitCost(transactions, "unitCostIngredient"), [transactions]);
-
-	const utilityExpenses = useMemo(() => expenses.filter((e) => e.section === "UTILITIES"), [expenses]);
-	const additionalExpenses = useMemo(() => expenses.filter((e) => e.section === "ADDITIONAL"), [expenses]);
+	const utilityExpenses = expenses.filter((e) => e.section === "UTILITIES");
+	const additionalExpenses = expenses.filter((e) => e.section === "ADDITIONAL");
 
 	return (
 		<div className={styles.layout}>
@@ -118,7 +75,7 @@ export function ExpensesStep({
 
 				<div className={styles.sections}>
 					<LaborSection
-						estimate={laborEstimate}
+						estimate={salesEstimate.labor}
 						actual={laborActual}
 						onActualChange={onLaborActualChange}
 						readOnly={readOnly}
@@ -127,7 +84,7 @@ export function ExpensesStep({
 					<ExpenseBackedSection
 						title="Utilities"
 						estimateLabel="Sales estimate"
-						estimate={utilitiesEstimate}
+						estimate={salesEstimate.utility}
 						expenses={utilityExpenses}
 						selectedIds={selectedUtilityIds}
 						readOnly={readOnly}
@@ -137,13 +94,13 @@ export function ExpensesStep({
 
 					<DerivedCostSection
 						title="Packaging"
-						amount={packagingRecognized}
+						amount={salesEstimate.packing}
 						note="Derived from sales COGS. Packaging purchases are tracked separately and aren't recognized directly here."
 					/>
 
 					<DerivedCostSection
 						title="Ingredient"
-						amount={ingredientRecognized}
+						amount={salesEstimate.ingredient}
 						note="Derived from the ingredient COGS consumed by the selected sales — not the full ingredient purchase amount."
 					/>
 
@@ -323,11 +280,10 @@ function ExpenseBackedSection({
 
 export type ExpenseDrawerProps = {
 	section: TExpenseSection;
-	/** Pool pre-filtered to this section by the parent. */
 	expenses: TBusinessExpense[];
 	selectedIds: string[];
 	onToggleExpense: (id: string) => void;
-	onAddExpense: (expense: Omit<TBusinessExpense, "id" | "section" | "settledAmount">) => void;
+	onAddExpense: (expense: Omit<TBusinessExpense, "id" | "section" | "settledAmount">) => Promise<unknown>;
 	onClose: () => void;
 };
 
@@ -337,8 +293,6 @@ const STATUS_FILTERS: { label: string; value: TExpenseStatus | "ALL" }[] = [
 	{ label: "Partial", value: "PARTIAL" },
 	{ label: "Settled", value: "SETTLED" }
 ];
-
-const emptyExpenseForm = { description: "", category: "", amount: "" };
 
 export function ExpenseDrawer({
 	section,
@@ -351,7 +305,7 @@ export function ExpenseDrawer({
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<TExpenseStatus | "ALL">("ALL");
 	const [isAddingNew, setIsAddingNew] = useState(false);
-	const [form, setForm] = useState(emptyExpenseForm);
+	const [form, setForm] = useState(() => buildEmptyExpenseForm(section));
 
 	const eyebrow = section === "UTILITIES" ? "Utilities" : "Additional";
 
@@ -364,18 +318,22 @@ export function ExpenseDrawer({
 		return true;
 	});
 
-	function handleAddSubmit(event: SubmitEvent<HTMLFormElement>) {
+	async function handleAddSubmit(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
 		const amount = Number(form.amount);
 		if (!form.description.trim() || !amount) return;
 
-		onAddExpense({
-			description: form.description.trim(),
-			category: form.category.trim() || "Other",
-			originalAmount: amount
-		});
-		setForm(emptyExpenseForm);
-		onClose();
+		try {
+			await onAddExpense({
+				description: form.description.trim(),
+				category: form.category.trim() || "Other",
+				originalAmount: amount
+			});
+			setForm(buildEmptyExpenseForm(section));
+			onClose();
+		} catch {
+			// error already toasted in the mutation's onError — keep the drawer open so the user can retry
+		}
 	}
 
 	if (isAddingNew) {
@@ -407,12 +365,18 @@ export function ExpenseDrawer({
 
 				<label className={styles.field}>
 					<span>Category</span>
-					<input
-						type="text"
+					<select
 						value={form.category}
-						onChange={(event) => setForm({ ...form, category: event.target.value })}
-						placeholder="e.g. Electricity"
-					/>
+						onChange={(event) =>
+							setForm({ ...form, category: event.target.value as BusinessExpenseCategory })
+						}
+					>
+						{CATEGORY_OPTIONS_BY_SECTION[section].map((category) => (
+							<option key={category} value={category}>
+								{category}
+							</option>
+						))}
+					</select>
 				</label>
 
 				<label className={styles.field}>

@@ -1,21 +1,24 @@
 import styles from "./FinanceResult.module.css";
-// import { useFinanceAllocation } from "../../Hooks/useFinanceAllocation";
 import { AllocationSelector, AllocationSelectorDrawer } from "./components/AllocationSelector";
-// import { ExpensesStep, ExpenseDrawer } from "./components/ExpensesStep";
-// import type { TExpenseSection, TBusinessExpense } from "./components/ExpensesStep";
+import { ExpensesStep, ExpenseDrawer } from "./components/ExpensesStep";
 import { useState } from "react";
 import { useFinanceSettlementCycle } from "../../Hooks/useFinanceSettlementCycle";
 import { useSettlementSales } from "../../Hooks/useSettlementSales";
+import { resolveSalesEstimate } from "../../Utilities/resolveSalesEstimate";
+
 import StepNav from "./components/StepNav";
 import SalesStep from "./components/SalesStep";
 // import SummaryStep from "./components/SummaryStep";
 import SalesBreakdown from "./components/SalesBreakdown";
 import Button from "../../Component/Button/Button";
 import LoadingModal from "../../Component/LoadingModal/LoadingModal";
+import { useSettlementExpenses } from "../../Hooks/useSettlementExpenses";
+import type { TExpenseSection } from "../../Types/expense";
 
-type FinancePageDrawers = {
-	type: "SETTLEMENT_SELECTOR";
-} | null;
+type FinancePageDrawers =
+	| { type: "SETTLEMENT_SELECTOR" }
+	| { type: "EXPENSES_DRAWER"; section: TExpenseSection }
+	| null;
 
 type LoadingState = {
 	isLoading: boolean;
@@ -58,20 +61,21 @@ export default function FinancePage() {
 	// SALES STEP HOOKS
 	const salesControl = useSettlementSales(isReadOnly, currentStep === "SALES", activeSettlement, setIsEditMade);
 	// sales data
-	const {
-		productNames,
-		productsCategories,
-		transactionItems,
-		productBreakdown,
-		checkIsEffectivelySelected,
-		totalEffectiveSelected
-	} = salesControl;
+	const { productNames, productsCategories, transactionItems, productBreakdown, settlementSummary } = salesControl;
 	// sales functions
-	const { toggleTransaction, savingSales, selectAllFiltered, clearSelection, resetSelection } = salesControl;
+	const {
+		checkIsEffectivelySelected,
+		totalEffectiveSelected,
+		toggleTransaction,
+		savingSales,
+		selectAllFiltered,
+		clearSelection,
+		resetSelection
+	} = salesControl;
 	// sales pagination
 	const { totalCount, totalSelected, totalPages, itemPerPage } = salesControl;
 	// sales step stated & ui states
-	const { salesFilter, updateSalesFilter, preventRefilter } = salesControl;
+	const { salesFilter, updateSalesFilter, preventRefilter, breakdownGroupBy, setBreakdownGroupBy } = salesControl;
 	// sales loading state
 	const { showLoading: salesLoading, loadingState: salesLoadingMessage } = salesControl;
 
@@ -81,27 +85,58 @@ export default function FinancePage() {
 	const firstItem = totalCount === 0 ? 0 : (safeCurrentPage - 1) * itemPerPage + 1;
 	const lastItem = Math.min(safeCurrentPage * itemPerPage, totalCount);
 
+	// EXPENSES STEP HOOKS
+	const expensesControl = useSettlementExpenses(
+		currentStep === "SETTLEMENT",
+		activeSettlement.settlementId,
+		setIsEditMade
+	);
+	// Expense selector
+	const { expenses, selectedUtilityIds, selectedAdditionalIds } = expensesControl;
+	// Expense functons
+	const { toggleExpense, addExpense, saveExpenses, resetExpenseSelection } = expensesControl;
+	// Expense loading
+	const { showLoading: expenseLoading, loadingState: expenseLoadingMessage } = expensesControl;
+
+	const [laborActual, setLaborActual] = useState(0);
+
+	// Single drawer state for the whole page.
 	const [drawerState, setDrawerState] = useState<FinancePageDrawers>(null);
 
 	const allocationSelectorDrawerState = drawerState?.type === "SETTLEMENT_SELECTOR";
+	const expensesDrawerSection = drawerState?.type === "EXPENSES_DRAWER" ? drawerState.section : null;
 
 	const { showLoading, loadingState } = consolidateLoadingState([
 		{ isLoading: cycleLoading, loadingState: cycleLoadingMessage },
-		{ isLoading: salesLoading, loadingState: salesLoadingMessage }
+		{ isLoading: salesLoading, loadingState: salesLoadingMessage },
+		{ isLoading: expenseLoading, loadingState: expenseLoadingMessage }
 	]);
+
+	const salesEstimate = resolveSalesEstimate(activeSettlement, settlementSummary ?? null);
 
 	// --- handler ------------------------------------------------------
 	function openAllocationDrawer(open: boolean) {
 		setDrawerState(open ? { type: "SETTLEMENT_SELECTOR" } : null);
 	}
 
-	function handleSaving() {
-		const salesPortion = savingSales();
-		onSave(salesPortion);
+	function openExpenseDrawer(section: TExpenseSection | null) {
+		setDrawerState(section ? { type: "EXPENSES_DRAWER", section } : null);
+	}
+
+	async function handleSaving() {
+		try {
+			const salesPortion = savingSales();
+			const saveId = await onSave(salesPortion);
+			await saveExpenses(saveId);
+			window.location.reload();
+		} catch (error) {
+			console.error("Save failed", error);
+		}
 	}
 
 	function handleCancle() {
 		resetSelection();
+		resetExpenseSelection();
 		onCancel();
 	}
 
@@ -173,13 +208,6 @@ export default function FinancePage() {
 	// }
 	// --- END SCAFFOLDING ----------------------------------------------------
 
-	// function openExpenseDrawer(section: TExpenseSection | null) {
-	// 	if (section) {
-	// 		setAllocationSelectorDrawerState(false);
-	// 	}
-	// 	setActiveExpenseDrawer(section);
-	// }
-
 	// const statusActions = {
 	// 	canConfirm: (isNewAllocation || draftAllocation.status === "DRAFT") && !isReadOnly,
 	// 	canEnableEdit: !isNewAllocation && draftAllocation.status === "CONFIRMED" && !editMode,
@@ -194,6 +222,9 @@ export default function FinancePage() {
 			step={currentStep}
 			settlement={activeSettlement}
 			productBreakdown={productBreakdown || []}
+			settlementSummary={settlementSummary ?? null}
+			breakdownGroupBy={breakdownGroupBy}
+			onBreakdownGroupByChange={setBreakdownGroupBy}
 			// transactions={selectedTransactions}
 			// salesSummary={salesSummary}
 			// adjustments={draftAllocation.adjustments}
@@ -236,7 +267,7 @@ export default function FinancePage() {
 							{readyToSave && (
 								<>
 									<Button
-										disabled={showLoading || activeSettlement.settlementName === "" || isEditMade}
+										disabled={showLoading || activeSettlement.settlementName === ""}
 										variant="primary"
 										size="md"
 										onClick={handleSaving}
@@ -282,34 +313,33 @@ export default function FinancePage() {
 							readOnly={!isDraft}
 							breakdown={salesBreakdown}
 							pageData={{
-								firstItem: firstItem,
-								lastItem: lastItem,
-								totalCount: totalCount,
-								totalSelected: totalSelected,
-								totalPages: totalPages,
+								firstItem,
+								lastItem,
+								totalCount,
+								totalSelected,
+								totalPages,
 								currentPage: salesCurrentPage
 							}}
 						/>
 					)}
 
-					{/* {currentStep === "ADJUSTMENTS" && (
+					{currentStep === "SETTLEMENT" && (
 						<ExpensesStep
-							transactions={selectedTransactions}
-							readOnly={!isSalesAdjustmentsEditable}
+							salesEstimate={salesEstimate}
+							readOnly={!isDraft}
 							breakdown={salesBreakdown}
 							laborActual={laborActual}
 							onLaborActualChange={setLaborActual}
 							expenses={expenses}
 							selectedUtilityIds={selectedUtilityIds}
 							selectedAdditionalIds={selectedAdditionalIds}
-							activeDrawer={activeExpenseDrawer}
+							activeDrawer={expensesDrawerSection}
 							setActiveDrawer={openExpenseDrawer}
-							onToggleExpense={handleToggleExpense}
-							// onAddExpense={handleAddExpense}
+							onToggleExpense={toggleExpense}
 						/>
 					)}
 
-					{currentStep === "SUMMARY" && (
+					{/* {currentStep === "SUMMARY" && (
 						<SummaryStep
 							allocation={draftAllocation}
 							finalResult={finalResult}
@@ -341,9 +371,7 @@ export default function FinancePage() {
 								const confirmed = window.confirm(
 									"You have some changed in the sales selection, are you really want to go to other settlement without saving?"
 								);
-								if (!confirmed) {
-									return;
-								}
+								if (!confirmed) return;
 							}
 							loadSettlement(id);
 							resetSelection();
@@ -353,9 +381,7 @@ export default function FinancePage() {
 								const confirmed = window.confirm(
 									"You have some changed in the sales selection, are you really want to go to other settlement without saving?"
 								);
-								if (!confirmed) {
-									return;
-								}
+								if (!confirmed) return;
 							}
 							startNewSettlement();
 						}}
@@ -363,16 +389,16 @@ export default function FinancePage() {
 					/>
 				)}
 
-				{/* {activeExpenseDrawer && (
+				{expensesDrawerSection && (
 					<ExpenseDrawer
-						section={activeExpenseDrawer}
-						expenses={expenses.filter((expense) => expense.section === activeExpenseDrawer)}
-						selectedIds={activeExpenseDrawer === "UTILITIES" ? selectedUtilityIds : selectedAdditionalIds}
-						onToggleExpense={(id) => handleToggleExpense(activeExpenseDrawer, id)}
-						onAddExpense={(data) => handleAddExpense(activeExpenseDrawer, data)}
-						onClose={() => setActiveExpenseDrawer(null)}
+						section={expensesDrawerSection}
+						expenses={expenses.filter((expense) => expense.section === expensesDrawerSection)}
+						selectedIds={expensesDrawerSection === "UTILITIES" ? selectedUtilityIds : selectedAdditionalIds}
+						onToggleExpense={(id) => toggleExpense(expensesDrawerSection, id)}
+						onAddExpense={(data) => addExpense(expensesDrawerSection, data)}
+						onClose={() => setDrawerState(null)}
 					/>
-				)} */}
+				)}
 			</div>
 
 			<LoadingModal isOpen={showLoading}>{loadingState}</LoadingModal>
@@ -380,16 +406,3 @@ export default function FinancePage() {
 		</div>
 	);
 }
-
-/*
-	if (isAllowed) {
-		action();
-		return;
-	}
-
-	const confirmed = window.confirm(message);
-
-	if (!confirmed) {
-		return;
-	}
-*/

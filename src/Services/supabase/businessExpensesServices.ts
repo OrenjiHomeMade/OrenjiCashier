@@ -1,5 +1,6 @@
 import { supabase } from "./client";
 import type { Database } from "../../Types/database";
+import type { TExpenseSection } from "../../Types/expense";
 
 export const BUSINESS_EXPENSE_CATEGORIES = ["INGREDIENT", "PACKAGING", "UTILITY", "LABOR", "TEAM", "OTHER"] as const;
 
@@ -8,6 +9,11 @@ export type BusinessExpenseCategory = (typeof BUSINESS_EXPENSE_CATEGORIES)[numbe
 export const BUSINESS_EXPENSE_TYPES = ["PURCHASE", "DIRECT_EXPENSE"] as const;
 
 export type BusinessExpenseType = (typeof BUSINESS_EXPENSE_TYPES)[number];
+
+export const CATEGORY_OPTIONS_BY_SECTION: Record<TExpenseSection, BusinessExpenseCategory[]> = {
+	UTILITIES: ["UTILITY"],
+	ADDITIONAL: ["TEAM", "OTHER"]
+};
 
 // type BusinessExpense = Database["public"]["Tables"]["business_expense"]["Row"];
 

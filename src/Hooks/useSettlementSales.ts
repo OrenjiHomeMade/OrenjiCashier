@@ -10,7 +10,6 @@ import {
 	getTransactionItemsSettlementSummary
 } from "../Services/supabase/settlementServices";
 
-// Pure — shared by savingSales() and the live breakdown query below.
 function computeSelectionDelta(bulkIntent: "ALL" | "CLEAR" | "MANUAL", toggled: Map<number, boolean>) {
 	const toggledIds = Array.from(toggled.keys());
 	let idToSave: number[] = [];
@@ -169,7 +168,6 @@ export const useSettlementSales = (
 
 	const savingSales = () => {
 		setPreventRefilter(false);
-
 		const { idToSave, idToDelete } = computeSelectionDelta(bulkIntent, toggledTransactionItems);
 
 		return {
@@ -185,7 +183,6 @@ export const useSettlementSales = (
 		return toggledTransactionItems.has(transactionItemId) ? !base : base;
 	};
 
-	// --- LIVE PRODUCT BREAKDOWN (drives the bar chart in SalesBreakdown) ---
 	const { idToSave: liveAdds, idToDelete: liveRemoves } = useMemo(
 		() => computeSelectionDelta(bulkIntent, toggledTransactionItems),
 		[bulkIntent, toggledTransactionItems]
@@ -194,10 +191,12 @@ export const useSettlementSales = (
 	const breakdownStart = salesFilter.startDate ? new Date(salesFilter.startDate) : activeSettlement.settlementStart;
 	const breakdownEnd = salesFilter.endDate ? new Date(salesFilter.endDate) : activeSettlement.settlementEnd;
 
+	const [breakdownGroupBy, setBreakdownGroupBy] = useState<"PRODUCT" | "CATEGORY">("PRODUCT");
+
 	const { data: productBreakdown, isLoading: isLoadingBreakdown } = useQuery({
 		queryKey: [
 			"settlementBreakdown",
-			"PRODUCT",
+			breakdownGroupBy,
 			selectedTransactionId,
 			bulkIntent,
 			liveAdds,
@@ -213,7 +212,7 @@ export const useSettlementSales = (
 				idToRemoves: liveRemoves,
 				settlementStart: breakdownStart!,
 				settlementEnd: breakdownEnd!,
-				breakdownType: "PRODUCT"
+				breakdownType: breakdownGroupBy
 			}),
 		enabled: enabled && !!breakdownStart && !!breakdownEnd
 	});
@@ -236,10 +235,9 @@ export const useSettlementSales = (
 				idToRemoves: liveRemoves,
 				settlementStart: breakdownStart!,
 				settlementEnd: breakdownEnd!
-			})
+			}),
+		enabled: enabled && !!breakdownStart && !!breakdownEnd
 	});
-
-	// const productBreakdown = useMemo(productBreakdownRaw, [productBreakdownRaw]);
 
 	const _getLoadingState = () => {
 		if (isLoadingProductCategory) {
@@ -266,6 +264,7 @@ export const useSettlementSales = (
 		transactionItems,
 		productBreakdown,
 		settlementSummary,
+
 		// functions
 		savingSales,
 		// filter related
@@ -282,6 +281,8 @@ export const useSettlementSales = (
 		totalPages,
 		itemPerPage,
 		// states
+		breakdownGroupBy,
+		setBreakdownGroupBy,
 		bulkIntent,
 		setBulkIntent,
 		toggledTransactionItems,

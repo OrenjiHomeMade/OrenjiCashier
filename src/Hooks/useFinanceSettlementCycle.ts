@@ -158,7 +158,7 @@ export const useFinanceSettlementCycle = () => {
 			// if (activeSettlement.settlementStatus !== "DRAFT") {
 			// 	setCurrentStep("SUMMARY");
 			// }
-			window.location.reload();
+			// window.location.reload();
 		},
 
 		onError: (error) => {
@@ -178,7 +178,7 @@ export const useFinanceSettlementCycle = () => {
 			// 	})
 			// ]);
 			// setIsEditMade(false);
-			window.location.reload();
+			// window.location.reload();
 		}
 	});
 
@@ -235,12 +235,12 @@ export const useFinanceSettlementCycle = () => {
 		});
 	};
 
-	const onSave = (salesSection: {
+	const onSave = async (salesSection: {
 		idToSave: number[];
 		idToDelete: number[];
 		salesFilter: TSalesFilter;
 		selectionMode: "ALL" | "CLEAR" | "MANUAL";
-	}) => {
+	}): Promise<number> => {
 		const { idToSave, idToDelete, salesFilter, selectionMode } = salesSection;
 
 		const lastSettlementState = {
@@ -249,11 +249,13 @@ export const useFinanceSettlementCycle = () => {
 			...(salesFilter.endDate && { settlementEnd: new Date(salesFilter.endDate) })
 		};
 
+		let data;
+
 		if (lastSettlementState.settlementId === null) {
 			console.log("TEST CREATION");
 			console.log("mutate prep start: ", lastSettlementState.settlementStart);
 			console.log("mutate prep end: ", lastSettlementState.settlementEnd);
-			createNewSettlementMutation.mutate({
+			const newBusinessSettlement = await createNewSettlementMutation.mutateAsync({
 				settlementName: lastSettlementState.settlementName,
 				settlementStart: lastSettlementState.settlementStart,
 				settlementEnd: lastSettlementState.settlementEnd,
@@ -262,8 +264,9 @@ export const useFinanceSettlementCycle = () => {
 				idToExclude: idToDelete,
 				selectionMode: selectionMode
 			});
+			data = newBusinessSettlement.business_settlement_id;
 		} else {
-			updateSettlementMutation.mutate({
+			const updateBusinessSettlement = await updateSettlementMutation.mutateAsync({
 				businessSettlementId: lastSettlementState.settlementId,
 				selectionMode: selectionMode,
 				idToAdds: idToSave,
@@ -272,7 +275,9 @@ export const useFinanceSettlementCycle = () => {
 				settlementEnd: lastSettlementState.settlementEnd,
 				settlementAdditionalSelector: null
 			});
+			data = updateBusinessSettlement.business_settlement_id;
 		}
+		return data;
 	};
 
 	const onCancel = () => {
