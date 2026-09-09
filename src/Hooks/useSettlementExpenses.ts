@@ -11,6 +11,8 @@ import type { SettlementExpenseInput, TBusinessExpense, TExpenseSection } from "
 import { getLocalTimestamp } from "../Utilities/NumberFormater";
 import { toast } from "react-toastify";
 import { getSettlementExpenses, updateBusinessSettlementExpenses } from "../Services/supabase/settlementServices";
+import type { TBusinessSettlement, TQSalesSummary } from "../Types/settlement";
+import { resolveSalesEstimate } from "../Utilities/resolveSalesEstimate";
 
 const EMPTY_EXPENSES: TBusinessExpense[] = [];
 const EMPTY_IDS: string[] = [];
@@ -54,10 +56,14 @@ function mapExpenseRow(row: TBusinessExpenseRow): TBusinessExpense | null {
 
 export const useSettlementExpenses = (
 	enabled: boolean,
-	businessSettlementId: number | null,
+	activeSettlement: TBusinessSettlement,
+	salesSummary: TQSalesSummary,
 	setIsEditMade: (value: boolean) => void
 ) => {
+	const businessSettlementId = activeSettlement.settlementId;
 	const queryClient = useQueryClient();
+
+	const salesEstimate = resolveSalesEstimate(activeSettlement, salesSummary ?? null);
 
 	const { data: expenseRows, isLoading: isLoadingExpenses } = useQuery({
 		queryKey: ["businessExpenses"],
@@ -80,6 +86,18 @@ export const useSettlementExpenses = (
 	});
 
 	const [selectedExpenseIds, setSelectedExpenseIds] = useState<string[]>(EMPTY_IDS);
+	const [laborActual, setLaborActual] = useState(0);
+	const [isLaborEdited, setIsLaborEdited] = useState(false);
+
+	useEffect(() => {
+		if (isLaborEdited) return;
+		const seed = (() => {
+			const initialEstimate = resolveSalesEstimate(activeSettlement, salesSummary ?? null);
+			return initialEstimate.labor || activeSettlement.settledLaborCost || activeSettlement.salesLaborCost;
+		})();
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		setLaborActual(seed);
+	}, [activeSettlement, salesSummary, isLaborEdited]);
 
 	// Seed selection from the DB whenever the loaded settlement's allocations change.
 	useEffect(() => {
@@ -102,6 +120,12 @@ export const useSettlementExpenses = (
 		setSelectedExpenseIds((prev) =>
 			prev.includes(id) ? prev.filter((existing) => existing !== id) : [...prev, id]
 		);
+	}
+
+	function updateLaborActual(value: number) {
+		setIsLaborEdited(true);
+		setIsEditMade(true);
+		setLaborActual(value);
 	}
 
 	const addExpenseMutation = useMutation({
@@ -155,7 +179,13 @@ export const useSettlementExpenses = (
 		setSelectedExpenseIds(
 			settlementExpenseRows ? settlementExpenseRows.map((row) => String(row.business_expense_id)) : []
 		);
+		setLaborActual(activeSettlement.settledLaborCost || activeSettlement.salesLaborCost);
+		setIsLaborEdited(false);
 	};
+
+	function clearLaborEdit() {
+		setIsLaborEdited(false);
+	}
 
 	const _getLoadingState = () => {
 		if (saveExpensesMutation.isPending) {
@@ -175,10 +205,15 @@ export const useSettlementExpenses = (
 		expenses,
 		selectedUtilityIds,
 		selectedAdditionalIds,
+		salesEstimate,
 		toggleExpense,
 		addExpense,
 		saveExpenses,
 		resetExpenseSelection,
+		laborActual,
+		updateLaborActual,
+		clearLaborEdit,
+		isLaborEdited,
 		showLoading,
 		loadingState
 	};

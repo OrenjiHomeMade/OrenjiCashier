@@ -12,6 +12,8 @@ import {
 	type BusinessExpenseCategory
 } from "../../../Services/supabase/businessExpensesServices";
 
+const SHOW_PACKAGING_INGREDIENT_SECTIONS = false;
+
 function buildEmptyExpenseForm(section: TExpenseSection) {
 	return {
 		description: "",
@@ -91,18 +93,21 @@ export function ExpensesStep({
 						isDrawerOpen={activeDrawer === "UTILITIES"}
 						onOpenDrawer={() => setActiveDrawer("UTILITIES")}
 					/>
+					{SHOW_PACKAGING_INGREDIENT_SECTIONS && (
+						<>
+							<DerivedCostSection
+								title="Packaging"
+								amount={salesEstimate.packing}
+								note="Derived from sales COGS. Packaging purchases are tracked separately and aren't recognized directly here."
+							/>
 
-					<DerivedCostSection
-						title="Packaging"
-						amount={salesEstimate.packing}
-						note="Derived from sales COGS. Packaging purchases are tracked separately and aren't recognized directly here."
-					/>
-
-					<DerivedCostSection
-						title="Ingredient"
-						amount={salesEstimate.ingredient}
-						note="Derived from the ingredient COGS consumed by the selected sales — not the full ingredient purchase amount."
-					/>
+							<DerivedCostSection
+								title="Ingredient"
+								amount={salesEstimate.ingredient}
+								note="Derived from the ingredient COGS consumed by the selected sales — not the full ingredient purchase amount."
+							/>
+						</>
+					)}
 
 					<ExpenseBackedSection
 						title="Additional"

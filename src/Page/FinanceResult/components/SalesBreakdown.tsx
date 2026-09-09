@@ -388,9 +388,6 @@ export default function SalesBreakdown({
 	settlementSummary,
 	breakdownGroupBy,
 	onBreakdownGroupByChange
-	// adjustments,
-	// adjustmentsTotal,
-	// finalResult
 }: SalesBreakdownProps) {
 	const visibleSections = SECTION_ORDER[step];
 	const focusSection = FOCUS_SECTION[step];

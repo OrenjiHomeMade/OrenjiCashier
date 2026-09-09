@@ -1,198 +1,140 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import type { ReactNode } from "react";
+import type { EChartsOption } from "echarts";
 import styles from "./SummaryStep.module.css";
-import Button from "../../../Component/Button/Button";
-import StatusBadge from "./StatusBadge";
+import CurrencyStat from "./CurrencyStat";
+import EChart from "../../../Component/Echart/Echart";
 import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
 import { formatRupiah } from "../../../Utilities/NumberFormater";
-import { resolveDistributionAmount } from "../../../Utilities/financeCalculations";
-import type { TDistributionMode, TFinanceAllocation } from "../../../Types/finance";
+import type { TSettlementReconciliation } from "../../../Utilities/resolveSettlementReconciliation";
+
+const COLOR = {
+	retained: "#79a354",
+	distributed: "#b25e34"
+};
+
+function buildDistributionOption(retained: number, distributed: number): EChartsOption {
+	return {
+		tooltip: {
+			trigger: "item",
+			valueFormatter: (value) => formatRupiah(Number(value))
+		},
+		legend: {
+			bottom: 0,
+			textStyle: { color: "#756d67", fontSize: 11 },
+			itemWidth: 10,
+			itemHeight: 10
+		},
+		series: [
+			{
+				name: "Profit split",
+				type: "pie",
+				radius: ["45%", "72%"],
+				center: ["50%", "42%"],
+				avoidLabelOverlap: true,
+				itemStyle: { borderColor: "#fefcfa", borderWidth: 2 },
+				label: { formatter: "{b}\n{d}%", color: "#583f16", fontSize: 11 },
+				data: [
+					{ name: "Retained", value: retained, itemStyle: { color: COLOR.retained } },
+					{ name: "Distributed", value: distributed, itemStyle: { color: COLOR.distributed } }
+				]
+			}
+		]
+	};
+}
 
 export type SummaryStepProps = {
-	allocation: TFinanceAllocation;
-	finalResult: number;
-	onDistributionModeChange: (mode: TDistributionMode) => void;
-	onUpdateDistributionEntry: (id: string, value: number) => void;
-	onAddDistributionEntry: (label: string) => void;
-	onRemoveDistributionEntry: (id: string) => void;
-	distributionTotalAmount: number;
-	distributionTotalPercent: number;
-	isReconciled: boolean;
-	canEditDistribution: boolean;
-	statusActions: {
-		canConfirm: boolean;
-		canEnableEdit: boolean;
-		canDistribute: boolean;
-	};
-	onConfirm: () => void;
-	onEnableEdit: () => void;
-	onDistribute: () => void;
-	/** Built once in FinanceResult and shared across all 3 steps — see SalesBreakdown. */
+	reconciliation: TSettlementReconciliation;
+	profitDistributed: number;
+	profitRetained: number;
+	onProfitDistributedChange: (value: number) => void;
+	readOnly: boolean;
 	breakdown: ReactNode;
 };
 
 export default function SummaryStep({
-	allocation,
-	finalResult,
-	onDistributionModeChange,
-	onUpdateDistributionEntry,
-	onAddDistributionEntry,
-	onRemoveDistributionEntry,
-	distributionTotalAmount,
-	distributionTotalPercent,
-	isReconciled,
-	canEditDistribution,
-	statusActions,
-	onConfirm,
-	onEnableEdit,
-	onDistribute,
+	reconciliation,
+	profitDistributed,
+	profitRetained,
+	onProfitDistributedChange,
+	readOnly,
 	breakdown
 }: SummaryStepProps) {
-	const [newLabel, setNewLabel] = useState("");
+	const { revenue, settledLaborCost, settledUtilityCost, otherExpenses, totalSettledCost, balance, isDeficit } =
+		reconciliation;
+
+	const deficitCovered = isDeficit ? Math.abs(balance) : 0;
+	const availableProfit = Math.max(balance, 0);
+
+	const distributionOption = useMemo(
+		() => buildDistributionOption(profitRetained, profitDistributed),
+		[profitRetained, profitDistributed]
+	);
 
 	return (
 		<div className={styles.layout}>
-			<section className={`${styles.headerCard} card`}>
-				<div>
-					<p className={styles.eyebrow}>Allocation</p>
-					<h2 className={styles.name}>{allocation.name || "Untitled allocation"}</h2>
+			<section className={`${styles.heroCard} card`}>
+				<CurrencyStat
+					label={isDeficit ? "Deficit" : "Profit"}
+					value={Math.abs(balance)}
+					tone={isDeficit ? "negative" : "positive"}
+					size="lg"
+				/>
+				<span className={styles.heroSub}>
+					{formatRupiah(revenue)} revenue − {formatRupiah(totalSettledCost)} settled costs
+				</span>
+			</section>
+
+			<section className={`${styles.metricsCard} card`}>
+				<h3 className={styles.cardTitle}>Settled costs</h3>
+				<div className={styles.statGrid}>
+					<CurrencyStat label="Revenue" value={revenue} tone="accent" />
+					<CurrencyStat label="Labor" value={settledLaborCost} tone="muted" />
+					<CurrencyStat label="Utilities" value={settledUtilityCost} tone="muted" />
+					<CurrencyStat label="Additional" value={otherExpenses} tone="muted" />
+					<CurrencyStat label="Total settled" value={totalSettledCost} tone="muted" />
 				</div>
-				<StatusBadge status={"DRAFT"} />
-				{/* TODO: EDIT HERE */}
 			</section>
 
 			{breakdown}
 
-			<section className={`${styles.distributionCard} card`}>
-				<div className={styles.distributionHeader}>
-					<h3 className={styles.cardTitle}>Distribution breakdown</h3>
-
-					{canEditDistribution && (
-						<div className={styles.modeToggle}>
-							<button
-								type="button"
-								className={
-									allocation.distributionMode === "PERCENTAGE" ? styles.modeActive : styles.mode
-								}
-								onClick={() => onDistributionModeChange("PERCENTAGE")}
-							>
-								Percentage
-							</button>
-							<button
-								type="button"
-								className={allocation.distributionMode === "FIXED" ? styles.modeActive : styles.mode}
-								onClick={() => onDistributionModeChange("FIXED")}
-							>
-								Fixed amount
-							</button>
+			<section className={`${styles.allocationCard} card`}>
+				{isDeficit ? (
+					<>
+						<h3 className={styles.cardTitle}>Deficit coverage</h3>
+						<div className={styles.deficitRow}>
+							<span>Deficit covered</span>
+							<strong>{formatRupiah(deficitCovered)}</strong>
 						</div>
-					)}
-				</div>
+					</>
+				) : (
+					<>
+						<h3 className={styles.cardTitle}>Profit allocation</h3>
 
-				<div className={styles.distributionList}>
-					{allocation.distribution.map((entry) => (
-						<div className={styles.distributionRow} key={entry.id}>
-							<span className={styles.distributionLabel}>{entry.label}</span>
-
-							{canEditDistribution ? (
-								allocation.distributionMode === "PERCENTAGE" ? (
-									<div className={styles.percentInputWrap}>
-										<input
-											type="number"
-											min={0}
-											max={100}
-											value={entry.value}
-											onChange={(event) =>
-												onUpdateDistributionEntry(entry.id, Number(event.target.value))
-											}
-											className={styles.percentInput}
-										/>
-										<span>%</span>
-									</div>
-								) : (
-									<RupiahInput
-										value={String(entry.value)}
-										onChange={(event) =>
-											onUpdateDistributionEntry(entry.id, Number(event.currentTarget.value || 0))
-										}
-										className={styles.fixedInput}
-									/>
-								)
-							) : (
-								<span className={styles.distributionStatic}>
-									{allocation.distributionMode === "PERCENTAGE"
-										? `${entry.value}%`
-										: formatRupiah(entry.value)}
-								</span>
-							)}
-
-							<span className={styles.distributionAmount}>
-								{formatRupiah(
-									resolveDistributionAmount(entry, allocation.distributionMode, finalResult)
-								)}
-							</span>
-
-							{canEditDistribution && (
-								<button
-									type="button"
-									className={styles.removeButton}
-									onClick={() => onRemoveDistributionEntry(entry.id)}
-									aria-label="Remove distribution category"
-								>
-									×
-								</button>
-							)}
+						<div className={styles.chartWrap}>
+							<EChart option={distributionOption} height={220} />
 						</div>
-					))}
-				</div>
 
-				{canEditDistribution && (
-					<div className={styles.addRow}>
-						<input
-							type="text"
-							value={newLabel}
-							onChange={(event) => setNewLabel(event.target.value)}
-							placeholder="Add category, e.g. Equipment"
-							className={styles.addInput}
-						/>
-						<Button
-							size="sm"
-							variant="secondary"
-							type="button"
-							onClick={() => {
-								if (!newLabel.trim()) return;
-								onAddDistributionEntry(newLabel.trim());
-								setNewLabel("");
-							}}
-						>
-							Add
-						</Button>
-					</div>
+						<div className={styles.statGrid}>
+							<CurrencyStat label="Retained" value={profitRetained} tone="positive" />
+							<CurrencyStat label="Distributed" value={profitDistributed} tone="accent" />
+						</div>
+
+						<label className={styles.field}>
+							<span>Amount to distribute</span>
+							<RupiahInput
+								value={String(profitDistributed)}
+								onChange={(event) => onProfitDistributedChange(Number(event.currentTarget.value) || 0)}
+								placeholder="0"
+								disabled={readOnly}
+							/>
+						</label>
+						<p className={styles.fieldHint}>
+							Retained updates automatically — the split always sums to {formatRupiah(availableProfit)}.
+						</p>
+					</>
 				)}
-
-				<div className={`${styles.reconcileBar} ${isReconciled ? styles.reconciled : styles.unreconciled}`}>
-					<span>
-						{allocation.distributionMode === "PERCENTAGE"
-							? `${distributionTotalPercent}% allocated`
-							: `${formatRupiah(distributionTotalAmount)} allocated`}
-					</span>
-					<span>{isReconciled ? "Reconciles with final result" : `Target ${formatRupiah(finalResult)}`}</span>
-				</div>
 			</section>
-
-			<div className={styles.actions}>
-				{statusActions.canConfirm && <Button onClick={onConfirm}>Confirm allocation</Button>}
-				{statusActions.canEnableEdit && (
-					<Button variant="secondary" onClick={onEnableEdit}>
-						Edit
-					</Button>
-				)}
-				{statusActions.canDistribute && (
-					<Button onClick={onDistribute} disabled={!isReconciled}>
-						Distribute
-					</Button>
-				)}
-			</div>
 		</div>
 	);
 }
