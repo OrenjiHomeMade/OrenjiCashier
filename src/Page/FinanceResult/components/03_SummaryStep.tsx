@@ -9,11 +9,12 @@ import { formatRupiah } from "../../../Utilities/NumberFormater";
 import type { TSettlementReconciliation } from "../../../Utilities/resolveSettlementReconciliation";
 
 const COLOR = {
-	retained: "#66d604",
-	distributed: "#e2682b"
+	profit: "#66d604",
+	cogs: "#e2682b",
+	other: "#C32230"
 };
 
-function buildDistributionOption(retained: number, distributed: number): EChartsOption {
+function buildDistributionOption(profit: number, cogs: number, other: number): EChartsOption {
 	return {
 		tooltip: {
 			trigger: "item",
@@ -29,14 +30,17 @@ function buildDistributionOption(retained: number, distributed: number): ECharts
 			{
 				name: "Profit split",
 				type: "pie",
-				radius: ["45%", "72%"],
-				center: ["50%", "42%"],
+				radius: "60%", // ["45%", "60%"],
+				center: ["50%", "50%"], // was 50% — leaves room on the right for the label + leader line
 				avoidLabelOverlap: true,
 				itemStyle: { borderColor: "#fefcfa", borderWidth: 2 },
 				label: { formatter: "{b}\n{d}%", color: "#cc7f03", fontSize: 11 },
 				data: [
-					{ name: "Retained", value: retained, itemStyle: { color: COLOR.retained } },
-					{ name: "Distributed", value: distributed, itemStyle: { color: COLOR.distributed } }
+					{ name: "Profit", value: profit, itemStyle: { color: COLOR.profit } },
+					{ name: "HPP", value: cogs, itemStyle: { color: COLOR.cogs } },
+					...(other > 0
+						? [{ name: "Pengeluaran Lain", value: other, itemStyle: { color: COLOR.other } }]
+						: [])
 				]
 			}
 		]
@@ -60,43 +64,44 @@ export default function SummaryStep({
 	readOnly,
 	breakdown
 }: SummaryStepProps) {
-	const { revenue, settledLaborCost, settledUtilityCost, otherExpenses, totalSettledCost, balance, isDeficit } =
-		reconciliation;
+	const {
+		revenue,
+		totalSettledCost,
+		balance,
+		isDeficit,
+		settledIngredientCost,
+		settledPackagingCost,
+		settledUtilityCost,
+		settledLaborCost,
+		otherExpenses
+	} = reconciliation;
 
 	const deficitCovered = isDeficit ? Math.abs(balance) : 0;
 	const availableProfit = Math.max(balance, 0);
-
+	const cogs = settledIngredientCost + settledPackagingCost + settledUtilityCost + settledLaborCost;
 	const distributionOption = useMemo(
-		() => buildDistributionOption(profitRetained, profitDistributed),
-		[profitRetained, profitDistributed]
+		() => buildDistributionOption(balance, cogs, otherExpenses),
+		[balance, cogs, otherExpenses]
 	);
 
 	return (
 		<div className={styles.layout}>
-			<section className={`${styles.heroCard} card`}>
-				<CurrencyStat
-					label={isDeficit ? "Deficit" : "Profit"}
-					value={Math.abs(balance)}
-					tone={isDeficit ? "negative" : "positive"}
-					size="lg"
-				/>
-				<span className={styles.heroSub}>
-					{formatRupiah(revenue)} revenue − {formatRupiah(totalSettledCost)} settled costs
-				</span>
-			</section>
-
-			<section className={`${styles.metricsCard} card`}>
-				<h3 className={styles.cardTitle}>Settled costs</h3>
-				<div className={styles.statGrid}>
-					<CurrencyStat label="Revenue" value={revenue} tone="accent" />
-					<CurrencyStat label="Labor" value={settledLaborCost} tone="muted" />
-					<CurrencyStat label="Utilities" value={settledUtilityCost} tone="muted" />
-					<CurrencyStat label="Additional" value={otherExpenses} tone="muted" />
-					<CurrencyStat label="Total settled" value={totalSettledCost} tone="muted" />
+			<section className={`${styles.profitSection} card`}>
+				<div className={styles.heroCard}>
+					<CurrencyStat
+						label={isDeficit ? "Deficit" : "Profit"}
+						value={Math.abs(balance)}
+						tone={isDeficit ? "negative" : "positive"}
+						size="lg"
+					/>
+					<span className={styles.heroSub}>
+						{formatRupiah(revenue)} revenue − {formatRupiah(totalSettledCost)} settled costs
+					</span>
+				</div>
+				<div className={styles.chartWrap}>
+					<EChart option={distributionOption} height={220} />
 				</div>
 			</section>
-
-			{breakdown}
 
 			<section className={`${styles.allocationCard} card`}>
 				{isDeficit ? (
@@ -110,10 +115,6 @@ export default function SummaryStep({
 				) : (
 					<>
 						<h3 className={styles.cardTitle}>Profit allocation</h3>
-
-						<div className={styles.chartWrap}>
-							<EChart option={distributionOption} height={220} />
-						</div>
 
 						<div className={styles.statGrid}>
 							<CurrencyStat label="Retained" value={profitRetained} tone="positive" />
@@ -141,6 +142,7 @@ export default function SummaryStep({
 					</>
 				)}
 			</section>
+			{breakdown}
 		</div>
 	);
 }

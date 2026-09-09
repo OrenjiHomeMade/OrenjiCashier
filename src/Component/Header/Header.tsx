@@ -12,12 +12,18 @@ import CheerfulLogo from "../../assets/OrenjiSquareLogo.svg";
 import CircleUser from "../../assets/circle-user.svg";
 import LogoutIcon from "../MediaComponent/LogoutIcon";
 import FinanceIcon from "../MediaComponent/FinanceIcon";
+import OrderingIcon from "../MediaComponent/OrderingIcon";
 
 const menuList = [
 	{
 		label: "Cashier",
 		path: "/cashier",
 		icon: CashierIcon
+	},
+	{
+		label: "Order",
+		path: "/order",
+		icon: OrderingIcon
 	},
 	{
 		label: "Transactions",

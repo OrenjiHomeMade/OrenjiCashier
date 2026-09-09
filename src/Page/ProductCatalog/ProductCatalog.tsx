@@ -33,7 +33,7 @@ const ProductCatalog = () => {
 		setDrawer(null);
 
 		queryClient.invalidateQueries({
-			queryKey: ["products"]
+			queryKey: ["products_in_section"]
 		});
 	};
 

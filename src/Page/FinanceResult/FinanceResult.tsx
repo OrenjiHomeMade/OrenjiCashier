@@ -182,10 +182,12 @@ export default function FinancePage() {
 		<SalesBreakdown
 			step={currentStep}
 			settlement={activeSettlement}
+			reconciliation={reconciliation}
 			productBreakdown={productBreakdown || []}
 			settlementSummary={settlementSummary ?? null}
 			breakdownGroupBy={breakdownGroupBy}
 			onBreakdownGroupByChange={setBreakdownGroupBy}
+			isExpenseEdit={isLaborEdited}
 		/>
 	);
 

@@ -19,6 +19,7 @@ import InvoicePreviewPage from "./Page/Invoice/Invoice";
 import FinanceResult from "./Page/FinanceResult/FinanceResult";
 // IMPORT UTILITIES
 import { ToastContainer } from "react-toastify";
+import Ordering from "./Page/Ordering/Ordering";
 
 // =========================================================
 // QUERY CLIENT
@@ -94,6 +95,7 @@ function AppRoutes() {
 				<Route path="/transactions" element={<TransactionHistory />} />
 				<Route path="/products" element={<ProductCatalog />} />
 				<Route path="/finance" element={<FinanceResult />} />
+				<Route path="/order" element={<Ordering />} />
 				{/* =================================================
                 DEVELOPMENT ONLY
             	================================================= */}

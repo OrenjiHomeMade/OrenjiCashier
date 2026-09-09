@@ -34,7 +34,7 @@ const CashierContent = () => {
 			emptyCart();
 			setCartIsOpenOnPhone(false);
 			queryClient.invalidateQueries({
-				queryKey: ["products"]
+				queryKey: ["products_in_section"]
 			});
 		}
 	});

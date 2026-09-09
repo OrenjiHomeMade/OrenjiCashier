@@ -8,10 +8,10 @@ import type {
 	TBusinessSettlement,
 	TProductBreakdown,
 	TQSalesSummary,
-	// TQSalesSummary,
-	TSalesSummary,
 	TSettlementStep
 } from "../../../Types/settlement";
+import type { TSettlementReconciliation } from "../../../Utilities/resolveSettlementReconciliation";
+import { resolveSalesEstimate } from "../../../Utilities/resolveSalesEstimate";
 
 /* =========================================================
    COLORS
@@ -357,11 +357,11 @@ const SECTION_ORDER: Record<TSettlementStep, TSectionKey[]> = {
 	SUMMARY: ["sales", "settlement", "breakdown"]
 };
 
-// const FOCUS_SECTION: Record<TSettlementStep, TSectionKey> = {
-// 	SALES: "sales",
-// 	SETTLEMENT: "settlement",
-// 	SUMMARY: "breakdown"
-// };
+const FOCUS_SECTION: Record<TSettlementStep, TSectionKey> = {
+	SALES: "sales",
+	SETTLEMENT: "settlement",
+	SUMMARY: "breakdown"
+};
 
 /* =========================================================
    MAIN COMPONENT
@@ -372,8 +372,10 @@ export type SalesBreakdownProps = {
 	settlement: TBusinessSettlement;
 	productBreakdown: TProductBreakdown[];
 	settlementSummary: TQSalesSummary;
+	reconciliation: TSettlementReconciliation | null;
 	breakdownGroupBy: TBreakdownGroupBy;
 	onBreakdownGroupByChange: (groupBy: TBreakdownGroupBy) => void;
+	isExpenseEdit: boolean;
 	// adjustments: TAdjustment[];
 	// adjustmentsTotal: number;
 	// finalResult: number;
@@ -384,51 +386,87 @@ export default function SalesBreakdown({
 	settlement,
 	productBreakdown,
 	settlementSummary,
+	reconciliation,
 	breakdownGroupBy,
+	isExpenseEdit,
 	onBreakdownGroupByChange
 }: SalesBreakdownProps) {
 	const visibleSections = SECTION_ORDER[step];
-	// const focusSection = FOCUS_SECTION[step];
+	const focusSection = FOCUS_SECTION[step];
 
-	let remain = 0;
-	if (settlement.profitDistributed) remain += settlement.profitDistributed;
-	if (settlement.profitRetained) remain += settlement.profitRetained;
-	if (settlement.deficitCovered) remain += settlement.deficitCovered;
-	if (remain === 0) {
-		remain = settlementSummary?.salesMargin ?? settlement.salesMargin;
-	}
+	const isSettled =
+		settlement.settlementStatus !== "DRAFT" ||
+		focusSection === "breakdown" ||
+		(focusSection === "settlement" && isExpenseEdit);
+	const estimate = resolveSalesEstimate(settlement, settlementSummary);
 
-	const remainLabel = remain > 0 ? "Profit" : remain < 0 ? "Deficit" : "Even";
+	const revenue = reconciliation?.revenue ?? estimate.revenue;
+	const laborCost = reconciliation?.settledLaborCost ?? estimate.labor;
+	const ingredientCost = reconciliation?.settledIngredientCost ?? estimate.ingredient;
+	const packingCost = reconciliation?.settledPackagingCost ?? estimate.packing;
+	const utilityCost = reconciliation?.settledUtilityCost ?? estimate.utility;
+	const otherCosts = reconciliation?.otherExpenses ?? settlement.totalAdditionalExpenses ?? 0;
+	const cogs = laborCost + ingredientCost + packingCost + utilityCost;
 
-	const salesSummary: TSalesSummary = {
-		transaction: settlementSummary?.salesTransactionCount ?? settlement.transactionCounts ?? 0,
-		itemSold: settlementSummary?.selectedItemCount ?? settlement.soldItems ?? 0,
-		revenue: settlementSummary?.salesRevenue ?? settlement.salesRevenue,
-		labor: settlement.settledLaborCost ?? settlementSummary?.salesLaborCost ?? settlement.salesLaborCost,
-		ingredient:
-			settlement.settledIngredientCost ??
-			settlementSummary?.salesIngredientCost ??
-			settlement.salesIngredientCost,
-		packing:
-			settlement.settledPackagingCost ?? settlementSummary?.salesPackagingCost ?? settlement.salesPackagingCost,
-		utility: settlement.settledUtilityCost ?? settlementSummary?.salesUtilityCost ?? settlement.salesUtilityCost,
-		otherCosts: settlement.totalAdditionalExpenses ?? 0,
-		remain: remain
-	};
+	const remain = reconciliation?.balance ?? settlementSummary?.salesMargin ?? settlement.salesMargin;
+	const remainStatus = remain > 0 ? "Profit" : remain < 0 ? "Deficit" : "Remain";
+
+	// let remain = 0;
+	// if (settlement.profitDistributed) remain += settlement.profitDistributed;
+	// if (settlement.profitRetained) remain += settlement.profitRetained;
+	// if (settlement.deficitCovered) remain += settlement.deficitCovered;
+	// if (remain === 0) {
+	// 	remain = settlementSummary?.salesMargin ?? settlement.salesMargin;
+	// }
+
+	// const remainLabel = remain > 0 ? "Profit" : remain < 0 ? "Deficit" : "Even";
+
+	// const salesSummary: TSalesSummary = {
+	// 	transaction: settlementSummary?.salesTransactionCount ?? settlement.transactionCounts ?? 0,
+	// 	itemSold: settlementSummary?.selectedItemCount ?? settlement.soldItems ?? 0,
+	// 	revenue: settlementSummary?.salesRevenue ?? settlement.salesRevenue,
+	// 	labor: settlement.settledLaborCost ?? settlementSummary?.salesLaborCost ?? settlement.salesLaborCost,
+	// 	ingredient:
+	// 		settlement.settledIngredientCost ??
+	// 		settlementSummary?.salesIngredientCost ??
+	// 		settlement.salesIngredientCost,
+	// 	packing:
+	// 		settlement.settledPackagingCost ?? settlementSummary?.salesPackagingCost ?? settlement.salesPackagingCost,
+	// 	utility: settlement.settledUtilityCost ?? settlementSummary?.salesUtilityCost ?? settlement.salesUtilityCost,
+	// 	otherCosts: settlement.totalAdditionalExpenses ?? 0,
+	// 	remain: remain
+	// };
 
 	return (
 		<aside className={`${styles.panel} card`}>
 			{visibleSections.includes("sales") && (
 				<SalesSummarySection
-					focused={true}
-					summary={salesSummary}
-					itemsSold={salesSummary.itemSold}
+					focused={focusSection === "sales"}
+					transaction={estimate.transaction}
+					itemsSold={estimate.itemSold}
+					revenue={revenue}
+					cogs={cogs}
+					laborCost={laborCost}
+					ingredientCost={ingredientCost}
+					utilityCost={utilityCost}
+					otherCosts={otherCosts}
+					remain={remain}
+					remainStatus={remainStatus}
+					isSettled={isSettled}
 					productBreakdown={productBreakdown}
-					salesStatus={remainLabel}
 					breakdownGroupBy={breakdownGroupBy}
 					onBreakdownGroupByChange={onBreakdownGroupByChange}
 				/>
 			)}
+			{/* // <SalesSummarySection
+			// 	focused={true}
+			// 	summary={salesSummary}
+			// 	itemsSold={salesSummary.itemSold}
+			// 	productBreakdown={productBreakdown}
+			// 	salesStatus={remainLabel}
+			// 	breakdownGroupBy={breakdownGroupBy}
+			// 	onBreakdownGroupByChange={onBreakdownGroupByChange}
+			// /> */}
 
 			{/* {visibleSections.includes("settlement") && (
 				<AdjustmentSummarySection
@@ -455,18 +493,34 @@ export default function SalesBreakdown({
 
 function SalesSummarySection({
 	focused,
-	summary,
+	transaction,
 	itemsSold,
+	revenue,
+	cogs,
+	laborCost,
+	ingredientCost,
+	utilityCost,
+	otherCosts,
+	remain,
+	remainStatus,
+	isSettled,
 	productBreakdown,
-	salesStatus,
 	breakdownGroupBy,
 	onBreakdownGroupByChange
 }: {
 	focused: boolean;
-	summary: TSalesSummary;
+	transaction: number;
 	itemsSold: number;
+	revenue: number;
+	cogs: number;
+	laborCost: number;
+	ingredientCost: number;
+	utilityCost: number;
+	otherCosts: number;
+	remain: number;
+	remainStatus: "Profit" | "Deficit" | "Remain";
+	isSettled: boolean;
 	productBreakdown: TProductBreakdown[];
-	salesStatus: string;
 	breakdownGroupBy: TBreakdownGroupBy;
 	onBreakdownGroupByChange: (groupBy: TBreakdownGroupBy) => void;
 }) {
@@ -475,6 +529,15 @@ function SalesSummarySection({
 		[productBreakdown, breakdownGroupBy]
 	);
 
+	const costLabel = isSettled ? "Settled cost" : "COGS";
+	const laborLabel = isSettled ? "Settled labor" : "Labor";
+	const ingredientLabel = isSettled ? "Settled ingredient" : "Ingredient";
+	const utilityLabel = isSettled ? "Settled utilities" : "Utilities";
+	const otherLabel = isSettled ? "Settled other costs" : "Other costs";
+	const remainLabel = isSettled ? `Settled ${remainStatus.toLowerCase()}` : remainStatus;
+
+	console.log(productBreakdown);
+
 	return (
 		<section className={`${styles.section} ${focused ? styles.sectionFocused : styles.sectionCompact}`}>
 			<div className={styles.sectionHeader}>
@@ -482,65 +545,84 @@ function SalesSummarySection({
 					<span className={`${styles.dot} ${styles.dotSales}`} aria-hidden="true" />
 					Sales summary
 				</h3>
-
-				<div className={styles.sectionHeaderActions}>
-					{productBreakdown.length > 0 && (
-						<div className={styles.groupToggle} role="group" aria-label="Group breakdown by">
-							<button
-								type="button"
-								className={breakdownGroupBy === "PRODUCT" ? styles.groupActive : styles.groupInactive}
-								onClick={() => onBreakdownGroupByChange("PRODUCT")}
-							>
-								Product
-							</button>
-							<button
-								type="button"
-								className={breakdownGroupBy === "CATEGORY" ? styles.groupActive : styles.groupInactive}
-								onClick={() => onBreakdownGroupByChange("CATEGORY")}
-							>
-								Category
-							</button>
-						</div>
-					)}
-				</div>
 			</div>
 
-			<div className={focused ? styles.statGrid : styles.statRow}>
-				<CurrencyStat
-					label="Transactions"
-					value={summary.transaction}
-					format="number"
-					tone="muted"
-					size={focused ? "md" : "sm"}
-				/>
-				<CurrencyStat
-					label="Items sold"
-					value={itemsSold}
-					format="number"
-					tone="muted"
-					size={focused ? "md" : "sm"}
-				/>
-				<CurrencyStat label="Revenue" value={summary.revenue} tone="accent" size={focused ? "lg" : "md"} />
-				<CurrencyStat
-					label="COGS"
-					value={summary.labor + summary.ingredient + summary.utility + summary.packing}
-					tone="muted"
-				/>
-				<CurrencyStat label="Labor" value={summary.labor} tone="muted" />
-				<CurrencyStat label="Ingredient" value={summary.ingredient} tone="muted" />
-				<CurrencyStat label="Utilities" value={summary.utility} tone="muted" />
-				<CurrencyStat label="Other costs" value={summary.otherCosts} tone="muted" />
-				<CurrencyStat
-					label={salesStatus}
-					value={summary.remain}
-					tone={summary.remain > 0 ? "positive" : "negative"}
-				/>
+			<div className={styles.statTiers}>
+				{/* Tier 1: overview */}
+				<div className={styles.statOverview}>
+					<CurrencyStat
+						label="Transactions"
+						value={transaction}
+						format="number"
+						tone="muted"
+						size={focused ? "md" : "sm"}
+					/>
+					<CurrencyStat
+						label="Items sold"
+						value={itemsSold}
+						format="number"
+						tone="muted"
+						size={focused ? "md" : "sm"}
+					/>
+				</div>
+
+				{/* Tier 2: headline money */}
+				<div className={styles.statHeadline}>
+					<CurrencyStat label="Revenue" value={revenue} tone="accent" size={focused ? "lg" : "md"} />
+					<CurrencyStat
+						label={remainLabel}
+						value={remain}
+						tone={remain > 0 ? "positive" : "negative"}
+						size={focused ? "lg" : "md"}
+					/>
+					<CurrencyStat label={costLabel} value={cogs} tone="muted" size={focused ? "lg" : "md"} />
+				</div>
+
+				{/* Tier 3: cost detail */}
+				<div className={styles.statDetail}>
+					<CurrencyStat label={laborLabel} value={laborCost} tone="muted" />
+					<CurrencyStat label={ingredientLabel} value={ingredientCost} tone="muted" />
+					<CurrencyStat label={utilityLabel} value={utilityCost} tone="muted" />
+					<CurrencyStat label={otherLabel} value={otherCosts} tone="muted" />
+				</div>
 			</div>
 
 			{productBreakdown.length > 0 && (
-				<div className={styles.chartWrap}>
-					<EChart option={chartOption} height={Math.max(180, Math.min(productBreakdown.length, 20) * 34)} />
-				</div>
+				<>
+					<div className={styles.chartTitleSections}>
+						<div className={styles.chartTitle}>Sales Breakdown</div>
+						<div className={styles.sectionHeaderActions}>
+							{productBreakdown.length > 0 && (
+								<div className={styles.groupToggle} role="group" aria-label="Group breakdown by">
+									<button
+										type="button"
+										className={
+											breakdownGroupBy === "PRODUCT" ? styles.groupActive : styles.groupInactive
+										}
+										onClick={() => onBreakdownGroupByChange("PRODUCT")}
+									>
+										Product
+									</button>
+									<button
+										type="button"
+										className={
+											breakdownGroupBy === "CATEGORY" ? styles.groupActive : styles.groupInactive
+										}
+										onClick={() => onBreakdownGroupByChange("CATEGORY")}
+									>
+										Category
+									</button>
+								</div>
+							)}
+						</div>
+					</div>
+					<div className={styles.chartWrap}>
+						<EChart
+							option={chartOption}
+							height={Math.max(180, Math.min(productBreakdown.length, 20) * 34)}
+						/>
+					</div>
+				</>
 			)}
 
 			{productBreakdown.length === 0 && focused && (

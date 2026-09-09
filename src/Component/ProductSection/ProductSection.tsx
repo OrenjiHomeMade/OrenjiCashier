@@ -39,9 +39,11 @@ const ProductSection = ({
 	const [searchTerm, setSearchTerm] = useState("");
 
 	const { data: products = [] } = useSuspenseQuery({
-		queryKey: ["products"],
+		queryKey: ["products_in_section", mode],
 		queryFn: () => getProducts(mode === "Cashier" ? true : null)
 	});
+
+	console.log("products:", products);
 
 	const productInfos: ProductInfoProps[] = useMemo(() => {
 		return products.map((product) => ({
