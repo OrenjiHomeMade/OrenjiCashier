@@ -22,7 +22,7 @@ const menuList = [
 	},
 	{
 		label: "Order",
-		path: "/order",
+		path: "/orders",
 		icon: OrderingIcon
 	},
 	{

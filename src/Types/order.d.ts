@@ -5,6 +5,24 @@
 export type TOrderStatus = "pending" | "delivered" | "paid" | "cancelled";
 
 /* =========================================================
+   SEED ITEM — handoff payload from Cashier's cart to Ordering
+   (passed as router state, then fed through react-use-cart's
+   own addItem on the Ordering side; never touches the RPC layer)
+   ========================================================= */
+
+export type TOrderSeedItem = {
+	id: string;
+	price: number;
+	quantity: number;
+	name: string;
+	productImageUrl?: string;
+	costLabor?: number;
+	costIngredient?: number;
+	costUtilities?: number;
+	costPackaging?: number;
+};
+
+/* =========================================================
    ORDER ITEM — INPUT (creating an order)
    ========================================================= */
 

@@ -448,6 +448,7 @@ export default function SalesBreakdown({
 					cogs={cogs}
 					laborCost={laborCost}
 					ingredientCost={ingredientCost}
+					packingCost={packingCost}
 					utilityCost={utilityCost}
 					otherCosts={otherCosts}
 					remain={remain}
@@ -499,6 +500,7 @@ function SalesSummarySection({
 	cogs,
 	laborCost,
 	ingredientCost,
+	packingCost,
 	utilityCost,
 	otherCosts,
 	remain,
@@ -515,6 +517,7 @@ function SalesSummarySection({
 	cogs: number;
 	laborCost: number;
 	ingredientCost: number;
+	packingCost: number;
 	utilityCost: number;
 	otherCosts: number;
 	remain: number;
@@ -529,9 +532,10 @@ function SalesSummarySection({
 		[productBreakdown, breakdownGroupBy]
 	);
 
-	const costLabel = isSettled ? "Settled cost" : "COGS";
+	const costLabel = isSettled ? "Settled cost" : "HPP";
 	const laborLabel = isSettled ? "Settled labor" : "Labor";
 	const ingredientLabel = isSettled ? "Settled ingredient" : "Ingredient";
+	const packingLabel = isSettled ? "Settled packing" : "Packing";
 	const utilityLabel = isSettled ? "Settled utilities" : "Utilities";
 	const otherLabel = isSettled ? "Settled other costs" : "Other costs";
 	const remainLabel = isSettled ? `Settled ${remainStatus.toLowerCase()}` : remainStatus;
@@ -582,6 +586,7 @@ function SalesSummarySection({
 				<div className={styles.statDetail}>
 					<CurrencyStat label={laborLabel} value={laborCost} tone="muted" />
 					<CurrencyStat label={ingredientLabel} value={ingredientCost} tone="muted" />
+					<CurrencyStat label={packingLabel} value={packingCost} tone="muted" />
 					<CurrencyStat label={utilityLabel} value={utilityCost} tone="muted" />
 					<CurrencyStat label={otherLabel} value={otherCosts} tone="muted" />
 				</div>

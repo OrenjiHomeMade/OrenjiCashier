@@ -19,11 +19,12 @@ import AuthContext from "../../../Component/Context/AuthProvider";
 // PROPERTY DEFINITION
 export type CartProps = {
 	onExecutePayment: (entry: TCreateTransactionInput) => void;
+	onConvertToOrder?: () => void;
 	onCartHeaderClick: () => void;
 	cartHeaderIsOpen: boolean;
 };
 
-const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: CartProps) => {
+const CartSection = ({ onExecutePayment, onConvertToOrder, onCartHeaderClick, cartHeaderIsOpen }: CartProps) => {
 	const [paymentMethod, setPaymentMethod] = useState<"qris" | "cash">("qris");
 	const [paymentAmount, setPaymentAmount] = useState<number>(0);
 	const [isEditingPayment, setIsEditingPayment] = useState(false);
@@ -166,6 +167,13 @@ const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: 
 						<span>Proses Pembayaran</span>
 					</button>
 
+					{onConvertToOrder && (
+						<button type="button" className={style.convertButton} onClick={onConvertToOrder}>
+							<CartIcon />
+							<span>Jadikan Pesanan</span>
+						</button>
+					)}
+
 					<button type="button" className={style.clearButton} onClick={() => emptyCart()}>
 						<TrashIcon />
 						<span>Kosongkan Keranjang</span>
@@ -182,11 +190,6 @@ const CartSection = ({ onExecutePayment, onCartHeaderClick, cartHeaderIsOpen }: 
 					<h1>Keranjang</h1>
 				</div>
 
-				{/* <select className={style.cartSelect} defaultValue="default">
-					<option value="default">Pilih Pelanggan</option>
-					<option value="customer-1">Pelanggan 1</option>
-					<option value="customer-2">Pelanggan 2</option>
-				</select> */}
 				{!isEmpty && (
 					<div className={style.totalItem}>
 						<strong>{totalItems} Items</strong>
