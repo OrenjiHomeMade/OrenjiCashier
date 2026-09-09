@@ -213,8 +213,7 @@ export const useSettlementSales = (
 				settlementStart: breakdownStart!,
 				settlementEnd: breakdownEnd!,
 				breakdownType: breakdownGroupBy
-			}),
-		enabled: enabled && !!breakdownStart && !!breakdownEnd
+			})
 	});
 
 	const { data: settlementSummary, isLoading: isLoadingSettlementSummary } = useQuery({
@@ -236,7 +235,7 @@ export const useSettlementSales = (
 				settlementStart: breakdownStart!,
 				settlementEnd: breakdownEnd!
 			}),
-		enabled: enabled && !!breakdownStart && !!breakdownEnd
+		enabled: enabled
 	});
 
 	const _getLoadingState = () => {
