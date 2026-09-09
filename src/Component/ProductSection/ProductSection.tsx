@@ -6,7 +6,7 @@ import { type ProductInfoProps } from "../ProductItem/ProductItem";
 
 // IMPORT HOOKS
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 // IMPORT COMPONENTS
 import GridIcon from "../MediaComponent/GridIcon";
@@ -38,32 +38,34 @@ const ProductSection = ({
 	const [selectedCategory, setSelectedCategory] = useState("Semua");
 	const [searchTerm, setSearchTerm] = useState("");
 
-	const { data: products = [] } = useQuery({
+	const { data: products = [] } = useSuspenseQuery({
 		queryKey: ["products"],
 		queryFn: () => getProducts(mode === "Cashier" ? true : null)
 	});
 
-	const productInfos: ProductInfoProps[] = products.map((product) => ({
-		id: product.productId.toString(),
-		price: product.productPrice,
-		quantity: 0,
+	const productInfos: ProductInfoProps[] = useMemo(() => {
+		return products.map((product) => ({
+			id: product.productId.toString(),
+			price: product.productPrice,
+			quantity: 0,
 
-		productCode: product.productCode,
-		productName: product.productName,
-		productImageUrl: getProductImageUrl(product.productCode),
-		productCategory: product.productCategory ?? "",
-		description: product.description ?? "",
-		isActive: product.isActive,
+			productCode: product.productCode,
+			productName: product.productName,
+			productImageUrl: getProductImageUrl(product.productCode),
+			productCategory: product.productCategory ?? "",
+			description: product.description ?? "",
+			isActive: product.isActive,
 
-		costIngredient: product.costIngredient,
-		costLabor: product.costLabor,
-		costPackaging: product.costPackaging,
-		costUtilities: product.costUtilities,
+			costIngredient: product.costIngredient,
+			costLabor: product.costLabor,
+			costPackaging: product.costPackaging,
+			costUtilities: product.costUtilities,
 
-		productPrice: product.productPrice,
+			productPrice: product.productPrice,
 
-		availableStock: product.stockQuantity
-	}));
+			availableStock: product.stockQuantity
+		}));
+	}, [products]);
 
 	const productCategory = ["Semua", ...categories];
 

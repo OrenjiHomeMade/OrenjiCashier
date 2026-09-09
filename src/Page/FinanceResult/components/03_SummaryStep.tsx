@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { ReactNode } from "react";
 import type { EChartsOption } from "echarts";
-import styles from "./SummaryStep.module.css";
+import styles from "./03_SummaryStep.module.css";
 import CurrencyStat from "./CurrencyStat";
 import EChart from "../../../Component/Echart/Echart";
 import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
@@ -9,8 +9,8 @@ import { formatRupiah } from "../../../Utilities/NumberFormater";
 import type { TSettlementReconciliation } from "../../../Utilities/resolveSettlementReconciliation";
 
 const COLOR = {
-	retained: "#79a354",
-	distributed: "#b25e34"
+	retained: "#66d604",
+	distributed: "#e2682b"
 };
 
 function buildDistributionOption(retained: number, distributed: number): EChartsOption {
@@ -33,7 +33,7 @@ function buildDistributionOption(retained: number, distributed: number): ECharts
 				center: ["50%", "42%"],
 				avoidLabelOverlap: true,
 				itemStyle: { borderColor: "#fefcfa", borderWidth: 2 },
-				label: { formatter: "{b}\n{d}%", color: "#583f16", fontSize: 11 },
+				label: { formatter: "{b}\n{d}%", color: "#cc7f03", fontSize: 11 },
 				data: [
 					{ name: "Retained", value: retained, itemStyle: { color: COLOR.retained } },
 					{ name: "Distributed", value: distributed, itemStyle: { color: COLOR.distributed } }
@@ -119,19 +119,25 @@ export default function SummaryStep({
 							<CurrencyStat label="Retained" value={profitRetained} tone="positive" />
 							<CurrencyStat label="Distributed" value={profitDistributed} tone="accent" />
 						</div>
-
-						<label className={styles.field}>
-							<span>Amount to distribute</span>
-							<RupiahInput
-								value={String(profitDistributed)}
-								onChange={(event) => onProfitDistributedChange(Number(event.currentTarget.value) || 0)}
-								placeholder="0"
-								disabled={readOnly}
-							/>
-						</label>
-						<p className={styles.fieldHint}>
-							Retained updates automatically — the split always sums to {formatRupiah(availableProfit)}.
-						</p>
+						{!readOnly && (
+							<>
+								<label className={styles.field}>
+									<span>Amount to distribute</span>
+									<RupiahInput
+										value={String(profitDistributed)}
+										onChange={(event) =>
+											onProfitDistributedChange(Number(event.currentTarget.value) || 0)
+										}
+										placeholder="0"
+										disabled={readOnly}
+									/>
+								</label>
+								<p className={styles.fieldHint}>
+									Retained updates automatically — the split always sums to{" "}
+									{formatRupiah(availableProfit)}.
+								</p>
+							</>
+						)}
 					</>
 				)}
 			</section>

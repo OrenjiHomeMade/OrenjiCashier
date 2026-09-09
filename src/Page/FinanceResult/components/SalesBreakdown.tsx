@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { EChartsOption } from "echarts";
 import styles from "./SalesBreakdown.module.css";
 import CurrencyStat from "./CurrencyStat";
@@ -25,7 +25,7 @@ const COLOR = {
 	adjustment: "#d14957",
 	margin: "#efac32",
 	profitNegative: "#ec2c5c",
-	qty: "#583f16"
+	qty: "#ff9e01"
 };
 
 // const ADJUSTMENT_COLORS: Record<string, string> = {
@@ -108,7 +108,7 @@ function buildProductBreakdownOption(data: TProductBreakdown[], groupBy: TBreakd
 				color: "#583f16",
 				fontSize: 11,
 				interval: 0,
-				rotate: labels.length > 8 ? 35 : 0
+				rotate: labels.length > 5 ? 35 : 0
 			}
 		},
 
@@ -219,7 +219,7 @@ function buildProductBreakdownOption(data: TProductBreakdown[], groupBy: TBreakd
 				yAxisIndex: 1,
 				symbolSize: 6,
 				itemStyle: {
-					color: COLOR.margin
+					color: COLOR.qty
 				},
 				data: data.map((p) => p.quantity)
 			}
@@ -357,11 +357,11 @@ const SECTION_ORDER: Record<TSettlementStep, TSectionKey[]> = {
 	SUMMARY: ["sales", "settlement", "breakdown"]
 };
 
-const FOCUS_SECTION: Record<TSettlementStep, TSectionKey> = {
-	SALES: "sales",
-	SETTLEMENT: "settlement",
-	SUMMARY: "breakdown"
-};
+// const FOCUS_SECTION: Record<TSettlementStep, TSectionKey> = {
+// 	SALES: "sales",
+// 	SETTLEMENT: "settlement",
+// 	SUMMARY: "breakdown"
+// };
 
 /* =========================================================
    MAIN COMPONENT
@@ -369,7 +369,6 @@ const FOCUS_SECTION: Record<TSettlementStep, TSectionKey> = {
 
 export type SalesBreakdownProps = {
 	step: TSettlementStep;
-	// transactions: TTransaction[];
 	settlement: TBusinessSettlement;
 	productBreakdown: TProductBreakdown[];
 	settlementSummary: TQSalesSummary;
@@ -382,7 +381,6 @@ export type SalesBreakdownProps = {
 
 export default function SalesBreakdown({
 	step,
-	// transactions,
 	settlement,
 	productBreakdown,
 	settlementSummary,
@@ -390,7 +388,7 @@ export default function SalesBreakdown({
 	onBreakdownGroupByChange
 }: SalesBreakdownProps) {
 	const visibleSections = SECTION_ORDER[step];
-	const focusSection = FOCUS_SECTION[step];
+	// const focusSection = FOCUS_SECTION[step];
 
 	let remain = 0;
 	if (settlement.profitDistributed) remain += settlement.profitDistributed;
@@ -403,6 +401,7 @@ export default function SalesBreakdown({
 	const remainLabel = remain > 0 ? "Profit" : remain < 0 ? "Deficit" : "Even";
 
 	const salesSummary: TSalesSummary = {
+		transaction: settlementSummary?.salesTransactionCount ?? settlement.transactionCounts ?? 0,
 		itemSold: settlementSummary?.selectedItemCount ?? settlement.soldItems ?? 0,
 		revenue: settlementSummary?.salesRevenue ?? settlement.salesRevenue,
 		labor: settlement.settledLaborCost ?? settlementSummary?.salesLaborCost ?? settlement.salesLaborCost,
@@ -416,17 +415,12 @@ export default function SalesBreakdown({
 		otherCosts: settlement.totalAdditionalExpenses ?? 0,
 		remain: remain
 	};
-	// const itemsSold = useMemo(() => calcItemsSoldCount(transactions), [transactions]);
-
-	// const productBreakdown = useMemo(() => aggregateSalesByProduct(transactions), [transactions]);
-
-	// const adjustmentBreakdown = useMemo(() => aggregateAdjustmentsByCategory(adjustments), [adjustments]);
 
 	return (
 		<aside className={`${styles.panel} card`}>
 			{visibleSections.includes("sales") && (
 				<SalesSummarySection
-					focused={focusSection === "sales"}
+					focused={true}
 					summary={salesSummary}
 					itemsSold={salesSummary.itemSold}
 					productBreakdown={productBreakdown}
@@ -476,8 +470,6 @@ function SalesSummarySection({
 	breakdownGroupBy: TBreakdownGroupBy;
 	onBreakdownGroupByChange: (groupBy: TBreakdownGroupBy) => void;
 }) {
-	const [isExpanded, setIsExpanded] = useState(focused);
-
 	const chartOption = useMemo(
 		() => buildProductBreakdownOption(productBreakdown, breakdownGroupBy),
 		[productBreakdown, breakdownGroupBy]
@@ -492,7 +484,7 @@ function SalesSummarySection({
 				</h3>
 
 				<div className={styles.sectionHeaderActions}>
-					{isExpanded && productBreakdown.length > 0 && (
+					{productBreakdown.length > 0 && (
 						<div className={styles.groupToggle} role="group" aria-label="Group breakdown by">
 							<button
 								type="button"
@@ -510,34 +502,17 @@ function SalesSummarySection({
 							</button>
 						</div>
 					)}
-
-					{productBreakdown.length > 0 && (
-						<button
-							type="button"
-							className={styles.expandButton}
-							onClick={() => setIsExpanded((value) => !value)}
-						>
-							{isExpanded ? "Hide" : `By ${breakdownGroupBy.toLowerCase()}`}
-							<span
-								className={`${styles.chevron} ${isExpanded ? styles.chevronOpen : ""}`}
-								aria-hidden="true"
-							>
-								⌄
-							</span>
-						</button>
-					)}
 				</div>
 			</div>
 
 			<div className={focused ? styles.statGrid : styles.statRow}>
 				<CurrencyStat
 					label="Transactions"
-					value={summary.itemSold}
+					value={summary.transaction}
 					format="number"
 					tone="muted"
 					size={focused ? "md" : "sm"}
 				/>
-
 				<CurrencyStat
 					label="Items sold"
 					value={itemsSold}
@@ -545,24 +520,24 @@ function SalesSummarySection({
 					tone="muted"
 					size={focused ? "md" : "sm"}
 				/>
-
 				<CurrencyStat label="Revenue" value={summary.revenue} tone="accent" size={focused ? "lg" : "md"} />
-
-				{focused && (
-					<>
-						<CurrencyStat
-							label="COGS"
-							value={summary.labor + summary.ingredient + summary.utility + summary.packing}
-							tone="muted"
-						/>
-						<CurrencyStat label="Labor" value={summary.labor} tone="muted" />
-						<CurrencyStat label="Other costs" value={summary.otherCosts} tone="muted" />
-						<CurrencyStat label={salesStatus} value={summary.remain} tone="positive" />
-					</>
-				)}
+				<CurrencyStat
+					label="COGS"
+					value={summary.labor + summary.ingredient + summary.utility + summary.packing}
+					tone="muted"
+				/>
+				<CurrencyStat label="Labor" value={summary.labor} tone="muted" />
+				<CurrencyStat label="Ingredient" value={summary.ingredient} tone="muted" />
+				<CurrencyStat label="Utilities" value={summary.utility} tone="muted" />
+				<CurrencyStat label="Other costs" value={summary.otherCosts} tone="muted" />
+				<CurrencyStat
+					label={salesStatus}
+					value={summary.remain}
+					tone={summary.remain > 0 ? "positive" : "negative"}
+				/>
 			</div>
 
-			{isExpanded && productBreakdown.length > 0 && (
+			{productBreakdown.length > 0 && (
 				<div className={styles.chartWrap}>
 					<EChart option={chartOption} height={Math.max(180, Math.min(productBreakdown.length, 20) * 34)} />
 				</div>

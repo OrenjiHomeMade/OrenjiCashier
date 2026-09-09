@@ -412,6 +412,7 @@ export async function getTransactionItemsSettlementSummary({
 		salesPackagingCost: data.sales_packaging_cost,
 		salesRevenue: data.sales_revenue,
 		salesUtilityCost: data.sales_utility_cost,
-		selectedItemCount: data.selected_item_count
+		selectedItemCount: data.selected_item_count,
+		salesTransactionCount: data.sales_transaction_count
 	};
 }

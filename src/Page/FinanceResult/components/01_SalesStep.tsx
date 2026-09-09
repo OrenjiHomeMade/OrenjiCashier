@@ -1,12 +1,13 @@
 import { useState } from "react";
 import type { ReactNode, SubmitEvent } from "react";
-import styles from "./SalesStep.module.css";
+import styles from "./01_SalesStep.module.css";
 import Button from "../../../Component/Button/Button";
 import Drawer from "../../../Component/Drawer/Drawer";
 import { formatRupiah, getLocalTimestamp } from "../../../Utilities/NumberFormater";
 import type { TBusinessSettlement, TSalesFilter } from "../../../Types/settlement";
 import type { TTransactionPerItem } from "../../../Types/transaction";
 import ChevronIcon from "../../../Component/MediaComponent/ChevronIcon";
+import { guardAction } from "../../../Utilities/guardAction";
 
 export type SalesStepProps = {
 	activeSettlement: TBusinessSettlement;
@@ -61,7 +62,7 @@ function FilterFields({
 					type="date"
 					value={filters.startDate}
 					onChange={(event) => {
-						handleActionOnPrevention(
+						guardAction(
 							isFilterAllowed,
 							"Your action will change the selection scope, are you sure?",
 							() => {
@@ -78,7 +79,7 @@ function FilterFields({
 					type="date"
 					value={filters.endDate}
 					onChange={(event) => {
-						handleActionOnPrevention(
+						guardAction(
 							isFilterAllowed,
 							"Your action will change the selection scope, are you sure?",
 							() => {
@@ -174,10 +175,6 @@ export default function SalesStep({
 						variant="secondary"
 						size="sm"
 						onClick={() => {
-							// handleActionOnPrevention(
-							// 	isFilterAllowed,
-							// 	"Your action will reset toggled selection, are you sure?",
-							// );
 							onSelectAll();
 						}}
 						type="button"
@@ -188,10 +185,6 @@ export default function SalesStep({
 						variant="ghost"
 						size="sm"
 						onClick={() => {
-							// handleActionOnPrevention(
-							// 	isFilterAllowed,
-							// 	"Your action will reset toggled selection, are you sure?",
-							// );
 							onClearSelection();
 						}}
 						type="button"
@@ -207,17 +200,14 @@ export default function SalesStep({
 	);
 	return (
 		<div className={styles.layout}>
-			<aside className={`${styles.filterCard} card`}>
-				<h3 className={styles.cardTitle}>Filter transactions</h3>
-				{renderFilterSection(false)}
-			</aside>
-
-			<button type="button" className={styles.mobileFilterTrigger} onClick={() => setFilterDrawerOpen(true)}>
-				Filters
-				{activeFilterCount > 0 && <span className={styles.filterCount}>{activeFilterCount}</span>}
-			</button>
-
 			<section className={styles.listCard}>
+				<div className={styles.filterBar}>{renderFilterSection(false)}</div>
+
+				<button type="button" className={styles.mobileFilterTrigger} onClick={() => setFilterDrawerOpen(true)}>
+					Filters
+					{activeFilterCount > 0 && <span className={styles.filterCount}>{activeFilterCount}</span>}
+				</button>
+
 				<div className={styles.listHeader}>
 					<h3 className={styles.cardTitle}>Sold Items</h3>
 					<span className={styles.listCount}>
@@ -321,17 +311,3 @@ export default function SalesStep({
 		</div>
 	);
 }
-
-const handleActionOnPrevention = (isAllowed: boolean, message: string, action: () => void) => {
-	if (isAllowed) {
-		action();
-		return;
-	}
-
-	const confirmed = window.confirm(message);
-
-	if (!confirmed) {
-		return;
-	}
-	action();
-};

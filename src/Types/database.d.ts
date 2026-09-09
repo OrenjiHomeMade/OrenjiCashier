@@ -624,6 +624,7 @@ export type Database = {
           product_category_count: number
           settlement_name: string
           settlement_status: string
+          transaction_count: number
           transaction_item_count: number
           updated_at: string
         }[]
@@ -717,6 +718,7 @@ export type Database = {
           sales_margin: number
           sales_packaging_cost: number
           sales_revenue: number
+          sales_transaction_count: number
           sales_utility_cost: number
           selected_item_count: number
         }[]

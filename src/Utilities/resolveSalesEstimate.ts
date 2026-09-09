@@ -21,6 +21,7 @@ export function resolveSalesEstimate(
 		labor: settlementSummary?.salesLaborCost ?? settlement.salesLaborCost,
 		ingredient: settlementSummary?.salesIngredientCost ?? settlement.salesIngredientCost,
 		packing: settlementSummary?.salesPackagingCost ?? settlement.salesPackagingCost,
-		utility: settlementSummary?.salesUtilityCost ?? settlement.salesUtilityCost
+		utility: settlementSummary?.salesUtilityCost ?? settlement.salesUtilityCost,
+		transaction: settlementSummary?.salesTransactionCount ?? settlement.transactionCounts ?? 0
 	};
 }

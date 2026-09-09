@@ -2,12 +2,12 @@ import styles from "./FinanceResult.module.css";
 import type { TExpenseSection } from "../../Types/expense";
 
 import { AllocationSelector, AllocationSelectorDrawer } from "./components/AllocationSelector";
-import { ExpensesStep, ExpenseDrawer } from "./components/ExpensesStep";
 
 import StepNav from "./components/StepNav";
-import SalesStep from "./components/SalesStep";
+import SalesStep from "./components/01_SalesStep";
+import { ExpensesStep, ExpenseDrawer } from "./components/02_ExpensesStep";
+import SummaryStep from "./components/03_SummaryStep";
 import SalesBreakdown from "./components/SalesBreakdown";
-import SummaryStep from "./components/SummaryStep";
 import Button from "../../Component/Button/Button";
 import LoadingModal from "../../Component/LoadingModal/LoadingModal";
 import { useState } from "react";

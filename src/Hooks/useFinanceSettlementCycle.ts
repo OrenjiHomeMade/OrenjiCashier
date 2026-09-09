@@ -66,6 +66,7 @@ export const useFinanceSettlementCycle = () => {
 				settlementName: settlement.settlement_name,
 				settlementStatus: settlement.settlement_status as TSettlementStatus,
 				soldItems: settlement.transaction_item_count,
+				transactionCounts: settlement.transaction_count,
 				soldCategories: settlement.product_category_count,
 				settlementLastUpdatedAt: settlement.updated_at ? new Date(settlement.updated_at) : null,
 				settlementCreatedAt: new Date(settlement.created_at)
@@ -106,7 +107,9 @@ export const useFinanceSettlementCycle = () => {
 			if (!data) {
 				return null;
 			}
-			const { soldItems, soldCategories } = settlements.filter((e) => e.settlementId === selectedSettlementId)[0];
+			const { soldItems, soldCategories, transactionCounts } = settlements.filter(
+				(e) => e.settlementId === selectedSettlementId
+			)[0];
 			return {
 				settlementStart: new Date(data.settlement_start!),
 				settlementEnd: new Date(data.settlement_end!),
@@ -136,6 +139,7 @@ export const useFinanceSettlementCycle = () => {
 				settlementLastUpdatedAt: data.updated_at ? new Date(data.updated_at) : null,
 				settlementCreatedAt: new Date(data.created_at!),
 
+				transactionCounts: transactionCounts,
 				soldItems: soldItems,
 				soldCategories: soldCategories
 			};

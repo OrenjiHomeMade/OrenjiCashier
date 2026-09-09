@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ReactNode, SubmitEvent } from "react";
-import styles from "./ExpensesStep.module.css";
+import styles from "./02_ExpensesStep.module.css";
 import Button from "../../../Component/Button/Button";
 import Drawer from "../../../Component/Drawer/Drawer";
 import RupiahInput from "../../../Component/RupiahInput/RupiahInput";

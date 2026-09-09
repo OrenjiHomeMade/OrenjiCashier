@@ -13,6 +13,7 @@ export type TBusinessSettlementEssential = {
 } & TBusinessSettlementItemFilter;
 
 export type TBusinessItemsAggregate = {
+	transactionCounts?: number;
 	soldItems?: number;
 	soldCategories?: number;
 };
@@ -50,6 +51,7 @@ export type TBusinessSettlement = TBusinessSettlementLists &
 	Partial<TBusinessItemsAggregate>;
 
 export type TSalesSummary = {
+	transaction: number;
 	itemSold: number;
 	revenue: number;
 	labor: number;
@@ -92,4 +94,5 @@ export type TQSalesSummary = {
 	salesRevenue: number;
 	salesUtilityCost: number;
 	selectedItemCount: number;
+	salesTransactionCount: number;
 } | null;
