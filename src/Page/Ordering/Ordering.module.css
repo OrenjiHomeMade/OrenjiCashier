@@ -1,0 +1,70 @@
+.orderingLayout {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+/* =========================
+   Header
+   ========================= */
+
+.orderingHeader {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.orderingHeader h1 {
+	margin: 0;
+
+	color: var(--text-dark);
+
+	font-size: 1.3rem;
+	font-weight: 600;
+}
+
+.backButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	width: 36px;
+	height: 36px;
+
+	border: 1px solid var(--border-color, #ded7d1);
+	border-radius: var(--radius-md);
+
+	background-color: var(--white);
+	color: var(--text-dark);
+
+	cursor: pointer;
+
+	transition:
+		background-color 120ms ease,
+		border-color 120ms ease,
+		color 120ms ease;
+}
+
+.backButton:hover {
+	background-color: var(--cream-soft);
+	border-color: var(--orange-dark);
+	color: var(--orange-dark);
+}
+
+/* =========================
+   Body — same skeleton as Cashier.module.css
+   ========================= */
+
+.orderingBody {
+	display: flex;
+	flex-direction: row;
+	gap: 24px;
+
+	--mobile-cart-offset: 72px;
+}
+
+@media (max-width: 500px) {
+	.orderingBody {
+		padding-bottom: calc(var(--mobile-cart-offset) + env(safe-area-inset-bottom) + 16px);
+	}
+}

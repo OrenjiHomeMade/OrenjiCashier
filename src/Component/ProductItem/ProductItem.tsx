@@ -2,7 +2,7 @@
 import style from "./ProductInfo.module.css";
 
 // IMPORT TYPES
-import type { TProductItem } from "../../Types/product";
+import type { TProductItem, TProductMode } from "../../Types/product";
 
 // IMPORT HOOKS
 import { useState } from "react";
@@ -17,6 +17,7 @@ import { ArrowUpDown } from "lucide-react";
 
 export interface ProductInfoProps extends TProductItem {
 	availableStock: number;
+	mode?: TProductMode;
 	variant?: "grid" | "list";
 	onAdd?: () => void;
 	onAdjustStock?: () => void;
@@ -41,11 +42,21 @@ const ProductItem = ({
 	const isInactive = !isActive;
 
 	const inCashierMode = mode === "Cashier";
+	const inOrderMode = mode === "Order";
 
+	/*
+	 * Cashier mode fulfils from live stock, so it stays disabled when
+	 * out of stock. Order mode is explicitly allowed to demand a
+	 * product that isn't in stock yet — that demand is the whole
+	 * point (see get_product_demand_overview) — so it's never
+	 * disabled by stock.
+	 */
 	const disabledAddItem = inCashierMode && isOutOfStock;
 
+	const showAddAffordance = inCashierMode || inOrderMode;
+
 	const handleAdd = () => {
-		if (isOutOfStock) return;
+		if (disabledAddItem) return;
 
 		onAdd?.();
 	};
@@ -63,6 +74,13 @@ const ProductItem = ({
 				<EmptyImage className={style.fallbackIcon} />
 				<span>No Image</span>
 			</div>
+		);
+
+	const stockLabel =
+		inOrderMode && isOutOfStock ? (
+			<span className={`${style.stock} ${style.demandStock}`}>Out of stock — adds demand</span>
+		) : (
+			<span className={style.stock}>Stock: {availableStock}</span>
 		);
 
 	/* ==================================================
@@ -88,17 +106,17 @@ const ProductItem = ({
 
 				<div className={style.priceInfo}>
 					<strong className={style.price}>{rupiahFormater(price)}</strong>
-					<span className={style.stock}>Stock: {availableStock}</span>
+					{stockLabel}
 				</div>
 
-				{inCashierMode && (
+				{showAddAffordance && (
 					<button type="button" className={style.addButton} disabled={disabledAddItem} onClick={handleAdd}>
 						<span>+</span>
-						Add
+						{inOrderMode ? "Add demand" : "Add"}
 					</button>
 				)}
 
-				{!inCashierMode && (
+				{mode === "Catalog" && (
 					<div className={style.actionButtons}>
 						<button
 							type="button"
@@ -126,10 +144,13 @@ const ProductItem = ({
 	}
 
 	/* ==================================================
-	   GRID — CASHIER
+	   GRID — CASHIER / ORDER
+	   Both are a single clickable card. Cashier disables it
+	   when out of stock; Order never does — the card stays
+	   clickable and the stock line explains why.
 	   ================================================== */
 
-	if (inCashierMode) {
+	if (showAddAffordance) {
 		return (
 			<button
 				type="button"
@@ -150,7 +171,7 @@ const ProductItem = ({
 
 					<strong className={style.price}>{rupiahFormater(price)}</strong>
 
-					<span className={style.stock}>Stock: {availableStock}</span>
+					{stockLabel}
 				</div>
 			</button>
 		);

@@ -1,5 +1,7 @@
 import type { Item } from "react-use-cart";
 
+export type TProductMode = "Cashier" | "Catalog" | "Order";
+
 export type TProduct = {
 	productCode: string;
 	productName: string;

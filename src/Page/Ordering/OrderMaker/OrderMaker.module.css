@@ -1,0 +1,363 @@
+.orderMakerSection {
+	width: 380px;
+	height: 100%;
+	min-height: 0;
+
+	display: flex;
+	flex-direction: column;
+
+	background-color: var(--white);
+	border-radius: var(--radius-lg);
+
+	overflow: hidden;
+}
+
+/* =========================
+   Header
+   ========================= */
+
+.orderMakerHeader {
+	flex: 0 0 65px;
+
+	padding: 0 20px;
+
+	background-color: var(--orange-dark);
+	color: var(--white);
+
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+
+	border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.headerTitle {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+
+	min-width: 0;
+}
+
+.headerTitle h1 {
+	margin: 0;
+
+	color: var(--white);
+
+	font-size: 1.2rem;
+	font-weight: 600;
+
+	white-space: nowrap;
+}
+
+.totalItem {
+	background-color: var(--orange);
+	padding: 10px;
+	width: fit-content;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 2rem;
+	border-color: var(--orange-light);
+	border-width: 1px;
+	border-style: solid;
+}
+
+/* =========================
+   Body
+   ========================= */
+
+.body {
+	flex: 1;
+	min-height: 0;
+
+	display: flex;
+	flex-direction: column;
+
+	overflow: hidden;
+}
+
+/* =========================
+   Order Detail Fields
+   ========================= */
+
+.formFields {
+	flex: 0 0 auto;
+
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+
+	padding: 20px 20px 16px;
+
+	background-color: var(--white);
+	border-bottom: 1px solid var(--border-color, #ded7d1);
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.field label {
+	color: var(--text-muted, #756d67);
+
+	font-size: 0.8rem;
+	font-weight: 500;
+}
+
+.field input {
+	width: 100%;
+	height: 42px;
+
+	padding: 0 12px;
+
+	border: 1px solid var(--border-color, #ded7d1);
+	border-radius: var(--radius-md);
+
+	background-color: var(--white);
+	color: var(--text-dark);
+
+	font-size: 0.9rem;
+
+	box-sizing: border-box;
+
+	transition:
+		border-color 150ms ease,
+		box-shadow 150ms ease;
+}
+
+.field input:focus {
+	outline: none;
+
+	border-color: var(--orange-dark);
+
+	box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.12);
+}
+
+.inputInvalid {
+	border-color: var(--terracotta) !important;
+	background-color: rgba(192, 57, 43, 0.05);
+}
+
+.inputInvalid:focus {
+	border-color: var(--terracotta) !important;
+	box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.12) !important;
+}
+
+.fieldError {
+	color: var(--terracotta);
+
+	font-size: 0.76rem;
+}
+
+/* =========================
+   Items Empty
+   ========================= */
+
+.emptyItems {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100px;
+	padding: 40px;
+	color: var(--terracotta);
+}
+
+.emptyItems svg {
+	width: 30%;
+	height: 30%;
+}
+
+/* =========================
+   Items List
+   ========================= */
+
+.itemList {
+	flex: 1;
+	min-height: 0;
+
+	overflow-y: auto;
+
+	justify-content: center;
+
+	background-color: var(--white);
+}
+
+/* =========================
+   Order Summary
+   ========================= */
+
+.orderSummary {
+	flex: 0 0 auto;
+
+	padding: 20px;
+
+	background-color: var(--cream-soft);
+}
+
+.totalRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+
+	margin-bottom: 18px;
+}
+
+.totalRow span {
+	color: var(--text-muted);
+
+	font-size: 0.95rem;
+}
+
+.totalRow strong {
+	color: var(--orange-dark);
+
+	font-size: 1.35rem;
+	font-weight: 700;
+
+	white-space: nowrap;
+}
+
+/* =========================
+   Buat Pesanan
+   ========================= */
+
+.processButton {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	gap: 0.5rem;
+
+	width: 100%;
+	min-height: 48px;
+
+	border: none;
+	border-radius: var(--radius-md);
+
+	background-color: var(--sage);
+	color: var(--white);
+
+	font-size: 1rem;
+	font-weight: 700;
+
+	cursor: pointer;
+
+	transition:
+		background-color 150ms ease,
+		transform 100ms ease;
+}
+
+.processButton:hover {
+	background-color: var(--sage-light);
+}
+
+.processButton:active {
+	transform: scale(0.99);
+}
+
+.processButton:disabled {
+	background-color: var(--blue-light);
+	color: var(--text-muted);
+	cursor: not-allowed;
+	transform: none;
+}
+
+/* =========================
+   Kosongkan Pesanan
+   ========================= */
+
+.clearButton {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	gap: 0.5rem;
+
+	width: 100%;
+
+	margin-top: 8px;
+	padding: 8px;
+
+	border: none;
+	border-radius: var(--radius-md);
+
+	background: var(--danger-bg);
+	color: var(--brown);
+
+	font-size: 0.85rem;
+	font-weight: bolder;
+
+	cursor: pointer;
+}
+
+.clearButton:hover {
+	color: var(--orange-dark);
+	background-color: var(--yellow);
+}
+
+/* ==================================================
+   PHONE
+   ================================================== */
+
+@media (max-width: 767px) {
+	.orderMakerSection {
+		position: fixed;
+		z-index: 100;
+
+		left: 0;
+		right: 0;
+		bottom: 0;
+
+		width: 100%;
+		min-width: 0;
+		max-width: none;
+
+		height: auto;
+		max-height: 85dvh;
+
+		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+
+		transform: translateY(calc(100% - 60px));
+
+		transition: transform 280ms ease-out;
+	}
+
+	.orderMakerSection.open {
+		transform: translateY(0);
+	}
+
+	.orderMakerHeader {
+		flex-basis: 60px;
+
+		padding: 0 16px;
+
+		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+	}
+
+	.headerTitle h1 {
+		font-size: 1rem;
+	}
+
+	.formFields {
+		padding: 16px 16px 12px;
+	}
+
+	.orderSummary {
+		padding: 16px;
+	}
+
+	.totalRow {
+		margin-bottom: 14px;
+	}
+
+	.totalRow strong {
+		font-size: 1.15rem;
+	}
+}

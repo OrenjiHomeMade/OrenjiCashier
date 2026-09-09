@@ -297,6 +297,90 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          is_ready_override: boolean | null
+          order_id: number
+          order_item_id: number
+          product_id: number
+          quantity_ordered: number
+          unit_cost_ingredient: number
+          unit_cost_labor: number
+          unit_cost_packaging: number
+          unit_cost_utilities: number
+          unit_price: number
+        }
+        Insert: {
+          is_ready_override?: boolean | null
+          order_id: number
+          order_item_id?: number
+          product_id: number
+          quantity_ordered: number
+          unit_cost_ingredient?: number
+          unit_cost_labor?: number
+          unit_cost_packaging?: number
+          unit_cost_utilities?: number
+          unit_price: number
+        }
+        Update: {
+          is_ready_override?: boolean | null
+          order_id?: number
+          order_item_id?: number
+          product_id?: number
+          quantity_ordered?: number
+          unit_cost_ingredient?: number
+          unit_cost_labor?: number
+          unit_cost_packaging?: number
+          unit_cost_utilities?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_address: string | null
+          customer_name: string
+          due_date: string
+          notes: string | null
+          order_id: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name: string
+          due_date: string
+          notes?: string | null
+          order_id?: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name?: string
+          due_date?: string
+          notes?: string | null
+          order_id?: number
+          status?: string
+        }
+        Relationships: []
+      }
       product_stock: {
         Row: {
           product_id: number
@@ -490,6 +574,7 @@ export type Database = {
           cashier: string | null
           created_at: string
           deleted_at: string | null
+          order_id: number | null
           payment_method: string
           transaction_amount: number
           transaction_code: string
@@ -501,6 +586,7 @@ export type Database = {
           cashier?: string | null
           created_at?: string
           deleted_at?: string | null
+          order_id?: number | null
           payment_method: string
           transaction_amount: number
           transaction_code: string
@@ -512,6 +598,7 @@ export type Database = {
           cashier?: string | null
           created_at?: string
           deleted_at?: string | null
+          order_id?: number | null
           payment_method?: string
           transaction_amount?: number
           transaction_code?: string
@@ -519,7 +606,15 @@ export type Database = {
           transaction_time?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+        ]
       }
     }
     Views: {
@@ -540,6 +635,35 @@ export type Database = {
         }
         Relationships: []
       }
+      order_item_readiness: {
+        Row: {
+          computed_is_ready: boolean | null
+          is_ready: boolean | null
+          is_ready_override: boolean | null
+          order_id: number | null
+          order_item_id: number | null
+          product_id: number | null
+          quantity_ordered: number | null
+          running_quantity: number | null
+          stock_quantity: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
     }
     Functions: {
       adjust_product_qty: {
@@ -548,6 +672,16 @@ export type Database = {
           p_adjustment_type: string
           p_note?: string
           p_product_id: number
+        }
+        Returns: number
+      }
+      convert_order_to_transaction: {
+        Args: {
+          p_cashier: string
+          p_order_id: number
+          p_payment_method: string
+          p_transaction_code: string
+          p_transaction_time: string
         }
         Returns: number
       }
@@ -596,6 +730,16 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      create_order_with_items: {
+        Args: {
+          p_customer_address?: string
+          p_customer_name: string
+          p_due_date?: string
+          p_items?: Json
+          p_notes?: string
+        }
+        Returns: number
       }
       create_transaction: {
         Args: {
@@ -665,10 +809,57 @@ export type Database = {
           unit_price: number
         }[]
       }
+      get_order_detail: {
+        Args: { p_order_id: number }
+        Returns: {
+          computed_is_ready: boolean
+          is_ready: boolean
+          is_ready_override: boolean
+          order_item_id: number
+          product_id: number
+          product_name: string
+          quantity_ordered: number
+          stock_quantity: number
+          unit_price: number
+        }[]
+      }
+      get_orders_overview: {
+        Args: {
+          p_items_per_page?: number
+          p_page?: number
+          p_statuses?: string[]
+        }
+        Returns: {
+          created_at: string
+          customer_address: string
+          customer_name: string
+          due_date: string
+          item_count: number
+          notes: string
+          order_detail: Json
+          order_id: number
+          ready_count: number
+          status: string
+          total_count: number
+          total_orders: number
+          total_pages: number
+        }[]
+      }
       get_product_categories: {
         Args: { p_is_active?: boolean }
         Returns: {
           product_category: string
+        }[]
+      }
+      get_product_demand_overview: {
+        Args: never
+        Returns: {
+          nearest_due_date: string
+          product_id: number
+          product_name: string
+          shortfall: number
+          stock_quantity: number
+          total_demand: number
         }[]
       }
       get_sales_summary: { Args: { report_date: string }; Returns: Json }
@@ -760,6 +951,10 @@ export type Database = {
         Returns: {
           transaction_item_id: number
         }[]
+      }
+      set_order_item_ready_override: {
+        Args: { p_order_item_id: number; p_value: boolean }
+        Returns: boolean
       }
       sync_products: {
         Args: never
@@ -926,6 +1121,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      update_order_status: {
+        Args: { p_order_id: number; p_status: string }
+        Returns: boolean
       }
       update_transaction_item_costs: { Args: never; Returns: undefined }
     }

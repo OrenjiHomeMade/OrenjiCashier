@@ -3,6 +3,7 @@ import style from "./ProductSection.module.css";
 
 // IMPORT TYPES
 import { type ProductInfoProps } from "../ProductItem/ProductItem";
+import type { TProductMode } from "../../Types/product";
 
 // IMPORT HOOKS
 import { useMemo, useState } from "react";
@@ -18,7 +19,7 @@ import { getProductImageUrl, getProducts } from "../../Services/supabase/product
 import AddProductIcon from "../MediaComponent/AddProductIcon";
 
 export type TProductSectionProps = {
-	mode: "Cashier" | "Catalog";
+	mode: TProductMode;
 	categories: string[];
 	onItemAdjusted?: (prod: ProductInfoProps) => void;
 	onItemAdd?: (prod: ProductInfoProps) => void;
@@ -38,9 +39,12 @@ const ProductSection = ({
 	const [selectedCategory, setSelectedCategory] = useState("Semua");
 	const [searchTerm, setSearchTerm] = useState("");
 
+	// Cashier fulfils from live stock and Order records demand against a
+	// product regardless of stock — both only ever want active products.
+	// Catalog (product management) needs to see inactive products too.
 	const { data: products = [] } = useSuspenseQuery({
 		queryKey: ["products_in_section", mode],
-		queryFn: () => getProducts(mode === "Cashier" ? true : null)
+		queryFn: () => getProducts(mode === "Catalog" ? null : true)
 	});
 
 	console.log("products:", products);
