@@ -1,38 +1,44 @@
-.pageLayout {
+.orderManagementLayout {
 	display: flex;
 	flex-direction: column;
-	gap: 1rem;
+	gap: 16px;
 }
 
 /* =========================
-   Header row — tabs + New order
+   Header row
    ========================= */
 
 .headerRow {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 0.75rem;
+	gap: 12px;
 
 	flex-wrap: wrap;
 }
 
 .tabs {
 	display: flex;
-	gap: 0.35rem;
+	gap: 6px;
+
+	padding: 4px;
+
+	border-radius: var(--radius-md);
+
+	background-color: var(--cream-soft);
 }
 
 .tabButton {
-	padding: 0.5rem 1rem;
+	padding: 8px 16px;
 
 	border: none;
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-sm);
 
-	background: transparent;
-	color: var(--text-muted);
+	background-color: transparent;
+	color: var(--text-muted, #756d67);
 
-	font-size: 0.85rem;
-	font-weight: 600;
+	font-size: 0.88rem;
+	font-weight: 500;
 
 	cursor: pointer;
 
@@ -42,263 +48,285 @@
 }
 
 .tabButtonActive {
-	background: var(--cream-soft);
-	color: var(--brown);
+	background-color: var(--white);
+	color: var(--text-dark);
+	font-weight: 600;
 }
 
 .newOrderButton {
-	display: inline-flex;
+	display: flex;
 	align-items: center;
-	gap: 0.4rem;
+	gap: 6px;
 
-	padding: 0.55rem 1rem;
+	height: 40px;
 
-	border: 1px solid var(--orange);
+	padding: 0 16px;
+
+	border: 1px solid var(--orange-dark);
 	border-radius: var(--radius-md);
 
-	background: var(--orange);
+	background-color: var(--orange-dark);
 	color: var(--white);
 
-	font-size: 0.85rem;
-	font-weight: 700;
+	font-size: 0.88rem;
+	font-weight: 600;
 
 	cursor: pointer;
 
-	transition: opacity 120ms ease;
+	transition: background-color 120ms ease;
 }
 
 .newOrderButton:hover {
-	opacity: 0.92;
+	background-color: var(--orange);
 }
 
 /* =========================
-   Card — same shell as SalesStep's .listCard
+   Card encapsulation
    ========================= */
 
 .listCard {
-	background: var(--white);
-	border: 1px solid var(--border);
+	background-color: var(--white);
+
+	border: 1px solid var(--border-color, #ded7d1);
 	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-sm);
-	padding: 1rem 1rem 0 1rem;
-	min-height: 20rem;
-}
 
-.cardTitle {
-	font-size: 0.95rem;
-	margin-bottom: 0;
-}
+	box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
 
-.listHeader {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	margin-bottom: 0.75rem;
-}
-
-.listCount {
-	font-size: 0.78rem;
-	color: var(--text-muted);
+	padding: 16px 20px 20px;
 }
 
 /* =========================
    Status filter chips
    ========================= */
 
-.filterBar {
+.filterRow {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem;
+	gap: 6px;
 
-	padding-bottom: 1rem;
-	margin-bottom: 0.75rem;
-
-	border-bottom: 1px solid var(--border);
+	margin-bottom: 14px;
 }
 
 .filterChip {
-	padding: 0.35rem 0.85rem;
+	padding: 5px 12px;
 
-	border: 1px solid var(--border);
-	border-radius: 999px;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
 
-	background: var(--white);
-	color: var(--text-muted);
+	background-color: var(--cream-soft);
+	color: var(--text-muted, #756d67);
 
 	font-size: 0.78rem;
-	font-weight: 600;
+	font-weight: 500;
 
 	cursor: pointer;
-
-	transition:
-		border-color 120ms ease,
-		color 120ms ease,
-		background-color 120ms ease;
 }
 
 .filterChipActive {
-	border-color: var(--orange);
-	background: rgba(239, 172, 50, 0.08);
-	color: var(--brown);
+	border-color: var(--orange-dark);
+	background-color: var(--white);
+	color: var(--text-dark);
+	font-weight: 600;
 }
 
 /* =========================
-   List / rows — same language as SalesStep's .row
+   Tables
    ========================= */
 
-.list {
-	display: flex;
-	flex-direction: column;
-	gap: 0.4rem;
-	max-height: 32rem;
-	overflow-y: auto;
+.orderTable,
+.detailTable {
+	width: 100%;
+	border-collapse: collapse;
+
+	font-size: 0.86rem;
 }
 
-.emptyState {
-	padding: 2rem 0;
-	text-align: center;
-	color: var(--text-muted);
-	font-size: 0.85rem;
+.orderTable thead th,
+.detailTable thead th {
+	padding: 8px 6px;
+
+	border-bottom: 1px solid var(--border-color, #ded7d1);
+
+	color: var(--text-muted, #756d67);
+
+	font-weight: 500;
+	text-align: left;
 }
 
-.row {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
+.orderTable tbody td,
+.detailTable tbody td {
+	padding: 10px 6px;
 
-	padding: 0.65rem 0.75rem;
+	border-bottom: 1px solid var(--border-color, #ded7d1);
 
-	border: 1px solid var(--border);
-	border-radius: var(--radius-md);
+	color: var(--text-dark);
+}
 
+.orderRow {
 	cursor: pointer;
 }
 
-.row:hover {
-	border-color: var(--orange-light, var(--orange));
+.orderRow:hover {
+	background-color: var(--cream-soft);
 }
 
-.rowSelected {
-	background: rgba(239, 172, 50, 0.08);
-	border-color: var(--orange);
+.expandCell {
+	width: 24px;
+
+	color: var(--text-muted, #756d67);
 }
 
-.expandIcon {
-	display: flex;
-	color: var(--text-muted);
-	flex-shrink: 0;
+.mutedCell {
+	color: var(--text-muted, #756d67);
 }
 
-.rowMain {
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-	min-width: 0;
+.detailRowWrapper td {
+	padding: 0 0 14px 0;
+
+	background-color: var(--cream-soft);
+
+	border-bottom: 1px solid var(--border-color, #ded7d1);
 }
 
-.rowCode {
-	font-weight: 700;
-	font-size: 0.85rem;
-	color: var(--brown);
+.detailTable {
+	margin-top: 8px;
 }
 
-.rowMeta {
-	font-size: 0.72rem;
-	color: var(--text-muted);
-}
+.detailRow {
+	padding: 10px 6px;
 
-.rowActions {
-	display: flex;
-	gap: 0.5rem;
-	flex-shrink: 0;
-}
+	color: var(--text-muted, #756d67);
 
-/* =========================
-   Expanded order items — indented sub-rows
-   ========================= */
-
-.subListWrapper {
-	padding: 0.4rem 0 0.4rem 2.1rem;
-}
-
-.subList {
-	display: flex;
-	flex-direction: column;
-	gap: 0.3rem;
-}
-
-.subRow {
-	display: flex;
-	align-items: center;
-	gap: 0.6rem;
-
-	padding: 0.5rem 0.65rem;
-
-	border: 1px solid var(--border);
-	border-radius: var(--radius-sm);
-
-	background: var(--cream-soft);
+	font-size: 0.82rem;
 }
 
 /* =========================
    Badges
    ========================= */
 
-.readyBadge,
-.notReadyBadge,
-.shortfallBadge,
-.statusBadge {
-	flex-shrink: 0;
-
-	padding: 0.15rem 0.55rem;
+.readyBadge {
+	padding: 2px 8px;
 
 	border-radius: var(--radius-sm);
 
-	font-size: 0.72rem;
-	font-weight: 700;
-	white-space: nowrap;
-}
+	background-color: rgba(121, 163, 84, 0.16);
+	color: var(--sage);
 
-.readyBadge {
-	background: rgba(121, 163, 84, 0.16);
-	color: var(--sage, #5a8a3a);
-}
-
-.notReadyBadge {
-	background: rgba(239, 172, 50, 0.14);
-	color: var(--orange);
-}
-
-.shortfallBadge {
-	background: rgba(192, 57, 43, 0.12);
-	color: var(--terracotta, #c0392b);
-}
-
-.statusBadge {
-	background: var(--cream-soft);
-	color: var(--text-muted);
-	text-transform: capitalize;
+	font-size: 0.76rem;
 	font-weight: 600;
 }
 
+.partialBadge,
+.notReadyBadge {
+	padding: 2px 8px;
+
+	border-radius: var(--radius-sm);
+
+	background-color: rgba(230, 126, 34, 0.14);
+	color: var(--orange-dark);
+
+	font-size: 0.76rem;
+	font-weight: 600;
+}
+
+.shortfallBadge {
+	padding: 2px 8px;
+
+	border-radius: var(--radius-sm);
+
+	background-color: rgba(192, 57, 43, 0.12);
+	color: var(--terracotta);
+
+	font-size: 0.76rem;
+	font-weight: 600;
+}
+
+.statusBadge {
+	padding: 2px 8px;
+
+	border-radius: var(--radius-sm);
+
+	background-color: var(--cream-soft);
+	color: var(--text-muted, #756d67);
+
+	font-size: 0.76rem;
+	font-weight: 500;
+	text-transform: capitalize;
+}
+
 .status_pending {
-	background: rgba(239, 172, 50, 0.14);
-	color: var(--orange);
+	background-color: rgba(230, 126, 34, 0.14);
+	color: var(--orange-dark);
 }
 
 .status_delivered {
-	background: rgba(142, 151, 202, 0.16);
-	color: var(--blue, #6b7fd7);
+	background-color: rgba(142, 151, 202, 0.16);
+	color: var(--blue);
 }
 
 .status_paid {
-	background: rgba(121, 163, 84, 0.16);
-	color: var(--sage, #5a8a3a);
+	background-color: rgba(121, 163, 84, 0.16);
+	color: var(--sage);
 }
 
 .status_cancelled {
-	background: rgba(192, 57, 43, 0.12);
-	color: var(--terracotta, #c0392b);
+	background-color: rgba(192, 57, 43, 0.12);
+	color: var(--terracotta);
+}
+
+/* =========================
+   Actions
+   ========================= */
+
+.actionsCell {
+	white-space: nowrap;
+}
+
+.actionButtons {
+	display: flex;
+	gap: 6px;
+}
+
+.actionButtonPrimary {
+	padding: 5px 10px;
+
+	border: 1px solid var(--sage);
+	border-radius: var(--radius-sm);
+
+	background-color: var(--sage);
+	color: var(--white);
+
+	font-size: 0.76rem;
+	font-weight: 600;
+
+	cursor: pointer;
+}
+
+.actionButtonPrimary:hover {
+	background-color: var(--sage-light);
+}
+
+.actionButtonPrimary:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.actionButtonDanger {
+	padding: 5px 10px;
+
+	border: 1px solid var(--terracotta);
+	border-radius: var(--radius-sm);
+
+	background-color: transparent;
+	color: var(--terracotta);
+
+	font-size: 0.76rem;
+	font-weight: 600;
+
+	cursor: pointer;
+}
+
+.actionButtonDanger:hover {
+	background-color: rgba(192, 57, 43, 0.08);
 }
 
 /* =========================
@@ -311,87 +339,65 @@
 	align-items: center;
 	gap: 4px;
 
-	padding: 0.15rem 0.5rem;
+	margin-left: 6px;
+	padding: 2px 8px;
 
-	border: 1px solid var(--border);
+	border: 1px solid var(--border-color, #ded7d1);
 	border-radius: var(--radius-sm);
 
-	background: var(--white);
-	color: var(--text-muted);
+	background-color: var(--white);
+	color: var(--text-muted, #756d67);
 
-	font-size: 0.7rem;
-	font-weight: 600;
+	font-size: 0.72rem;
+	font-weight: 500;
 
 	cursor: pointer;
 }
 
 .overrideToggleButton:hover,
 .overrideResetButton:hover {
-	border-color: var(--orange);
-	color: var(--brown);
+	border-color: var(--orange-dark);
+	color: var(--orange-dark);
 }
 
 /* =========================
-   Pagination — copied straight from SalesStep
+   Empty / pagination
    ========================= */
+
+.emptyState {
+	padding: 40px;
+
+	text-align: center;
+
+	color: var(--text-muted, #756d67);
+}
 
 .pagination {
-	flex-shrink: 0;
-
-	min-height: 52px;
-
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-
+	justify-content: center;
 	gap: 12px;
 
-	padding: 0 12px;
+	margin-top: 16px;
 
-	border-top: 1px solid var(--border);
+	color: var(--text-muted, #756d67);
+
+	font-size: 0.82rem;
+}
+
+.pagination button {
+	padding: 5px 12px;
+
+	border: 1px solid var(--border-color, #ded7d1);
+	border-radius: var(--radius-sm);
 
 	background-color: var(--white);
+	color: var(--text-dark);
+
+	cursor: pointer;
 }
 
-.currentPage {
-	min-width: 46px;
-	display: flex;
-	justify-content: center;
-	font-size: 0.7rem;
-}
-
-.paginationInfo {
-	color: var(--text-muted);
-	font-size: 0.7rem;
-}
-
-.paginationControls {
-	display: flex;
-	align-items: center;
-	justify-content: space-around;
-	gap: 5px;
-}
-
-/* =========================
-   PHONE
-   ========================= */
-
-@media (max-width: 700px) {
-	.headerRow {
-		flex-direction: column;
-		align-items: stretch;
-	}
-
-	.newOrderButton {
-		justify-content: center;
-	}
-
-	.row {
-		flex-wrap: wrap;
-	}
-
-	.rowActions {
-		width: 100%;
-		justify-content: flex-end;
-	}
+.pagination button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
 }
