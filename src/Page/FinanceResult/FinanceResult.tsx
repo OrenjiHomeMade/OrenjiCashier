@@ -42,18 +42,20 @@ const consolidateLoadingState = (statesLoading: LoadingState[]) => {
 };
 
 export default function FinancePage() {
+	// global hooks
+	const [isEditMade, setIsEditMade] = useState<boolean>(false);
+
 	// CYCLE HOOKS
-	const cycleControl = useFinanceSettlementCycle();
+	const cycleControl = useFinanceSettlementCycle(setIsEditMade);
 	// settlements data
-	const { settlements, selectedSettlement, activeSettlement } = cycleControl;
+	const { settlements, selectedSettlement, activeSettlement } = cycleControl.data;
 	// settlements functions
-	const { loadSettlement, startNewSettlement, updateDraftSettlement } = cycleControl;
+	const { loadSettlement, startNewSettlement, updateDraftSettlement, onSave, onCancel, onDelete } =
+		cycleControl.functions;
 	// settlements states
-	const { isNewSettlement, isEditMade, setIsEditMade, currentStep, setCurrentStep } = cycleControl;
+	const { isNewSettlement, currentStep, setCurrentStep } = cycleControl.states;
 	// settlements loading state
-	const { showLoading: cycleLoading, loadingState: cycleLoadingMessage } = cycleControl;
-	// settlement result control
-	const { onSave, onCancel, onDelete } = cycleControl;
+	const { showLoading: cycleLoading, loadingState: cycleLoadingMessage } = cycleControl.loadingState;
 
 	// settlements DERIVATION
 	const isReadOnly = activeSettlement.settlementStatus === "SETTLED";
@@ -134,7 +136,7 @@ export default function FinancePage() {
 		activeSettlement.profitDistributed
 	);
 
-	// --- handler ------------------------------------------------------
+	// --------------------------------------- HANDLER ---------------------------------------
 	function openAllocationDrawer(open: boolean) {
 		setDrawerState(open ? { type: "SETTLEMENT_SELECTOR" } : null);
 	}

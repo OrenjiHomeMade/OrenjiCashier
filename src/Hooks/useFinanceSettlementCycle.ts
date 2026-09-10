@@ -48,7 +48,7 @@ const EMPTY_SETTLEMENT: TBusinessSettlement = {
 	soldCategories: 0
 };
 
-export const useFinanceSettlementCycle = () => {
+export const useFinanceSettlementCycle = (setIsEditMade: (edit: boolean) => void) => {
 	// const queryClient = useQueryClient();
 	// =========================================================
 	// SERVER STATE
@@ -87,7 +87,6 @@ export const useFinanceSettlementCycle = () => {
 	// DRAFT STATE
 	// =========================================================
 	const [draftSettlement, setDraftSettlement] = useState<TBusinessSettlement | null>(null);
-	const [isEditMade, setIsEditMade] = useState<boolean>(false);
 
 	// =========================================================
 	// SELECTED SETTLEMENT
@@ -335,28 +334,35 @@ export const useFinanceSettlementCycle = () => {
 
 	return {
 		// DATA
-		settlements,
-		selectedSettlement,
+		data: {
+			settlements,
+			selectedSettlement,
+			// DERIVED DATA
+			activeSettlement
+		},
 		// CALLBACKS
-		loadSettlement,
-		startNewSettlement,
-		updateDraftSettlement,
-		onSave,
-		onCancel,
-		onDelete,
+		functions: {
+			loadSettlement,
+			startNewSettlement,
+			updateDraftSettlement,
+			onSave,
+			onCancel,
+			onDelete
+		},
 		// STATE & SETTER
-		currentStep,
-		setCurrentStep,
-		isEditMade,
-		setIsEditMade,
-		// DERIVED DATA
-		activeSettlement,
-		// ONLY STATE
-		isNewSettlement,
+		states: {
+			currentStep,
+			setCurrentStep,
+			isNewSettlement
+		},
 		// QUERY STATE
-		showLoading,
-		loadingState,
-		isError,
-		errorState
+		loadingState: {
+			showLoading,
+			loadingState
+		},
+		errosState: {
+			isError,
+			errorState
+		}
 	};
 };

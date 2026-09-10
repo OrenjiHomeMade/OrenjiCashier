@@ -540,8 +540,6 @@ function SalesSummarySection({
 	const otherLabel = isSettled ? "Settled other costs" : "Other costs";
 	const remainLabel = isSettled ? `Settled ${remainStatus.toLowerCase()}` : remainStatus;
 
-	console.log(productBreakdown);
-
 	return (
 		<section className={`${styles.section} ${focused ? styles.sectionFocused : styles.sectionCompact}`}>
 			<div className={styles.sectionHeader}>
