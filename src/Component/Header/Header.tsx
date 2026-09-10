@@ -1,8 +1,8 @@
 // IMPORT STYLES
 import styles from "./Header.module.css";
 // IMPORT HOOKS
-import { useContext } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 // IMPORT COMPONENTS
 import AuthContext from "../Context/AuthProvider";
 import CashierIcon from "../MediaComponent/CashierIcon";
@@ -44,8 +44,24 @@ const menuList = [
 
 const Header = () => {
 	const navigate = useNavigate();
+	const location = useLocation();
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 	const { user, logout } = useContext(AuthContext);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") {
+				setIsMenuOpen(false);
+			}
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+
+		return () => {
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, []);
 
 	async function handleLogout() {
 		try {
@@ -58,6 +74,9 @@ const Header = () => {
 			console.error("Failed to logout:", error);
 		}
 	}
+
+	const currentMenu = menuList.find((menu) => location.pathname.startsWith(menu.path));
+	const CurrentMenuIcon = currentMenu?.icon;
 
 	return (
 		<header className={styles["header-section"]}>
@@ -95,6 +114,17 @@ const Header = () => {
 				})}
 			</nav>
 
+			<div className={styles["mobile-current-page"]}>
+				{currentMenu && CurrentMenuIcon && (
+					<>
+						<span className={styles["menu-icon"]}>
+							<CurrentMenuIcon />
+						</span>
+						<span className={styles["menu-label"]}>{currentMenu.label}</span>
+					</>
+				)}
+			</div>
+
 			{/* =================================================
                 USER
             ================================================= */}
@@ -109,7 +139,67 @@ const Header = () => {
 				<button type="button" onClick={handleLogout} className={styles["logout-button"]}>
 					<LogoutIcon />
 				</button>
+
+				<button
+					type="button"
+					className={styles["menu-button"]}
+					onClick={() => setIsMenuOpen((isOpen) => !isOpen)}
+					aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+					aria-expanded={isMenuOpen}
+					aria-controls="mobile-navigation"
+				>
+					<span />
+					<span />
+					<span />
+				</button>
 			</div>
+
+			{isMenuOpen && (
+				<div
+					className={styles["mobile-navigation-overlay"]}
+					onMouseDown={(event) => {
+						if (event.target === event.currentTarget) {
+							setIsMenuOpen(false);
+						}
+					}}
+				>
+					<nav id="mobile-navigation" className={styles["mobile-navigation"]} aria-label="Mobile navigation">
+						<div className={styles["mobile-navigation-header"]}>
+							<h2>Menu</h2>
+							<button
+								type="button"
+								className={styles["mobile-navigation-close"]}
+								onClick={() => setIsMenuOpen(false)}
+								aria-label="Close navigation menu"
+							>
+								×
+							</button>
+						</div>
+
+						<div className={styles["mobile-navigation-links"]}>
+							{menuList.map((menu) => {
+								const Icon = menu.icon;
+
+								return (
+									<NavLink
+										key={menu.path}
+										to={menu.path}
+										onClick={() => setIsMenuOpen(false)}
+										className={({ isActive }) =>
+											`${styles["mobile-menu-link"]} ${isActive ? styles["mobile-menu-link-active"] : ""}`
+										}
+									>
+										<span className={styles["menu-icon"]}>
+											<Icon />
+										</span>
+										<span>{menu.label}</span>
+									</NavLink>
+								);
+							})}
+						</div>
+					</nav>
+				</div>
+			)}
 		</header>
 	);
 };
