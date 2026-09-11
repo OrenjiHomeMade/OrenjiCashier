@@ -1,13 +1,19 @@
-import { useState } from "react";
-import type { ReactNode, SubmitEvent } from "react";
+// IMPORT STYLES
 import styles from "./01_SalesStep.module.css";
-import Button from "../../../Component/Button/Button";
-import Drawer from "../../../Component/Drawer/Drawer";
-import { formatRupiah, getLocalTimestamp } from "../../../Utilities/NumberFormater";
+// IMPORT TYPES
+import type { ReactNode, SubmitEvent } from "react";
 import type { TBusinessSettlement, TSalesFilter } from "../../../Types/settlement";
 import type { TTransactionPerItem } from "../../../Types/transaction";
+// IMPORT HOOKS
+import { useState } from "react";
+// IMPORT COMPONENTS
+import Button from "../../../Component/Button/Button";
+import Drawer from "../../../Component/Drawer/Drawer";
 import ChevronIcon from "../../../Component/MediaComponent/ChevronIcon";
+import MultiSelectDropdown from "../../../Component/MultiSelectDropdown/MultiSelectDropdown";
+// UTILITIES
 import { guardAction } from "../../../Utilities/guardAction";
+import { formatRupiah, getLocalTimestamp } from "../../../Utilities/NumberFormater";
 
 export type SalesStepProps = {
 	activeSettlement: TBusinessSettlement;
@@ -25,7 +31,6 @@ export type SalesStepProps = {
 	onClearSelection: () => void;
 	onResetSelection: () => void;
 
-	// toggeledItems: Map<number, boolean>;
 	totalEffectiveSelected: number;
 
 	pageData: {
@@ -44,7 +49,7 @@ export type SalesStepProps = {
 function FilterFields({
 	filters,
 	onFiltersChange,
-	categories, // --- ready
+	categories,
 	products,
 	isFilterAllowed
 }: {
@@ -92,42 +97,26 @@ function FilterFields({
 
 			<label className={styles.field}>
 				<span>Category</span>
-				<select
-					value={filters.category?.values().next().value ?? ""}
-					onChange={(event) =>
-						onFiltersChange({
-							...filters,
-							category: event.target.value ? [event.target.value] : undefined
-						})
-					}
-				>
-					<option value="">All categories</option>
-					{categories.map((category) => (
-						<option key={category} value={category}>
-							{category}
-						</option>
-					))}
-				</select>
+				<MultiSelectDropdown
+					options={categories}
+					selectedValues={filters.category}
+					onChange={(category) => {
+						onFiltersChange({ ...filters, category });
+					}}
+					placeholder="Categories"
+				/>
 			</label>
 
 			<label className={styles.field}>
 				<span>Product</span>
-				<select
-					value={filters.productName?.values().next().value ?? ""}
-					onChange={(event) =>
-						onFiltersChange({
-							...filters,
-							productName: event.target.value ? [event.target.value] : undefined
-						})
-					}
-				>
-					<option value="">All products</option>
-					{products.map((product) => (
-						<option key={product} value={product}>
-							{product}
-						</option>
-					))}
-				</select>
+				<MultiSelectDropdown
+					options={products}
+					selectedValues={filters.productName}
+					onChange={(productName) => {
+						onFiltersChange({ ...filters, productName });
+					}}
+					placeholder="Products"
+				/>
 			</label>
 		</div>
 	);
