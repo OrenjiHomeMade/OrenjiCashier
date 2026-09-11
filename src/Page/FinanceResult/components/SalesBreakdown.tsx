@@ -1,21 +1,22 @@
-import { useMemo } from "react";
-import type { EChartsOption } from "echarts";
+// IMPORT STYLES
 import styles from "./SalesBreakdown.module.css";
-import CurrencyStat from "./CurrencyStat";
-import EChart from "../../../Component/Echart/Echart";
-import { formatRupiah } from "../../../Utilities/NumberFormater";
+// IMPORT TYPES
 import type {
 	TBusinessSettlement,
 	TProductBreakdown,
 	TQSalesSummary,
 	TSettlementStep
 } from "../../../Types/settlement";
+import type { EChartsOption } from "echarts";
+// IMPORT HOOKS
+import { useMemo } from "react";
+// IMPORT COMPONENTS
+import CurrencyStat from "./CurrencyStat";
+import EChart from "../../../Component/Echart/Echart";
+// IMPORT UTILITIES
+import { formatRupiah } from "../../../Utilities/NumberFormater";
 import type { TSettlementReconciliation } from "../../../Utilities/resolveSettlementReconciliation";
 import { resolveSalesEstimate } from "../../../Utilities/resolveSalesEstimate";
-
-/* =========================================================
-   COLORS
-   ========================================================= */
 
 const COLOR = {
 	ingredient: "#b25e34",
@@ -409,33 +410,7 @@ export default function SalesBreakdown({
 	const cogs = laborCost + ingredientCost + packingCost + utilityCost;
 
 	const remain = reconciliation?.balance ?? settlementSummary?.salesMargin ?? settlement.salesMargin;
-	const remainStatus = remain > 0 ? "Profit" : remain < 0 ? "Deficit" : "Remain";
-
-	// let remain = 0;
-	// if (settlement.profitDistributed) remain += settlement.profitDistributed;
-	// if (settlement.profitRetained) remain += settlement.profitRetained;
-	// if (settlement.deficitCovered) remain += settlement.deficitCovered;
-	// if (remain === 0) {
-	// 	remain = settlementSummary?.salesMargin ?? settlement.salesMargin;
-	// }
-
-	// const remainLabel = remain > 0 ? "Profit" : remain < 0 ? "Deficit" : "Even";
-
-	// const salesSummary: TSalesSummary = {
-	// 	transaction: settlementSummary?.salesTransactionCount ?? settlement.transactionCounts ?? 0,
-	// 	itemSold: settlementSummary?.selectedItemCount ?? settlement.soldItems ?? 0,
-	// 	revenue: settlementSummary?.salesRevenue ?? settlement.salesRevenue,
-	// 	labor: settlement.settledLaborCost ?? settlementSummary?.salesLaborCost ?? settlement.salesLaborCost,
-	// 	ingredient:
-	// 		settlement.settledIngredientCost ??
-	// 		settlementSummary?.salesIngredientCost ??
-	// 		settlement.salesIngredientCost,
-	// 	packing:
-	// 		settlement.settledPackagingCost ?? settlementSummary?.salesPackagingCost ?? settlement.salesPackagingCost,
-	// 	utility: settlement.settledUtilityCost ?? settlementSummary?.salesUtilityCost ?? settlement.salesUtilityCost,
-	// 	otherCosts: settlement.totalAdditionalExpenses ?? 0,
-	// 	remain: remain
-	// };
+	const remainStatus = remain > 0 ? "Keuntungan" : remain < 0 ? "Defisit" : "Sisa";
 
 	return (
 		<aside className={`${styles.panel} card`}>
@@ -521,7 +496,7 @@ function SalesSummarySection({
 	utilityCost: number;
 	otherCosts: number;
 	remain: number;
-	remainStatus: "Profit" | "Deficit" | "Remain";
+	remainStatus: "Keuntungan" | "Defisit" | "Sisa";
 	isSettled: boolean;
 	productBreakdown: TProductBreakdown[];
 	breakdownGroupBy: TBreakdownGroupBy;
@@ -532,63 +507,65 @@ function SalesSummarySection({
 		[productBreakdown, breakdownGroupBy]
 	);
 
-	const costLabel = isSettled ? "Settled cost" : "HPP";
-	const laborLabel = isSettled ? "Settled labor" : "Labor";
-	const ingredientLabel = isSettled ? "Settled ingredient" : "Ingredient";
-	const packingLabel = isSettled ? "Settled packing" : "Packing";
-	const utilityLabel = isSettled ? "Settled utilities" : "Utilities";
-	const otherLabel = isSettled ? "Settled other costs" : "Other costs";
-	const remainLabel = isSettled ? `Settled ${remainStatus.toLowerCase()}` : remainStatus;
+	const costLabel = isSettled ? "HPP Akhir" : "HPP Dasar";
+	const laborLabel = isSettled ? "Tenaga Kerja Akhir" : "Tenaga Kerja";
+	const ingredientLabel = "Harga Bahan";
+	const packingLabel = "Harga Pengemasan";
+	const utilityLabel = isSettled ? "Biaya Operasional Akhir" : "Harga Operasional";
+	const otherLabel = "Biaya Lainnya";
+	const remainLabel = isSettled ? `${remainStatus.toLowerCase()} Akhir` : remainStatus;
 
 	return (
-		<section className={`${styles.section} ${focused ? styles.sectionFocused : styles.sectionCompact}`}>
+		<section className={`${styles.section} ${styles.sectionFocused}`}>
 			<div className={styles.sectionHeader}>
 				<h3 className={styles.sectionTitle}>
-					<span className={`${styles.dot} ${styles.dotSales}`} aria-hidden="true" />
-					Sales summary
+					{/* <span className={`${styles.dot} ${styles.dotSales}`} aria-hidden="true" /> */}
+					Rekapitulasi Penjualan
 				</h3>
 			</div>
 
-			<div className={styles.statTiers}>
-				{/* Tier 1: overview */}
-				<div className={styles.statOverview}>
-					<CurrencyStat
-						label="Transactions"
-						value={transaction}
-						format="number"
-						tone="muted"
-						size={focused ? "md" : "sm"}
-					/>
-					<CurrencyStat
-						label="Items sold"
-						value={itemsSold}
-						format="number"
-						tone="muted"
-						size={focused ? "md" : "sm"}
-					/>
-				</div>
+			{productBreakdown.length > 0 && (
+				<div className={styles.statTiers}>
+					{/* Tier 1: overview */}
+					<div className={styles.statOverview}>
+						<CurrencyStat
+							label="Transactions"
+							value={transaction}
+							format="number"
+							tone="muted"
+							size={focused ? "md" : "sm"}
+						/>
+						<CurrencyStat
+							label="Items sold"
+							value={itemsSold}
+							format="number"
+							tone="muted"
+							size={focused ? "md" : "sm"}
+						/>
+					</div>
 
-				{/* Tier 2: headline money */}
-				<div className={styles.statHeadline}>
-					<CurrencyStat label="Revenue" value={revenue} tone="accent" size={focused ? "lg" : "md"} />
-					<CurrencyStat
-						label={remainLabel}
-						value={remain}
-						tone={remain > 0 ? "positive" : "negative"}
-						size={focused ? "lg" : "md"}
-					/>
-					<CurrencyStat label={costLabel} value={cogs} tone="muted" size={focused ? "lg" : "md"} />
-				</div>
+					{/* Tier 2: headline money */}
+					<div className={styles.statHeadline}>
+						<CurrencyStat label="Pendapatan" value={revenue} tone="accent" size={focused ? "lg" : "md"} />
+						<CurrencyStat label={costLabel} value={cogs} tone="muted" size={focused ? "lg" : "md"} />
+						<CurrencyStat
+							label={remainLabel}
+							value={remain}
+							tone={remain > 0 ? "positive" : "negative"}
+							size={focused ? "lg" : "md"}
+						/>
+					</div>
 
-				{/* Tier 3: cost detail */}
-				<div className={styles.statDetail}>
-					<CurrencyStat label={laborLabel} value={laborCost} tone="muted" />
-					<CurrencyStat label={ingredientLabel} value={ingredientCost} tone="muted" />
-					<CurrencyStat label={packingLabel} value={packingCost} tone="muted" />
-					<CurrencyStat label={utilityLabel} value={utilityCost} tone="muted" />
-					<CurrencyStat label={otherLabel} value={otherCosts} tone="muted" />
+					{/* Tier 3: cost detail */}
+					<div className={styles.statDetail}>
+						<CurrencyStat label={laborLabel} value={laborCost} tone="muted" />
+						<CurrencyStat label={ingredientLabel} value={ingredientCost} tone="muted" />
+						<CurrencyStat label={packingLabel} value={packingCost} tone="muted" />
+						<CurrencyStat label={utilityLabel} value={utilityCost} tone="muted" />
+						<CurrencyStat label={otherLabel} value={otherCosts} tone="muted" />
+					</div>
 				</div>
-			</div>
+			)}
 
 			{productBreakdown.length > 0 && (
 				<>
@@ -604,7 +581,7 @@ function SalesSummarySection({
 										}
 										onClick={() => onBreakdownGroupByChange("PRODUCT")}
 									>
-										Product
+										Produk
 									</button>
 									<button
 										type="button"
@@ -613,7 +590,7 @@ function SalesSummarySection({
 										}
 										onClick={() => onBreakdownGroupByChange("CATEGORY")}
 									>
-										Category
+										Kategori
 									</button>
 								</div>
 							)}
@@ -628,9 +605,7 @@ function SalesSummarySection({
 				</>
 			)}
 
-			{productBreakdown.length === 0 && focused && (
-				<p className={styles.emptyNote}>No transactions selected yet.</p>
-			)}
+			{productBreakdown.length === 0 && <p className={styles.emptyNote}>Belum ada penjulanan yang dipilih.</p>}
 		</section>
 	);
 }
