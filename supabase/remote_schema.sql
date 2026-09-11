@@ -107,6 +107,361 @@ $$;
 
 ALTER FUNCTION "public"."adjust_product_qty"("p_product_id" bigint, "p_adjustment_quantity" integer, "p_adjustment_type" "text", "p_note" "text") OWNER TO "postgres";
 
+
+CREATE OR REPLACE FUNCTION "public"."convert_order_to_transaction"("p_order_id" bigint, "p_transaction_code" "text", "p_transaction_time" timestamp without time zone, "p_payment_method" "text", "p_cashier" "text") RETURNS bigint
+    LANGUAGE "plpgsql"
+    AS $$
+DECLARE
+    v_transaction_id bigint;
+    v_order_status text;
+    v_existing_transaction_id bigint;
+    v_transaction_amount numeric;
+    v_stock_quantity integer;
+    v_product record;
+    v_unready_item record;
+BEGIN
+
+    /*
+     * ============================================================
+     * 1. Validate basic transaction information
+     * ============================================================
+     */
+
+    IF p_transaction_code IS NULL
+       OR trim(p_transaction_code) = ''
+    THEN
+        RAISE EXCEPTION 'Transaction code is required';
+    END IF;
+
+    IF p_payment_method IS NULL
+       OR trim(p_payment_method) = ''
+    THEN
+        RAISE EXCEPTION 'Payment method is required';
+    END IF;
+
+
+    /*
+     * ============================================================
+     * 2. Lock the order
+     *
+     * This prevents two concurrent conversion attempts from
+     * finalizing the same order.
+     * ============================================================
+     */
+
+    SELECT
+        o.status
+    INTO
+        v_order_status
+    FROM public.orders o
+    WHERE o.order_id = p_order_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            'Order % does not exist',
+            p_order_id;
+    END IF;
+
+
+    /*
+     * ============================================================
+     * 3. Validate order status
+     *
+     * Only pending and delivered orders can be finalized.
+     *
+     * paid       -> already finalized
+     * cancelled  -> cannot be finalized
+     * ============================================================
+     */
+
+    IF v_order_status = 'paid' THEN
+        RAISE EXCEPTION
+            'Order % has already been paid',
+            p_order_id;
+    END IF;
+
+    IF v_order_status = 'cancelled' THEN
+        RAISE EXCEPTION
+            'Cancelled order % cannot be converted to a transaction',
+            p_order_id;
+    END IF;
+
+    IF v_order_status NOT IN ('pending', 'delivered') THEN
+        RAISE EXCEPTION
+            'Order % has invalid status: %',
+            p_order_id,
+            v_order_status;
+    END IF;
+
+
+    /*
+     * ============================================================
+     * 4. Check whether a transaction already exists
+     *
+     * This is also protected by UNIQUE(transactions.order_id),
+     * but checking explicitly gives a clearer error.
+     * ============================================================
+     */
+
+    SELECT t.transaction_id
+    INTO v_existing_transaction_id
+    FROM public.transactions t
+    WHERE t.order_id = p_order_id;
+
+    IF FOUND THEN
+        RAISE EXCEPTION
+            'Order % already has transaction %',
+            p_order_id,
+            v_existing_transaction_id;
+    END IF;
+
+
+    /*
+     * ============================================================
+     * 5. Validate order items
+     * ============================================================
+     */
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.order_items oi
+        WHERE oi.order_id = p_order_id
+    ) THEN
+        RAISE EXCEPTION
+            'Order % has no items',
+            p_order_id;
+    END IF;
+
+
+    /*
+     * ============================================================
+     * 6. Lock all relevant product stock rows
+     *
+     * Lock in product_id order to reduce the possibility of
+     * deadlocks when multiple orders are being finalized
+     * concurrently.
+     *
+     * This lock is important because readiness/FIFO depends on
+     * current stock.
+     * ============================================================
+     */
+
+    FOR v_product IN
+        SELECT DISTINCT oi.product_id
+        FROM public.order_items oi
+        WHERE oi.order_id = p_order_id
+        ORDER BY oi.product_id
+    LOOP
+
+        SELECT ps.stock_quantity
+        INTO v_stock_quantity
+        FROM public.product_stock ps
+        WHERE ps.product_id = v_product.product_id
+        FOR UPDATE;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION
+                'Stock record does not exist for product_id %',
+                v_product.product_id;
+        END IF;
+
+    END LOOP;
+
+
+    /*
+     * ============================================================
+     * 7. Validate FIFO readiness
+     *
+     * order_item_readiness already contains the project's FIFO
+     * rules:
+     *
+     * - pending + delivered are open demand
+     * - TRUE overrides receive priority
+     * - otherwise FIFO uses due_date, created_at, order_id,
+     *   order_item_id
+     * - stock is allocated per product
+     *
+     * We require EVERY item in this order to be ready.
+     * ============================================================
+     */
+
+    SELECT
+        r.order_item_id,
+        r.product_id,
+        r.quantity_ordered,
+        r.stock_quantity,
+        r.is_ready_override,
+        r.computed_is_ready
+    INTO v_unready_item
+    FROM public.order_item_readiness r
+    WHERE r.order_id = p_order_id
+      AND r.is_ready = FALSE
+    LIMIT 1;
+
+    IF FOUND THEN
+        RAISE EXCEPTION
+            'Order % cannot be converted: order item % for product_id % is not ready. Requested: %, available stock: %',
+            p_order_id,
+            v_unready_item.order_item_id,
+            v_unready_item.product_id,
+            v_unready_item.quantity_ordered,
+            v_unready_item.stock_quantity;
+    END IF;
+
+
+    /*
+     * ============================================================
+     * 8. Calculate transaction amount
+     *
+     * Do NOT trust the frontend for this value.
+     *
+     * transaction_amount =
+     *     SUM(quantity_ordered * unit_price)
+     * ============================================================
+     */
+
+    SELECT COALESCE(
+        SUM(
+            oi.quantity_ordered::numeric * oi.unit_price
+        ),
+        0
+    )
+    INTO v_transaction_amount
+    FROM public.order_items oi
+    WHERE oi.order_id = p_order_id;
+
+
+    /*
+     * ============================================================
+     * 9. Create transaction
+     * ============================================================
+     */
+
+    INSERT INTO public.transactions (
+        transaction_code,
+        order_id,
+        transaction_time,
+        payment_method,
+        transaction_amount,
+        cashier
+    )
+    VALUES (
+        p_transaction_code,
+        p_order_id,
+        p_transaction_time,
+        p_payment_method,
+        v_transaction_amount,
+        p_cashier
+    )
+    RETURNING transaction_id
+    INTO v_transaction_id;
+
+
+    /*
+     * ============================================================
+     * 10. Copy order items -> transaction items
+     *
+     * This is a snapshot of the finalized order.
+     *
+     * Generated columns such as subtotal and total_cogs are
+     * calculated automatically by transaction_items.
+     * ============================================================
+     */
+
+    INSERT INTO public.transaction_items (
+        transaction_id,
+        product_id,
+        quantity,
+        unit_price,
+        unit_cost_labor,
+        unit_cost_ingredient,
+        unit_cost_utilities,
+        unit_cost_packaging
+    )
+    SELECT
+        v_transaction_id,
+        oi.product_id,
+        oi.quantity_ordered,
+        oi.unit_price,
+        oi.unit_cost_labor,
+        oi.unit_cost_ingredient,
+        oi.unit_cost_utilities,
+        oi.unit_cost_packaging
+    FROM public.order_items oi
+    WHERE oi.order_id = p_order_id;
+
+
+    /*
+     * ============================================================
+     * 11. Decrease stock
+     *
+     * Aggregate duplicate products first.
+     *
+     * The rows are already locked from step 6.
+     * ============================================================
+     */
+
+    FOR v_product IN
+        SELECT
+            oi.product_id,
+            SUM(oi.quantity_ordered)::integer AS quantity
+        FROM public.order_items oi
+        WHERE oi.order_id = p_order_id
+        GROUP BY oi.product_id
+        ORDER BY oi.product_id
+    LOOP
+
+        UPDATE public.product_stock
+        SET
+            stock_quantity = stock_quantity - v_product.quantity,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE product_id = v_product.product_id
+          AND stock_quantity >= v_product.quantity;
+
+        IF NOT FOUND THEN
+
+            SELECT ps.stock_quantity
+            INTO v_stock_quantity
+            FROM public.product_stock ps
+            WHERE ps.product_id = v_product.product_id;
+
+            RAISE EXCEPTION
+                'Insufficient stock for product_id %. Requested: %, available: %',
+                v_product.product_id,
+                v_product.quantity,
+                COALESCE(v_stock_quantity, 0);
+
+        END IF;
+
+    END LOOP;
+
+
+    /*
+     * ============================================================
+     * 12. Mark order as paid
+     * ============================================================
+     */
+
+    UPDATE public.orders
+    SET status = 'paid'
+    WHERE order_id = p_order_id;
+
+
+    /*
+     * ============================================================
+     * 13. Return transaction ID
+     * ============================================================
+     */
+
+    RETURN v_transaction_id;
+
+END;
+$$;
+
+
+ALTER FUNCTION "public"."convert_order_to_transaction"("p_order_id" bigint, "p_transaction_code" "text", "p_transaction_time" timestamp without time zone, "p_payment_method" "text", "p_cashier" "text") OWNER TO "postgres";
+
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
@@ -2774,7 +3129,6 @@ CREATE TABLE IF NOT EXISTS "public"."orders" (
     "due_date" "date" NOT NULL,
     "status" "text" DEFAULT 'pending'::"text" NOT NULL,
     "notes" "text",
-    "transaction_id" bigint,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     CONSTRAINT "orders_status_check" CHECK (("status" = ANY (ARRAY['pending'::"text", 'delivered'::"text", 'paid'::"text", 'cancelled'::"text"])))
 );
@@ -2962,7 +3316,8 @@ CREATE TABLE IF NOT EXISTS "public"."transactions" (
     "created_at" timestamp without time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp without time zone DEFAULT "now"() NOT NULL,
     "deleted_at" timestamp without time zone,
-    "cashier" "text"
+    "cashier" "text",
+    "order_id" bigint
 );
 
 
@@ -3047,6 +3402,11 @@ ALTER TABLE ONLY "public"."stock_adjustments"
 
 ALTER TABLE ONLY "public"."transaction_items"
     ADD CONSTRAINT "transaction_items_pkey" PRIMARY KEY ("transaction_item_id");
+
+
+
+ALTER TABLE ONLY "public"."transactions"
+    ADD CONSTRAINT "transactions_order_id_key" UNIQUE ("order_id");
 
 
 
@@ -3147,11 +3507,6 @@ ALTER TABLE ONLY "public"."order_items"
 
 
 
-ALTER TABLE ONLY "public"."orders"
-    ADD CONSTRAINT "orders_transaction_id_fkey" FOREIGN KEY ("transaction_id") REFERENCES "public"."transactions"("transaction_id") ON DELETE SET NULL;
-
-
-
 ALTER TABLE ONLY "public"."product_stock"
     ADD CONSTRAINT "product_stock_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("product_id") ON DELETE CASCADE;
 
@@ -3174,6 +3529,11 @@ ALTER TABLE ONLY "public"."transaction_items"
 
 ALTER TABLE ONLY "public"."transaction_items"
     ADD CONSTRAINT "transaction_items_transaction_id_fkey" FOREIGN KEY ("transaction_id") REFERENCES "public"."transactions"("transaction_id");
+
+
+
+ALTER TABLE ONLY "public"."transactions"
+    ADD CONSTRAINT "transactions_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("order_id") ON DELETE SET NULL;
 
 
 
@@ -3308,6 +3668,12 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 GRANT ALL ON FUNCTION "public"."adjust_product_qty"("p_product_id" bigint, "p_adjustment_quantity" integer, "p_adjustment_type" "text", "p_note" "text") TO "anon";
 GRANT ALL ON FUNCTION "public"."adjust_product_qty"("p_product_id" bigint, "p_adjustment_quantity" integer, "p_adjustment_type" "text", "p_note" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."adjust_product_qty"("p_product_id" bigint, "p_adjustment_quantity" integer, "p_adjustment_type" "text", "p_note" "text") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."convert_order_to_transaction"("p_order_id" bigint, "p_transaction_code" "text", "p_transaction_time" timestamp without time zone, "p_payment_method" "text", "p_cashier" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."convert_order_to_transaction"("p_order_id" bigint, "p_transaction_code" "text", "p_transaction_time" timestamp without time zone, "p_payment_method" "text", "p_cashier" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."convert_order_to_transaction"("p_order_id" bigint, "p_transaction_code" "text", "p_transaction_time" timestamp without time zone, "p_payment_method" "text", "p_cashier" "text") TO "service_role";
 
 
 

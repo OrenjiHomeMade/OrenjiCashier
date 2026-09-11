@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import { getSettlementExpenses, updateBusinessSettlementExpenses } from "../Services/supabase/settlementServices";
 import type { TBusinessSettlement, TQSalesSummary } from "../Types/settlement";
 import { resolveSalesEstimate } from "../Utilities/resolveSalesEstimate";
+import { useSettlementScopedValue } from "./useSettlementScopedValue";
 
 const EMPTY_EXPENSES: TBusinessExpense[] = [];
 const EMPTY_IDS: string[] = [];
@@ -48,8 +49,6 @@ function mapExpenseRow(row: TBusinessExpenseRow): TBusinessExpense | null {
 		description: row.expense_description ?? "",
 		category: row.expense_category,
 		originalAmount: row.expense_amount,
-		// TODO: wire once a settlement-scoped "already recognized elsewhere"
-		// RPC exists — every expense currently shows as fully unsettled.
 		settledAmount: 0
 	};
 }
@@ -58,7 +57,8 @@ export const useSettlementExpenses = (
 	enabled: boolean,
 	activeSettlement: TBusinessSettlement,
 	salesSummary: TQSalesSummary,
-	setIsEditMade: (value: boolean) => void
+	setIsEditMade: (value: boolean) => void,
+	isNewSettlement: boolean
 ) => {
 	const businessSettlementId = activeSettlement.settlementId;
 	const queryClient = useQueryClient();
@@ -85,19 +85,22 @@ export const useSettlementExpenses = (
 		enabled: enabled && businessSettlementId !== null
 	});
 
-	const [selectedExpenseIds, setSelectedExpenseIds] = useState<string[]>(EMPTY_IDS);
-	const [laborActual, setLaborActual] = useState(0);
-	const [isLaborEdited, setIsLaborEdited] = useState(false);
-
-	useEffect(() => {
-		if (isLaborEdited) return;
-		const seed = (() => {
+	const {
+		value: laborActual,
+		setValue: setLaborActualRaw,
+		isEdited: isLaborEdited,
+		resetToPersisted: resetLaborActual,
+		clearEdit: clearLaborEdit
+	} = useSettlementScopedValue<number>({
+		resetKey: [businessSettlementId, isNewSettlement],
+		computeValue: () => {
 			const initialEstimate = resolveSalesEstimate(activeSettlement, salesSummary ?? null);
 			return initialEstimate.labor || activeSettlement.settledLaborCost || activeSettlement.salesLaborCost;
-		})();
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		setLaborActual(seed);
-	}, [activeSettlement, salesSummary, isLaborEdited]);
+		},
+		persistedValue: activeSettlement.settledLaborCost || activeSettlement.salesLaborCost
+	});
+
+	const [selectedExpenseIds, setSelectedExpenseIds] = useState<string[]>(EMPTY_IDS);
 
 	// Seed selection from the DB whenever the loaded settlement's allocations change.
 	useEffect(() => {
@@ -123,9 +126,8 @@ export const useSettlementExpenses = (
 	}
 
 	function updateLaborActual(value: number) {
-		setIsLaborEdited(true);
 		setIsEditMade(true);
-		setLaborActual(value);
+		setLaborActualRaw(value);
 	}
 
 	const addExpenseMutation = useMutation({
@@ -179,13 +181,8 @@ export const useSettlementExpenses = (
 		setSelectedExpenseIds(
 			settlementExpenseRows ? settlementExpenseRows.map((row) => String(row.business_expense_id)) : []
 		);
-		setLaborActual(activeSettlement.settledLaborCost || activeSettlement.salesLaborCost);
-		setIsLaborEdited(false);
+		resetLaborActual();
 	};
-
-	function clearLaborEdit() {
-		setIsLaborEdited(false);
-	}
 
 	const _getLoadingState = () => {
 		if (saveExpensesMutation.isPending) {

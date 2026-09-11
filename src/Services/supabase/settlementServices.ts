@@ -280,6 +280,7 @@ export async function updateBusinessSettlementResult(params: {
 
 	if (error) {
 		throw error;
+		toast("Failed updateBusinessSettlementResult ${error.message}");
 	}
 
 	return data;
@@ -299,7 +300,7 @@ export async function updateBusinessSettlementStatus(
 	});
 
 	if (error) {
-		toast(`ERROR DELETING SETTLEMENT ${error.message}`);
+		toast(`ERROR updateBusinessSettlementStatus ${error.message}`);
 		console.error(error);
 		throw error;
 	}

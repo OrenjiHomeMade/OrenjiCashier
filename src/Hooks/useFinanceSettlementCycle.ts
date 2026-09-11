@@ -78,16 +78,14 @@ export const useFinanceSettlementCycle = (setIsEditMade: (edit: boolean) => void
 	// =========================================================
 	// UI STATE
 	// =========================================================
+	const [isNewSettlement, setIsNewSettlement] = useState<boolean>(settlements.length === 0);
 	const [selectedSettlementId, setSelectedSettlementId] = useState<number | null>(
 		settlements[0]?.settlementId ?? null
 	);
-	const [isNewSettlement, setIsNewSettlement] = useState<boolean>(false);
-	const [currentStep, setCurrentStep] = useState<TSettlementStep>("SUMMARY");
-
-	// =========================================================
-	// DRAFT STATE
-	// =========================================================
-	const [draftSettlement, setDraftSettlement] = useState<TBusinessSettlement | null>(null);
+	const [draftSettlement, setDraftSettlement] = useState<TBusinessSettlement | null>(
+		settlements.length === 0 ? { ...EMPTY_SETTLEMENT } : null
+	);
+	const [currentStep, setCurrentStep] = useState<TSettlementStep>(settlements.length === 0 ? "SALES" : "SUMMARY");
 
 	// =========================================================
 	// SELECTED SETTLEMENT
@@ -97,7 +95,7 @@ export const useFinanceSettlementCycle = (setIsEditMade: (edit: boolean) => void
 		isLoading: selectSettlementLoading
 		// isError
 	} = useQuery({
-		queryKey: ["settlement", selectedSettlementId, settlements],
+		queryKey: ["settlement", selectedSettlementId],
 		enabled: selectedSettlementId !== null,
 		queryFn: async (): Promise<TBusinessSettlement | null> => {
 			if (selectedSettlementId === null) {

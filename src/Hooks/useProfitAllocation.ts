@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useSettlementScopedValue } from "./useSettlementScopedValue";
 
 export const useProfitAllocation = (
 	settlementId: number | null,
@@ -6,25 +6,19 @@ export const useProfitAllocation = (
 	balance: number,
 	persistedDistributed: number | null
 ) => {
-	const [profitDistributed, setProfitDistributed] = useState(0);
-
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		setProfitDistributed(0);
-	}, [settlementId, isNewSettlement, persistedDistributed]);
+	const {
+		value: rawDistributed,
+		setValue: setProfitDistributed,
+		resetToPersisted: resetProfitAllocation
+	} = useSettlementScopedValue<number>({
+		resetKey: [settlementId, isNewSettlement],
+		computeValue: () => 0, // a fresh allocation always starts at 0 on switch
+		persistedValue: persistedDistributed ?? 0
+	});
 
 	const availableProfit = Math.max(balance, 0);
-	const clampedDistributed = Math.min(Math.max(profitDistributed, 0), availableProfit);
-	const profitRetained = availableProfit - clampedDistributed;
+	const profitDistributed = Math.min(Math.max(rawDistributed, 0), availableProfit);
+	const profitRetained = availableProfit - profitDistributed;
 
-	function resetProfitAllocation() {
-		setProfitDistributed(persistedDistributed ?? 0);
-	}
-
-	return {
-		profitDistributed: clampedDistributed,
-		profitRetained,
-		setProfitDistributed,
-		resetProfitAllocation
-	};
+	return { profitDistributed, profitRetained, setProfitDistributed, resetProfitAllocation };
 };
