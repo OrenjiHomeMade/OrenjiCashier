@@ -30,10 +30,10 @@ function MultiSelectDropdown({
 	}, []);
 
 	const selectionLabel = allSelected
-		? `All ${placeholder.toLowerCase()}`
+		? `Semua ${placeholder.toLowerCase()}`
 		: selected.length === 0
-			? `No ${placeholder.toLowerCase()} selected`
-			: `${selected.length} ${placeholder.toLowerCase()} selected`;
+			? `Tidak ada ${placeholder.toLowerCase()} yang dipilih`
+			: `${selected.length} ${placeholder.toLowerCase()} dipilih`;
 
 	return (
 		<div className={styles.multiSelect} ref={dropdownRef}>
@@ -60,7 +60,7 @@ function MultiSelectDropdown({
 							className={styles.multiSelectAction}
 							onClick={() => onChange(allSelected ? [] : options)}
 						>
-							{allSelected ? "Unselect all" : "Select all"}
+							{allSelected ? "Hapus semua pilihan" : "Pilih semua"}
 						</button>
 					)}
 					{options.map((option) => {

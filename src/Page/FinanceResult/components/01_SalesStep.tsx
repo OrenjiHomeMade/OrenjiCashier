@@ -15,6 +15,8 @@ import MultiSelectDropdown from "../../../Component/MultiSelectDropdown/MultiSel
 import { guardAction } from "../../../Utilities/guardAction";
 import { formatRupiah, getLocalTimestamp } from "../../../Utilities/NumberFormater";
 
+const WARNING_SCOPE_CHANGE = "Perubahan ini akan mengubah cakupan pilihan. Anda yakin?";
+
 export type SalesStepProps = {
 	activeSettlement: TBusinessSettlement;
 	transactionsItems: TTransactionPerItem[];
@@ -62,60 +64,52 @@ function FilterFields({
 	return (
 		<div className={styles.filterFields}>
 			<label className={styles.field}>
-				<span>Start date</span>
+				<span>Tanggal Mulai</span>
 				<input
 					type="date"
 					value={filters.startDate}
 					onChange={(event) => {
-						guardAction(
-							isFilterAllowed,
-							"Your action will change the selection scope, are you sure?",
-							() => {
-								onFiltersChange({ ...filters, startDate: event.target.value || undefined });
-							}
-						);
+						guardAction(isFilterAllowed, WARNING_SCOPE_CHANGE, () => {
+							onFiltersChange({ ...filters, startDate: event.target.value || undefined });
+						});
 					}}
 				/>
 			</label>
 
 			<label className={styles.field}>
-				<span>End date</span>
+				<span>Tanggal Akhir</span>
 				<input
 					type="date"
 					value={filters.endDate}
 					onChange={(event) => {
-						guardAction(
-							isFilterAllowed,
-							"Your action will change the selection scope, are you sure?",
-							() => {
-								onFiltersChange({ ...filters, endDate: event.target.value || undefined });
-							}
-						);
+						guardAction(isFilterAllowed, WARNING_SCOPE_CHANGE, () => {
+							onFiltersChange({ ...filters, endDate: event.target.value || undefined });
+						});
 					}}
 				/>
 			</label>
 
 			<label className={styles.field}>
-				<span>Category</span>
+				<span>Kategori</span>
 				<MultiSelectDropdown
 					options={categories}
 					selectedValues={filters.category}
 					onChange={(category) => {
 						onFiltersChange({ ...filters, category });
 					}}
-					placeholder="Categories"
+					placeholder="Kategori"
 				/>
 			</label>
 
 			<label className={styles.field}>
-				<span>Product</span>
+				<span>Produk</span>
 				<MultiSelectDropdown
 					options={products}
 					selectedValues={filters.productName}
 					onChange={(productName) => {
 						onFiltersChange({ ...filters, productName });
 					}}
-					placeholder="Products"
+					placeholder="Produk"
 				/>
 			</label>
 		</div>
@@ -168,7 +162,7 @@ export default function SalesStep({
 						}}
 						type="button"
 					>
-						Select all
+						Pilih semua
 					</Button>
 					<Button
 						variant="ghost"
@@ -178,10 +172,10 @@ export default function SalesStep({
 						}}
 						type="button"
 					>
-						Clear
+						Hapus pilihan
 					</Button>
 					<Button variant="danger" size="sm" onClick={onResetSelection} type="button">
-						Reset
+						Atur ulang
 					</Button>
 				</div>
 			)}
@@ -193,22 +187,22 @@ export default function SalesStep({
 				<div className={styles.filterBar}>{renderFilterSection(false)}</div>
 
 				<button type="button" className={styles.mobileFilterTrigger} onClick={() => setFilterDrawerOpen(true)}>
-					Filters
+					Filter
 					{activeFilterCount > 0 && <span className={styles.filterCount}>{activeFilterCount}</span>}
 				</button>
 
 				<div className={styles.listHeader}>
-					<h3 className={styles.cardTitle}>Sold Items</h3>
+					<h3 className={styles.cardTitle}>Barang Terjual</h3>
 					<span className={styles.listCount}>
 						{readOnly
-							? `${totalCount} results`
-							: `selected ${totalEffectiveSelected} of ${totalCount} results`}
+							? `${totalCount} hasil`
+							: `${totalEffectiveSelected} barang transaksi terpilih dari ${totalCount} hasil penyaringan`}
 					</span>
 				</div>
 
 				<div className={styles.list}>
 					{transactionsItems.length === 0 && (
-						<p className={styles.emptyState}>No transactions match these filters.</p>
+						<p className={styles.emptyState}>Tidak ada transaksi yang sesuai dengan filter ini.</p>
 					)}
 
 					{transactionsItems.map((item) => {
@@ -247,7 +241,7 @@ export default function SalesStep({
 
 				<div className={styles.pagination}>
 					<span className={styles.paginationInfo}>
-						Showing {firstItem} - {lastItem} of {totalCount}
+						Menampilkan {firstItem} - {lastItem} dari {totalCount}
 					</span>
 					<div className={styles.paginationControls}>
 						<Button
@@ -289,8 +283,8 @@ export default function SalesStep({
 
 			{isFilterDrawerOpen && (
 				<Drawer
-					title="Filter transactions"
-					eyebrow="Sales"
+					title="Filter transaksi"
+					eyebrow="Penjualan"
 					onClose={() => setFilterDrawerOpen(false)}
 					onSubmit={handleDrawerSubmit}
 				>
