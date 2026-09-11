@@ -76,6 +76,26 @@ export const getProducts = async (
 	return result;
 };
 
+export const getProductsFromTransactionItems = async (
+	startTime?: string,
+	endTIme?: string,
+	categories?: Array<string>
+): Promise<string[]> => {
+	const { data, error } = await supabase.rpc("get_products_from_transaction_item", {
+		p_start_time: startTime,
+		p_end_time: endTIme,
+		p_product_category: categories
+	});
+
+	if (error) {
+		toast.error(`Failed Loading Categories ${error.message}`);
+		console.error(error.message);
+		return [];
+	}
+
+	return data ? data.map((el) => el.product_name) : [];
+};
+
 export const getProductImageUrl = (product_code: string) => {
 	const imagePath = `${product_code}.webp`;
 
@@ -87,6 +107,21 @@ export const getProductImageUrl = (product_code: string) => {
 export const getProductCategories = async (activeProduct: boolean | null = null): Promise<string[]> => {
 	const { data, error } = await supabase.rpc("get_product_categories", {
 		p_is_active: activeProduct ?? undefined
+	});
+
+	if (error) {
+		toast.error(`Failed Loading Categories ${error.message}`);
+		console.error(error.message);
+		return [];
+	}
+
+	return data ? data.map((el) => el.product_category) : [];
+};
+
+export const getProductCategoriesByTimeRange = async (startTime?: string, endTIme?: string): Promise<string[]> => {
+	const { data, error } = await supabase.rpc("get_product_categories_by_time_range", {
+		p_start_time: startTime,
+		p_end_time: endTIme
 	});
 
 	if (error) {

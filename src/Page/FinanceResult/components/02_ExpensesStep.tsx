@@ -1,16 +1,21 @@
-import { useState } from "react";
-import type { ReactNode, SubmitEvent } from "react";
+// IMPORT STYLES
 import styles from "./02_ExpensesStep.module.css";
-import Button from "../../../Component/Button/Button";
-import Drawer from "../../../Component/Drawer/Drawer";
-import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
-import { formatRupiah } from "../../../Utilities/NumberFormater";
+// IMPORT TYPES
+import type { ReactNode, SubmitEvent } from "react";
 import type { TBusinessExpense, TExpenseSection, TExpenseStatus } from "../../../Types/expense";
 import type { TSalesEstimate } from "../../../Utilities/resolveSalesEstimate";
 import {
 	CATEGORY_OPTIONS_BY_SECTION,
 	type BusinessExpenseCategory
 } from "../../../Services/supabase/businessExpensesServices";
+// IMPORT HOOKS
+import { useState } from "react";
+// IMPORT COMPONENTS
+import Button from "../../../Component/Button/Button";
+import Drawer from "../../../Component/Drawer/Drawer";
+import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
+// IMPORT UTILITIES
+import { formatRupiah } from "../../../Utilities/NumberFormater";
 
 const SHOW_PACKAGING_INGREDIENT_SECTIONS = false;
 

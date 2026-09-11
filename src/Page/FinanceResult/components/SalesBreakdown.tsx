@@ -529,14 +529,14 @@ function SalesSummarySection({
 					{/* Tier 1: overview */}
 					<div className={styles.statOverview}>
 						<CurrencyStat
-							label="Transactions"
+							label="Jumlah Transaksi"
 							value={transaction}
 							format="number"
 							tone="muted"
 							size={focused ? "md" : "sm"}
 						/>
 						<CurrencyStat
-							label="Items sold"
+							label="Jumlah Barang Terjual"
 							value={itemsSold}
 							format="number"
 							tone="muted"
@@ -570,7 +570,7 @@ function SalesSummarySection({
 			{productBreakdown.length > 0 && (
 				<>
 					<div className={styles.chartTitleSections}>
-						<div className={styles.chartTitle}>Sales Breakdown</div>
+						<div className={styles.chartTitle}>Rincian Penjualan</div>
 						<div className={styles.sectionHeaderActions}>
 							{productBreakdown.length > 0 && (
 								<div className={styles.groupToggle} role="group" aria-label="Group breakdown by">

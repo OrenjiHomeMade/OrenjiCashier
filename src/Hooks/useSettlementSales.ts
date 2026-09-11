@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProductCategories, getProducts } from "../Services/supabase/productService";
+import { getProductCategoriesByTimeRange, getProductsFromTransactionItems } from "../Services/supabase/productService";
 import { useEffect, useMemo, useState } from "react";
 import type { TBusinessSettlement, TSalesFilter } from "../Types/settlement";
 import { getTransactionsPerItem, type GetTransactionItemParams } from "../Services/supabase/transactionService";
@@ -36,20 +36,6 @@ export const useSettlementSales = (
 ) => {
 	const selectedTransactionId: number | null = activeSettlement.settlementId;
 
-	const { data: productsCategories = [], isLoading: isLoadingProductCategory } = useQuery({
-		queryKey: ["category"],
-		queryFn: () => getProductCategories(),
-		enabled: enabled
-	});
-
-	const { data: productNames = [] } = useQuery({
-		queryKey: ["products"],
-		queryFn: async () => {
-			const data = await getProducts(null);
-			return data.map((d) => d.productName);
-		}
-	});
-
 	const [salesFilter, setSalesFilter] = useState<TSalesFilter>({
 		isReadOnly: isReadOnly,
 		page: 1
@@ -72,6 +58,24 @@ export const useSettlementSales = (
 			};
 		});
 	}, [activeSettlement.settlementStart, activeSettlement.settlementEnd]);
+
+	const { data: productsCategories = [], isLoading: isLoadingProductCategory } = useQuery({
+		queryKey: ["category_sales", salesFilter.startDate, salesFilter.endDate],
+		queryFn: () => getProductCategoriesByTimeRange(salesFilter.startDate, salesFilter.endDate),
+		enabled: enabled
+	});
+
+	const { data: productNames = [] } = useQuery({
+		queryKey: ["products_sales", salesFilter.startDate, salesFilter.endDate, salesFilter.category],
+		queryFn: async () => {
+			const data = await getProductsFromTransactionItems(
+				salesFilter.startDate,
+				salesFilter.endDate,
+				salesFilter.category
+			);
+			return data;
+		}
+	});
 
 	const updateSalesFilter = (changes: Partial<TSalesFilter>) => {
 		setSalesFilter((current) => {

@@ -851,6 +851,12 @@ export type Database = {
           product_category: string
         }[]
       }
+      get_product_categories_by_time_range: {
+        Args: { p_end_time?: string; p_start_time?: string }
+        Returns: {
+          product_category: string
+        }[]
+      }
       get_product_demand_overview: {
         Args: never
         Returns: {
@@ -860,6 +866,16 @@ export type Database = {
           shortfall: number
           stock_quantity: number
           total_demand: number
+        }[]
+      }
+      get_products_from_transaction_item: {
+        Args: {
+          p_end_time?: string
+          p_product_category?: string[]
+          p_start_time?: string
+        }
+        Returns: {
+          product_name: string
         }[]
       }
       get_sales_summary: { Args: { report_date: string }; Returns: Json }

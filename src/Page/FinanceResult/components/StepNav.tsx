@@ -2,9 +2,9 @@ import styles from "./StepNav.module.css";
 import type { TSettlementStep } from "../../../Types/settlement";
 
 const STEPS: { key: TSettlementStep; number: string; label: string }[] = [
-	{ key: "SALES", number: "1", label: "Sales" },
-	{ key: "SETTLEMENT", number: "2", label: "Settlement" },
-	{ key: "SUMMARY", number: "3", label: "Summary" }
+	{ key: "SALES", number: "1", label: "Penjualan" },
+	{ key: "SETTLEMENT", number: "2", label: "Penyesuaian" },
+	{ key: "SUMMARY", number: "3", label: "Laporan Keuangan" }
 ];
 
 export type StepNavProps = {

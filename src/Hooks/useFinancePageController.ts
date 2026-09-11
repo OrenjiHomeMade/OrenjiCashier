@@ -85,7 +85,7 @@ export const useFinancePageController = () => {
 		activeSettlement.profitDistributed
 	);
 
-	// --- LOADING (bug fixed: was always returning false before) ---
+	// --- LOADING ---
 	const { isLoading: showLoading, loadingState } = consolidateLoadingState([
 		{ isLoading: cycleLoading, loadingState: cycleLoadingMessage },
 		{ isLoading: salesLoading, loadingState: salesLoadingMessage },
