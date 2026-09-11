@@ -12,7 +12,8 @@ import {
 	deleteBusinessSettlement,
 	getBusinessSettlementById,
 	getBusinessSettlementLists,
-	updateBusinessSettlementSelection
+	updateBusinessSettlementSelection,
+	updateBusinessSettlementStatus
 } from "../Services/supabase/settlementServices";
 
 const EMPTY_SETTLEMENT: TBusinessSettlement = {
@@ -201,6 +202,11 @@ export const useFinanceSettlementCycle = (setIsEditMade: (edit: boolean) => void
 		}
 	});
 
+	const updateSettlementStatusMutation = useMutation({
+		mutationFn: async (param: { id: number; status: TSettlementStatus }) =>
+			updateBusinessSettlementStatus(param.id, param.status)
+	});
+
 	// ---------------------------------------------------------
 	// EFFECTIVE DATA
 	// ---------------------------------------------------------
@@ -236,6 +242,10 @@ export const useFinanceSettlementCycle = (setIsEditMade: (edit: boolean) => void
 				...changes
 			};
 		});
+	};
+
+	const onEditStatusState = (status: TSettlementStatus) => {
+		updateSettlementStatusMutation.mutateAsync({ id: activeSettlement.settlementId!, status: status });
 	};
 
 	const onSave = async (salesSection: {
@@ -323,6 +333,8 @@ export const useFinanceSettlementCycle = (setIsEditMade: (edit: boolean) => void
 			return { showLoading: true, loadingState: "Updating settlement..." };
 		} else if (deleteSettlementMutation.isPending) {
 			return { showLoading: true, loadingState: "Deleting settlement..." };
+		} else if (updateSettlementStatusMutation.isPending) {
+			return { showLoading: true, loadingState: "Updating settlement status..." };
 		} else {
 			return { showLoading: false, loadingState: "" };
 		}
@@ -347,7 +359,8 @@ export const useFinanceSettlementCycle = (setIsEditMade: (edit: boolean) => void
 			updateDraftSettlement,
 			onSave,
 			onCancel,
-			onDelete
+			onDelete,
+			onEditStatusState
 		},
 		// STATE & SETTER
 		states: {

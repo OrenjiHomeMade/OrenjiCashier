@@ -1,7 +1,12 @@
 import { toast } from "react-toastify";
 import type { Database, Json } from "../../Types/database";
 import { supabase } from "./client";
-import type { TBusinessSettlementEssential, TProductBreakdown, TQSalesSummary } from "../../Types/settlement";
+import type {
+	TBusinessSettlementEssential,
+	TProductBreakdown,
+	TQSalesSummary,
+	TSettlementStatus
+} from "../../Types/settlement";
 import { getLocalTimestamp } from "../../Utilities/NumberFormater";
 
 /**
@@ -108,8 +113,6 @@ type SettlementExpenseInput = {
 	business_expense_id: number;
 	allocated_amount: number;
 };
-
-type SettlementStatus = "DRAFT" | "CONFIRMED" | "SETTLED";
 
 type createBusinessSettlementParam = Omit<TBusinessSettlementEssential, "settlementStatus"> & {
 	idToAdds: number[];
@@ -288,7 +291,7 @@ export async function updateBusinessSettlementResult(params: {
 
 export async function updateBusinessSettlementStatus(
 	businessSettlementId: number,
-	settlementStatus: SettlementStatus
+	settlementStatus: TSettlementStatus
 ): Promise<BusinessSettlement> {
 	const { data, error } = await supabase.rpc("update_business_settlement_status", {
 		p_business_settlement_id: businessSettlementId,

@@ -50,7 +50,7 @@ export default function FinancePage() {
 	// settlements data
 	const { settlements, selectedSettlement, activeSettlement } = cycleControl.data;
 	// settlements functions
-	const { loadSettlement, startNewSettlement, updateDraftSettlement, onSave, onCancel, onDelete } =
+	const { loadSettlement, startNewSettlement, updateDraftSettlement, onSave, onCancel, onDelete, onEditStatusState } =
 		cycleControl.functions;
 	// settlements states
 	const { isNewSettlement, currentStep, setCurrentStep } = cycleControl.states;
@@ -61,8 +61,9 @@ export default function FinancePage() {
 	const isReadOnly = activeSettlement.settlementStatus === "SETTLED";
 	const isConfirmed = activeSettlement.settlementStatus === "CONFIRMED";
 	const isDraft = activeSettlement.settlementStatus === "DRAFT";
-	const showNameField = (isNewSettlement || activeSettlement.settlementStatus === "DRAFT") && !isReadOnly;
+	const showNameField = (isNewSettlement || isDraft) && !isReadOnly;
 	const readyToSave = isEditMade || isNewSettlement;
+	const readyToConvert = isDraft;
 
 	// SALES STEP HOOKS
 	const salesControl = useSettlementSales(isReadOnly, currentStep === "SALES", activeSettlement, setIsEditMade);
@@ -145,6 +146,21 @@ export default function FinancePage() {
 		setDrawerState(section ? { type: "EXPENSES_DRAWER", section } : null);
 	}
 
+	function handleConvertion() {
+		if (isDraft) {
+			// Convert to confirmed
+			onEditStatusState("CONFIRMED");
+		}
+		if (isConfirmed) {
+			// Convert to setteld
+			onEditStatusState("SETTLED");
+		}
+	}
+
+	function handleEdit() {
+		onEditStatusState("DRAFT");
+	}
+
 	async function handleSaving() {
 		try {
 			const salesPortion = savingSales();
@@ -224,6 +240,11 @@ export default function FinancePage() {
 									className={styles.nameInput}
 								/>
 							)}
+							{readyToConvert && (
+								<Button disabled={showLoading} variant="primary" size="md" onClick={handleConvertion}>
+									{isDraft ? "Confirm!" : "Settle!"}
+								</Button>
+							)}
 							{readyToSave && (
 								<>
 									<Button
@@ -245,7 +266,7 @@ export default function FinancePage() {
 								</Button>
 							)}
 							{isConfirmed && (
-								<Button variant="primary" size="md">
+								<Button variant="primary" size="md" disabled={showLoading} onClick={handleEdit}>
 									Edit
 								</Button>
 							)}
