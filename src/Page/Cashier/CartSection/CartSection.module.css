@@ -367,6 +367,13 @@ Change Row
 	background-color: var(--yellow);
 }
 
+.convertButton {
+	margin-top: 1rem;
+	margin-left: 2rem;
+	background-color: transparent;
+	color: var(--sage);
+}
+
 /* ==================================================
    PHONE
    ================================================== */
