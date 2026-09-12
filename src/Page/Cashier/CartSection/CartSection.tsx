@@ -167,17 +167,19 @@ const CartSection = ({ onExecutePayment, onConvertToOrder, onCartHeaderClick, ca
 						<span>Proses Pembayaran</span>
 					</button>
 
-					{onConvertToOrder && (
+
+					<button type="button" className={style.clearButton} onClick={() => emptyCart()}>
+						<TrashIcon />
+						<span>Kosongkan Keranjang</span>
+					</button>
+
+{onConvertToOrder && (
 						<button type="button" className={style.convertButton} onClick={onConvertToOrder}>
 							<CartIcon />
 							<span>Jadikan Pesanan</span>
 						</button>
 					)}
 
-					<button type="button" className={style.clearButton} onClick={() => emptyCart()}>
-						<TrashIcon />
-						<span>Kosongkan Keranjang</span>
-					</button>
 				</div>
 			</>
 		);
