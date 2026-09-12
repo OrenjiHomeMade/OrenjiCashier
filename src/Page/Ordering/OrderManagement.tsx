@@ -216,12 +216,21 @@ const ByOrderView = () => {
 			{!isLoading && orders.length === 0 && <div className={style.emptyState}>No orders in this view.</div>}
 
 			{!isLoading && orders.length > 0 && (
-				<div className={style.orderList}>
-					{orders.map((order) => {
-						const isExpanded = expandedIds.has(order.orderId);
+				<>
+					<div className={style.desktopOrderHeader} aria-hidden="true">
+						<span></span>
+						<span>Customer</span>
+						<span>Due date</span>
+						<span>Ready</span>
+						<span>Status</span>
+						<span>Actions</span>
+					</div>
+					<div className={style.orderList}>
+						{orders.map((order) => {
+							const isExpanded = expandedIds.has(order.orderId);
 
-						return (
-							<article className={style.orderCard} key={order.orderId}>
+							return (
+								<article className={style.orderCard} key={order.orderId}>
 								<button
 									type="button"
 									className={style.orderSummary}
@@ -263,10 +272,11 @@ const ByOrderView = () => {
 										}
 									/>
 								)}
-							</article>
-						);
-					})}
-				</div>
+								</article>
+							);
+						})}
+					</div>
+				</>
 			)}
 
 			{data && data.totalPages > 1 && (
