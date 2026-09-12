@@ -1,6 +1,6 @@
 import { supabase } from "./client";
-import type { Database } from "../../Types/database";
-import type { TExpenseSection } from "../../Types/expense";
+import type { BusinessExpenseInsert, BusinessExpenseUpdate, TExpenseSection } from "../../Types/expense";
+import { toast } from "react-toastify";
 
 export const BUSINESS_EXPENSE_CATEGORIES = ["INGREDIENT", "PACKAGING", "UTILITY", "LABOR", "TEAM", "OTHER"] as const;
 
@@ -14,10 +14,6 @@ export const CATEGORY_OPTIONS_BY_SECTION: Record<TExpenseSection, BusinessExpens
 	UTILITIES: ["UTILITY"],
 	ADDITIONAL: ["TEAM", "OTHER"]
 };
-
-type BusinessExpenseInsert = Database["public"]["Tables"]["business_expense"]["Insert"];
-
-type BusinessExpenseUpdate = Database["public"]["Tables"]["business_expense"]["Update"];
 
 /**
  * Get business expenses.
@@ -58,7 +54,10 @@ export async function getBusinessExpense(businessExpenseId: number) {
 export async function createBusinessExpense(expense: BusinessExpenseInsert) {
 	const { data, error } = await supabase.from("business_expense").insert(expense).select().single();
 
-	if (error) throw error;
+	if (error) {
+		toast(`Failed create expense. ${error.message}`);
+		throw error;
+	}
 
 	return data;
 }
@@ -75,26 +74,27 @@ export async function updateBusinessExpense(businessExpenseId: number, expense: 
 		.select()
 		.single();
 
-	if (error) throw error;
+	if (error) {
+		toast(`Failed update expense ${businessExpenseId}. ${error.message}`);
+		throw error;
+	}
 
 	return data;
 }
 
 /**
- * Soft-delete a business expense.
+ * Delete a business expense.
  */
 export async function deleteBusinessExpense(businessExpenseId: number) {
 	const { data, error } = await supabase
 		.from("business_expense")
-		.update({
-			deleted_at: new Date().toISOString()
-		})
-		.eq("business_expense_id", businessExpenseId)
-		.is("deleted_at", null)
-		.select()
-		.single();
+		.delete()
+		.eq("business_expense_id", businessExpenseId);
 
-	if (error) throw error;
+	if (error) {
+		toast(`Failed delete expense ${businessExpenseId}. ${error.message}`);
+		throw error;
+	}
 
 	return data;
 }

@@ -3,29 +3,19 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	getBusinessExpenses,
-	createBusinessExpense,
 	type BusinessExpenseCategory,
 	CATEGORY_OPTIONS_BY_SECTION
 } from "../Services/supabase/businessExpensesServices";
-import type { SettlementExpenseInput, TBusinessExpense, TExpenseSection } from "../Types/expense";
-import { getLocalTimestamp } from "../Utilities/NumberFormater";
+import type { SettlementExpenseInput, TBusinessExpense, TBusinessExpenseRow, TExpenseSection } from "../Types/expense";
 import { toast } from "react-toastify";
 import { getSettlementExpenses, updateBusinessSettlementExpenses } from "../Services/supabase/settlementServices";
 import type { TBusinessSettlement, TQSalesSummary } from "../Types/settlement";
 import { resolveSalesEstimate } from "../Utilities/resolveSalesEstimate";
 import { useSettlementScopedValue } from "./useSettlementScopedValue";
+import { useBusinessExpenses } from "./useBusinessExpenses";
 
 const EMPTY_EXPENSES: TBusinessExpense[] = [];
 const EMPTY_IDS: string[] = [];
-
-// NOTE: adjust field names to match business_expense's real columns
-// (Database["public"]["Tables"]["business_expense"]["Row"]) if different.
-type TBusinessExpenseRow = {
-	business_expense_id: number;
-	expense_category: BusinessExpenseCategory;
-	expense_description: string | null;
-	expense_amount: number;
-};
 
 const SECTION_BY_CATEGORY: Partial<Record<BusinessExpenseCategory, TExpenseSection>> = Object.entries(
 	CATEGORY_OPTIONS_BY_SECTION
@@ -130,21 +120,14 @@ export const useSettlementExpenses = (
 		setLaborActualRaw(value);
 	}
 
-	const addExpenseMutation = useMutation({
-		mutationFn: (input: {
-			section: TExpenseSection;
-			description: string;
-			category: BusinessExpenseCategory;
-			originalAmount: number;
-		}) =>
-			createBusinessExpense({
-				expense_category: input.category,
-				expense_type: "DIRECT_EXPENSE",
-				expense_description: input.description,
-				expense_amount: input.originalAmount,
-				expense_time: getLocalTimestamp(new Date())
-			}),
-		onSuccess: (created) => {
+	function invalidateBusinessExpense() {
+		queryClient.invalidateQueries({
+			queryKey: ["businessExpenses"]
+		});
+	}
+
+	const { addExpenseMutation, editExpenseMutation, deleteExpenseMutation } = useBusinessExpenses({
+		onAddExpenseSuccess: (created) => {
 			queryClient.setQueryData<TBusinessExpenseRow[]>(["businessExpenses"], (current) => [
 				created as unknown as TBusinessExpenseRow,
 				...(current ?? [])
@@ -152,18 +135,28 @@ export const useSettlementExpenses = (
 			setIsEditMade(true);
 			setSelectedExpenseIds((prev) => [...prev, String(created.business_expense_id)]);
 		},
-		onError: (error) => {
-			console.error("Failed to add expense", error);
-			toast.error(`Failed to add expense: ${(error as Error).message}`);
-		}
+		onDeletedExpenseSuccess: invalidateBusinessExpense,
+		onEditExpenseSuccess: invalidateBusinessExpense
 	});
-
-	// const editExpenseMutation = useMutation({});
-
-	// const deleteExpenseMutation = useMutation({})
 
 	function addExpense(section: TExpenseSection, data: Omit<TBusinessExpense, "id" | "section" | "settledAmount">) {
 		return addExpenseMutation.mutateAsync({ section, ...data });
+	}
+
+	function editExpense(section: TExpenseSection, data: Omit<TBusinessExpense, "section" | "settledAmount">) {
+		return editExpenseMutation.mutateAsync({
+			section,
+			expenseId: Number(data.id),
+			description: data.description,
+			category: data.category,
+			updateAmount: data.originalAmount
+		});
+	}
+
+	function deleteExpense(id: number) {
+		return deleteExpenseMutation.mutateAsync({
+			id: id
+		});
 	}
 
 	const saveExpensesMutation = useMutation({
@@ -209,6 +202,8 @@ export const useSettlementExpenses = (
 		salesEstimate,
 		toggleExpense,
 		addExpense,
+		editExpense,
+		deleteExpense,
 		saveExpenses,
 		resetExpenseSelection,
 		laborActual,

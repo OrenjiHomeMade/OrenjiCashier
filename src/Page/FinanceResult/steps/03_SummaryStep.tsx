@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import type { ReactNode } from "react";
 import type { EChartsOption } from "echarts";
 import styles from "./03_SummaryStep.module.css";
-import CurrencyStat from "./CurrencyStat";
+import CurrencyStat from "../components/CurrencyStat";
 import EChart from "../../../Component/Echart/Echart";
 import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
 import { formatRupiah } from "../../../Utilities/NumberFormater";

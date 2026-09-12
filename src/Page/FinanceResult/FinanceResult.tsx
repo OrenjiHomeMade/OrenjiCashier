@@ -2,9 +2,9 @@ import styles from "./FinanceResult.module.css";
 
 import { AllocationSelector, AllocationSelectorDrawer } from "./components/AllocationSelector";
 import StepNav from "./components/StepNav";
-import SalesStep from "./components/01_SalesStep";
-import { ExpensesStep, ExpenseDrawer } from "./components/02_ExpensesStep";
-import SummaryStep from "./components/03_SummaryStep";
+import SalesStep from "./steps/01_SalesStep";
+import { ExpensesStep, ExpenseDrawer } from "./steps/02_ExpensesStep";
+import SummaryStep from "./steps/03_SummaryStep";
 import SalesBreakdown from "./components/SalesBreakdown";
 import Button from "../../Component/Button/Button";
 import LoadingModal from "../../Component/LoadingModal/LoadingModal";
@@ -215,12 +215,10 @@ export default function FinancePage() {
 						}
 						onToggleExpense={(id) => expenses.toggleExpense(expensesDrawerSection, id)}
 						onEditExpense={(data) => {
-							console.log(data);
-							// await
-							// expenses.editExpense(expensesDrawerSection, data)
+							expenses.editExpense(expensesDrawerSection, data);
 						}}
 						onAddExpense={(data) => expenses.addExpense(expensesDrawerSection, data)}
-						onDeleteExpense={(id) => console.log(id)}
+						onDeleteExpense={(id) => expenses.deleteExpense(Number(id))}
 						onClose={drawers.closeDrawer}
 					/>
 				)}

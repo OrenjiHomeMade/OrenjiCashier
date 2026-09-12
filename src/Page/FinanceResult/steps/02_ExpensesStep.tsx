@@ -58,10 +58,8 @@ export function ExpensesStep({
 		<div className={styles.layout}>
 			<section className={`${styles.listCard} card`}>
 				<div className={styles.listHeader}>
-					<h3 className={styles.cardTitle}>Expenses</h3>
-					<p className={styles.cardSubtitle}>
-						How much of each cost should be recognized in this settlement?
-					</p>
+					<h3 className={styles.cardTitle}>Penyesuian Pengeluaran</h3>
+					<p className={styles.cardSubtitle}>Sesuaikan jumlah pengeluaran yang diperhitungkan!</p>
 				</div>
 
 				<div className={styles.sections}>
@@ -229,7 +227,7 @@ function ExpenseBackedSection({
 
 			<div className={styles.sectionBody}>
 				{selectedExpenses.length === 0 ? (
-					<p className={styles.emptyState}>No expenses recognized yet.</p>
+					<p className={styles.emptyState}>Belum ada pengeluaran yang ditetapkan.</p>
 				) : (
 					<ul className={styles.expenseList}>
 						{selectedExpenses.map((expense) => (
@@ -246,7 +244,7 @@ function ExpenseBackedSection({
 
 				<div className={styles.sectionFooter}>
 					<div className={styles.sectionTotal}>
-						<span>Recognized total</span>
+						<span>Jumlah pengeluaran yang ditetepkan</span>
 						<strong>{formatRupiah(recognizedTotal)}</strong>
 					</div>
 					{!readOnly && (
@@ -329,7 +327,7 @@ export function ExpenseDrawer({
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<TExpenseStatus | "ALL">("ALL");
 	const [subDrawerState, setSubDrawerState] = useState<ExpenseSubDrawer>(null);
-	const [form, setForm] = useState(() => buildEmptyExpenseForm(section));
+	const [form, setForm] = useState<TExpenseForm>(() => buildEmptyExpenseForm(section));
 
 	const eyebrow = section === "UTILITIES" ? "Biaya Operasional" : "Pengeluaran Lain";
 
@@ -353,13 +351,13 @@ export function ExpenseDrawer({
 				await onEditExpense({
 					id: expenseId,
 					description: form.description.trim(),
-					category: form.category.trim() || "Other",
+					category: form.category || "OTHER",
 					originalAmount: amount
 				});
 			} else {
 				await onAddExpense({
 					description: form.description.trim(),
-					category: form.category.trim() || "Other",
+					category: form.category || "OTHER",
 					originalAmount: amount
 				});
 				setForm(buildEmptyExpenseForm(section));
