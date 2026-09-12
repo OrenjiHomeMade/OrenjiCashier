@@ -2,7 +2,7 @@
 import style from "./OrderManagement.module.css";
 
 // IMPORT HOOKS
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // IMPORT DATA HOOKS
@@ -16,7 +16,7 @@ import {
 } from "../../Hooks/useOrdering";
 
 // IMPORT UTILITIES
-import { formatDate } from "../../Utilities/NumberFormater";
+import { formatShortDate } from "../../Utilities/NumberFormater";
 
 // IMPORT TYPES
 import type { TOrderStatus, TOrderSummary } from "../../Types/order";
@@ -51,7 +51,13 @@ const statusLabel: Record<TStatusFilter, string> = {
    row is open — rather than up front for every row.
    ================================================== */
 
-const ExpandedOrderItems = ({ orderId }: { orderId: number }) => {
+const ExpandedOrderItems = ({
+	orderId,
+	onCancel
+}: {
+	orderId: number;
+	onCancel?: () => void;
+}) => {
 	const { data: items = [], isLoading } = useOrderDetail(orderId);
 	const overrideMutation = useSetOrderItemReadyOverride(orderId);
 
@@ -64,26 +70,24 @@ const ExpandedOrderItems = ({ orderId }: { orderId: number }) => {
 	}
 
 	return (
-		<table className={style.detailTable}>
-			<thead>
-				<tr>
-					<th>Product</th>
-					<th>Qty</th>
-					<th>Stock</th>
-					<th>Ready</th>
-				</tr>
-			</thead>
-			<tbody>
+		<div className={style.itemsPanel}>
+			<div className={style.itemsHeading}>Order items</div>
+			<div className={style.itemsList}>
 				{items.map((item) => (
-					<tr key={item.orderItemId}>
-						<td>{item.productName}</td>
-						<td>{item.quantityOrdered}</td>
-						<td>{item.stockQuantity}</td>
-						<td>
+					<div className={style.itemRow} key={item.orderItemId}>
+						<div className={style.itemInfo}>
+							<div className={style.itemName}>{item.productName}</div>
+							<div className={style.itemMeta}>
+								Qty {item.quantityOrdered} · Stock {item.stockQuantity}
+							</div>
+						</div>
+						<div className={style.itemSide}>
 							<span className={item.isReady ? style.readyBadge : style.notReadyBadge}>
 								{item.isReady ? "Ready" : "Not ready"}
 							</span>
-
+							<button type="button" className={style.addButton} aria-label={`Add ${item.productName}`}>
+								<Plus size={15} />
+							</button>
 							{item.isReadyOverride !== null ? (
 								<button
 									type="button"
@@ -108,14 +112,19 @@ const ExpandedOrderItems = ({ orderId }: { orderId: number }) => {
 										})
 									}
 								>
-									Override
+									Override readiness
 								</button>
 							)}
-						</td>
-					</tr>
+						</div>
+					</div>
 				))}
-			</tbody>
-		</table>
+			</div>
+			{onCancel && (
+				<button type="button" className={style.cancelButton} onClick={onCancel}>
+					Cancel order
+				</button>
+			)}
+		</div>
 	);
 };
 
@@ -162,13 +171,6 @@ const ByOrderView = () => {
 					>
 						Mark delivered
 					</button>
-					<button
-						type="button"
-						className={style.actionButtonDanger}
-						onClick={() => updateStatusMutation.mutate({ orderId: order.orderId, status: "cancelled" })}
-					>
-						Cancel
-					</button>
 				</div>
 			);
 		}
@@ -214,63 +216,57 @@ const ByOrderView = () => {
 			{!isLoading && orders.length === 0 && <div className={style.emptyState}>No orders in this view.</div>}
 
 			{!isLoading && orders.length > 0 && (
-				<table className={style.orderTable}>
-					<thead>
-						<tr>
-							<th></th>
-							<th>Customer</th>
-							<th>Due date</th>
-							<th>Ready</th>
-							<th>Status</th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody>
-						{orders.map((order) => {
-							const isExpanded = expandedIds.has(order.orderId);
+				<div className={style.orderList}>
+					{orders.map((order) => {
+						const isExpanded = expandedIds.has(order.orderId);
 
-							return (
-								<Fragment key={order.orderId}>
-									<tr className={style.orderRow} onClick={() => toggleExpand(order.orderId)}>
-										<td className={style.expandCell}>
-											{isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
-										</td>
-										<td>{order.customerName}</td>
-										<td className={style.mutedCell}>{formatDate(order.dueDate)}</td>
-										<td>
-											<span
-												className={
-													order.readyCount >= order.totalCount
-														? style.readyBadge
-														: style.partialBadge
-												}
-											>
-												{order.readyCount}/{order.totalCount}
+						return (
+							<article className={style.orderCard} key={order.orderId}>
+								<button
+									type="button"
+									className={style.orderSummary}
+									onClick={() => toggleExpand(order.orderId)}
+								>
+									<span className={style.expandCell}>
+										{isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+									</span>
+									<span className={style.orderMainInfo}>
+										<span className={style.customerName}>{order.customerName}</span>
+										<span className={style.orderMeta}>
+											<span>Due {formatShortDate(order.dueDate)}</span>
+											<span className={style.readyCount}>
+												Ready {order.readyCount} / {order.totalCount}
 											</span>
-										</td>
-										<td>
-											<span className={`${style.statusBadge} ${style[`status_${order.status}`]}`}>
-												{order.status}
-											</span>
-										</td>
-										<td className={style.actionsCell} onClick={(event) => event.stopPropagation()}>
-											{renderActions(order)}
-										</td>
-									</tr>
+										</span>
+									</span>
+									<span className={`${style.statusBadge} ${style[`status_${order.status}`]}`}>
+										{order.status}
+									</span>
+								</button>
 
-									{isExpanded && (
-										<tr className={style.detailRowWrapper}>
-											<td></td>
-											<td colSpan={5}>
-												<ExpandedOrderItems orderId={order.orderId} />
-											</td>
-										</tr>
-									)}
-								</Fragment>
-							);
-						})}
-					</tbody>
-				</table>
+								<div className={style.summaryActions} onClick={(event) => event.stopPropagation()}>
+									<span className={style.productCount}>{order.totalCount} products</span>
+									{renderActions(order)}
+								</div>
+
+								{isExpanded && (
+									<ExpandedOrderItems
+										orderId={order.orderId}
+										onCancel={
+											order.status === "pending"
+												? () =>
+														updateStatusMutation.mutate({
+															orderId: order.orderId,
+															status: "cancelled"
+														})
+												: undefined
+										}
+									/>
+								)}
+							</article>
+						);
+					})}
+				</div>
 			)}
 
 			{data && data.totalPages > 1 && (
@@ -310,7 +306,7 @@ const ByProductView = () => {
 	}
 
 	return (
-		<table className={style.orderTable}>
+		<table className={`${style.orderTable} ${style.productTable}`}>
 			<thead>
 				<tr>
 					<th>Product</th>
@@ -318,12 +314,13 @@ const ByProductView = () => {
 					<th>Demand</th>
 					<th>Shortfall</th>
 					<th>Nearest due</th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody>
 				{products.map((product) => (
 					<tr key={product.productId}>
-						<td>{product.productName}</td>
+						<td className={style.productNameCell}>{product.productName}</td>
 						<td>{product.stockQuantity}</td>
 						<td>{product.totalDemand}</td>
 						<td>
@@ -333,7 +330,12 @@ const ByProductView = () => {
 								<span className={style.mutedCell}>0</span>
 							)}
 						</td>
-						<td className={style.mutedCell}>{formatDate(product.nearestDueDate)}</td>
+						<td className={style.mutedCell}>{formatShortDate(product.nearestDueDate)}</td>
+						<td className={style.addActionCell}>
+							<button type="button" className={style.addButton} aria-label={`Add ${product.productName}`}>
+								<Plus size={15} />
+							</button>
+						</td>
 					</tr>
 				))}
 			</tbody>

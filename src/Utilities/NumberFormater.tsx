@@ -92,6 +92,12 @@ export const formatDate = (date: string): string => {
 	}).format(localDate);
 };
 
+export const formatShortDate = (date: string): string => {
+	const [year, month, day] = date.split("-");
+
+	return `${day}/${month}/${year.slice(-2)}`;
+};
+
 export const getDate30DaysAgo = (entryDate: Date | null = null) => {
 	const date = entryDate ? new Date(entryDate) : new Date();
 	date.setDate(date.getDate() - 30);

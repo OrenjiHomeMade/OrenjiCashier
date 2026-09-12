@@ -129,6 +129,150 @@
 }
 
 /* =========================
+   Order cards
+   ========================= */
+
+.orderList {
+	display: grid;
+	gap: 10px;
+}
+
+.orderCard {
+	overflow: hidden;
+	border: 1px solid var(--border-color, #ded7d1);
+	border-radius: var(--radius-md);
+	background-color: var(--white);
+	box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+}
+
+.orderSummary {
+	display: grid;
+	grid-template-columns: 25px minmax(0, 1fr) auto;
+	column-gap: 8px;
+	align-items: start;
+	width: 100%;
+	padding: 12px;
+	border: 0;
+	background: transparent;
+	color: var(--text-dark);
+	text-align: left;
+	cursor: pointer;
+}
+
+.orderSummary:hover {
+	background-color: var(--cream-soft);
+}
+
+.orderMainInfo {
+	min-width: 0;
+}
+
+.customerName {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 0.94rem;
+	font-weight: 600;
+}
+
+.orderMeta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 3px 10px;
+	margin-top: 4px;
+	color: var(--text-muted, #756d67);
+	font-size: 0.76rem;
+}
+
+.readyCount {
+	color: var(--sage);
+}
+
+.summaryActions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 12px;
+	border-top: 1px solid var(--border-color, #ded7d1);
+}
+
+.productCount {
+	color: var(--text-muted, #756d67);
+	font-size: 0.76rem;
+}
+
+.itemsPanel {
+	padding: 6px 12px 12px;
+	background-color: var(--cream-soft);
+}
+
+.itemsHeading {
+	padding: 7px 0 5px;
+	color: var(--text-muted, #756d67);
+	font-size: 0.76rem;
+}
+
+.itemRow {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 10px;
+	align-items: center;
+	padding: 11px 0;
+	border-top: 1px solid var(--border-color, #ded7d1);
+}
+
+.itemName {
+	font-size: 0.86rem;
+	font-weight: 600;
+}
+
+.itemMeta {
+	margin-top: 3px;
+	color: var(--text-muted, #756d67);
+	font-size: 0.76rem;
+}
+
+.itemSide {
+	display: grid;
+	grid-template-columns: auto 36px;
+	gap: 8px;
+	align-items: center;
+}
+
+.itemSide .readyBadge,
+.itemSide .notReadyBadge {
+	white-space: nowrap;
+}
+
+.itemSide .overrideToggleButton,
+.itemSide .overrideResetButton {
+	grid-column: 1 / -1;
+	justify-self: end;
+	margin: -4px 0 0;
+	border: 0;
+	background: transparent;
+}
+
+.cancelButton {
+	width: 100%;
+	margin-top: 8px;
+	padding: 6px 10px;
+	border: 1px solid var(--terracotta);
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--terracotta);
+	font-size: 0.76rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.cancelButton:hover {
+	background-color: rgba(192, 57, 43, 0.08);
+}
+
+/* =========================
    Tables
    ========================= */
 
@@ -281,6 +425,48 @@
 	white-space: nowrap;
 }
 
+.addActionCell {
+	width: 36px;
+	text-align: right;
+}
+
+.addButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	width: 28px;
+	height: 28px;
+
+	padding: 0;
+
+	border: 1px solid var(--orange-dark);
+	border-radius: var(--radius-sm);
+
+	background-color: transparent;
+	color: var(--orange-dark);
+
+	cursor: pointer;
+}
+
+.addButton:hover {
+	background-color: var(--cream-soft);
+}
+
+.mobileDueDate {
+	display: none;
+
+	margin-top: 2px;
+
+	color: var(--text-muted, #756d67);
+	font-size: 0.76rem;
+}
+
+.productNameCell {
+	max-width: 0;
+	overflow-wrap: anywhere;
+}
+
 .actionButtons {
 	display: flex;
 	gap: 6px;
@@ -327,6 +513,128 @@
 
 .actionButtonDanger:hover {
 	background-color: rgba(192, 57, 43, 0.08);
+}
+
+@media (max-width: 640px) {
+	.listCard {
+		padding: 12px 10px 16px;
+	}
+
+	.orderCard {
+		border-radius: 13px;
+	}
+
+	.orderSummary {
+		padding: 12px;
+	}
+
+	.summaryActions {
+		padding: 8px 12px;
+	}
+
+	.itemRow {
+		padding: 11px 0;
+	}
+
+	.orderTable,
+	.detailTable {
+		table-layout: fixed;
+		font-size: 0.78rem;
+	}
+
+	.orderTable thead th,
+	.detailTable thead th,
+	.orderTable tbody td,
+	.detailTable tbody td {
+		padding: 8px 4px;
+	}
+
+	.orderTable thead th:nth-child(1) {
+		width: 22px;
+	}
+
+	.orderTable thead th:nth-child(3) {
+		width: 48px;
+	}
+
+	.orderTable thead th:nth-child(4) {
+		width: 58px;
+	}
+
+	.orderTable thead th:nth-child(5) {
+		width: 84px;
+	}
+
+	.orderTable thead th:nth-child(6) {
+		width: 78px;
+	}
+
+	.dueDateColumn {
+		display: none;
+	}
+
+	.mobileDueDate {
+		display: block;
+	}
+
+	.actionsCell {
+		white-space: normal;
+	}
+
+	.actionButtons {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 4px;
+	}
+
+	.actionButtonPrimary,
+	.actionButtonDanger {
+		padding: 4px 5px;
+		font-size: 0.68rem;
+	}
+
+	.detailTable thead th:first-child {
+		width: 40%;
+	}
+
+	.detailTable thead th:nth-child(2),
+	.detailTable thead th:nth-child(3),
+	.detailTable thead th:nth-child(4) {
+		width: 16%;
+	}
+
+	.detailTable thead th:last-child {
+		width: 12%;
+	}
+
+	.productNameCell {
+		font-weight: 500;
+	}
+
+	.productTable thead th:nth-child(1) {
+		width: 34%;
+	}
+
+	.productTable thead th:nth-child(2),
+	.productTable thead th:nth-child(3),
+	.productTable thead th:nth-child(4) {
+		width: 16%;
+	}
+
+	.productTable thead th:nth-child(5) {
+		width: 18%;
+	}
+
+	.productTable thead th:nth-child(6) {
+		width: 36px;
+	}
+
+	.overrideToggleButton,
+	.overrideResetButton {
+		margin: 4px 0 0;
+		padding: 2px 4px;
+		font-size: 0.65rem;
+	}
 }
 
 /* =========================
