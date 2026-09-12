@@ -405,7 +405,8 @@ export default function SalesBreakdown({
 	const laborCost = reconciliation?.settledLaborCost ?? estimate.labor;
 	const ingredientCost = reconciliation?.settledIngredientCost ?? estimate.ingredient;
 	const packingCost = reconciliation?.settledPackagingCost ?? estimate.packing;
-	const utilityCost = reconciliation?.settledUtilityCost ?? estimate.utility;
+	const utilityCost = reconciliation?.settledUtilityCost || estimate.utility;
+
 	const otherCosts = reconciliation?.otherExpenses ?? settlement.totalAdditionalExpenses ?? 0;
 	const cogs = laborCost + ingredientCost + packingCost + utilityCost;
 

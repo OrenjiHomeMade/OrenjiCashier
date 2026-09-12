@@ -16,26 +16,10 @@ import Drawer from "../../../Component/Drawer/Drawer";
 import RupiahInput from "../../../Component/RupiahInput/RupiahInput";
 // IMPORT UTILITIES
 import { formatRupiah } from "../../../Utilities/NumberFormater";
+import TrashIcon from "../../../Component/MediaComponent/TrashIcon";
+import { EditIcon } from "lucide-react";
 
 const SHOW_PACKAGING_INGREDIENT_SECTIONS = false;
-
-function buildEmptyExpenseForm(section: TExpenseSection) {
-	return {
-		description: "",
-		category: CATEGORY_OPTIONS_BY_SECTION[section][0],
-		amount: ""
-	};
-}
-
-function getExpenseRemaining(expense: TBusinessExpense) {
-	return Math.max(expense.originalAmount - expense.settledAmount, 0);
-}
-
-function getExpenseStatus(expense: TBusinessExpense): TExpenseStatus {
-	if (getExpenseRemaining(expense) <= 0) return "SETTLED";
-	if (expense.settledAmount > 0) return "PARTIAL";
-	return "UNSETTLED";
-}
 
 export type ExpensesStepProps = {
 	salesEstimate: TSalesEstimate;
@@ -288,6 +272,39 @@ function ExpenseBackedSection({
    on `activeDrawer`, same as AllocationSelectorDrawer.
    ========================================================= */
 
+const STATUS_FILTERS: { label: string; value: TExpenseStatus | "ALL" }[] = [
+	{ label: "All", value: "ALL" },
+	{ label: "Unsettled", value: "UNSETTLED" },
+	{ label: "Partial", value: "PARTIAL" },
+	{ label: "Settled", value: "SETTLED" }
+];
+
+type TExpenseForm = {
+	description: string;
+	category: BusinessExpenseCategory;
+	amount: string;
+};
+
+function buildEmptyExpenseForm(section: TExpenseSection): TExpenseForm {
+	return {
+		description: "",
+		category: CATEGORY_OPTIONS_BY_SECTION[section][0],
+		amount: ""
+	};
+}
+
+function getExpenseRemaining(expense: TBusinessExpense) {
+	return Math.max(expense.originalAmount - expense.settledAmount, 0);
+}
+
+function getExpenseStatus(expense: TBusinessExpense): TExpenseStatus {
+	if (getExpenseRemaining(expense) <= 0) return "SETTLED";
+	if (expense.settledAmount > 0) return "PARTIAL";
+	return "UNSETTLED";
+}
+
+type ExpenseSubDrawer = { type: "ADD" } | { type: "EDIT"; expenseData: TBusinessExpense } | null;
+
 export type ExpenseDrawerProps = {
 	section: TExpenseSection;
 	expenses: TBusinessExpense[];
@@ -296,13 +313,6 @@ export type ExpenseDrawerProps = {
 	onAddExpense: (expense: Omit<TBusinessExpense, "id" | "section" | "settledAmount">) => Promise<unknown>;
 	onClose: () => void;
 };
-
-const STATUS_FILTERS: { label: string; value: TExpenseStatus | "ALL" }[] = [
-	{ label: "All", value: "ALL" },
-	{ label: "Unsettled", value: "UNSETTLED" },
-	{ label: "Partial", value: "PARTIAL" },
-	{ label: "Settled", value: "SETTLED" }
-];
 
 export function ExpenseDrawer({
 	section,
@@ -314,10 +324,10 @@ export function ExpenseDrawer({
 }: ExpenseDrawerProps) {
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<TExpenseStatus | "ALL">("ALL");
-	const [isAddingNew, setIsAddingNew] = useState(false);
+	const [subDrawerState, setSubDrawerState] = useState<ExpenseSubDrawer>(null);
 	const [form, setForm] = useState(() => buildEmptyExpenseForm(section));
 
-	const eyebrow = section === "UTILITIES" ? "Utilities" : "Additional";
+	const eyebrow = section === "UTILITIES" ? "Biaya Operasional" : "Pengeluaran Lain";
 
 	const visibleExpenses = expenses.filter((expense) => {
 		const status = getExpenseStatus(expense);
@@ -346,64 +356,23 @@ export function ExpenseDrawer({
 		}
 	}
 
-	if (isAddingNew) {
+	if (subDrawerState !== null) {
 		return (
-			<Drawer
-				title="Add new expense"
+			<AddNewOrEditDrawer
+				type={subDrawerState.type}
 				eyebrow={eyebrow}
-				onClose={() => setIsAddingNew(false)}
-				onSubmit={handleAddSubmit}
-				footer={
-					<>
-						<Button type="button" variant="ghost" onClick={() => setIsAddingNew(false)}>
-							Back
-						</Button>
-						<Button type="submit">Add &amp; select</Button>
-					</>
-				}
-			>
-				<label className={styles.field}>
-					<span>Description</span>
-					<input
-						type="text"
-						value={form.description}
-						onChange={(event) => setForm({ ...form, description: event.target.value })}
-						placeholder="e.g. August electricity bill"
-						required
-					/>
-				</label>
-
-				<label className={styles.field}>
-					<span>Category</span>
-					<select
-						value={form.category}
-						onChange={(event) =>
-							setForm({ ...form, category: event.target.value as BusinessExpenseCategory })
-						}
-					>
-						{CATEGORY_OPTIONS_BY_SECTION[section].map((category) => (
-							<option key={category} value={category}>
-								{category}
-							</option>
-						))}
-					</select>
-				</label>
-
-				<label className={styles.field}>
-					<span>Amount</span>
-					<RupiahInput
-						value={form.amount}
-						onChange={(event) => setForm({ ...form, amount: event.currentTarget.value })}
-						placeholder="0"
-					/>
-				</label>
-			</Drawer>
+				onCloseSubDrawer={() => setSubDrawerState(null)}
+				handleSubmit={handleAddSubmit}
+				setForm={setForm}
+				form={form}
+				section={section}
+			/>
 		);
 	}
 
 	return (
 		<Drawer
-			title={`Select ${eyebrow.toLowerCase()} expenses`}
+			title={`Pilih ${eyebrow.toLowerCase()}`}
 			eyebrow={eyebrow}
 			onClose={onClose}
 			footer={
@@ -435,13 +404,13 @@ export function ExpenseDrawer({
 			</div>
 
 			<div className={styles.addNewRow}>
-				<Button size="sm" variant="ghost" type="button" onClick={() => setIsAddingNew(true)}>
+				<Button size="sm" variant="ghost" type="button" onClick={() => setSubDrawerState({ type: "ADD" })}>
 					+ Add new expense
 				</Button>
 			</div>
 
 			<ul className={styles.drawerList}>
-				{visibleExpenses.length === 0 && <p className={styles.emptyState}>No matching expenses.</p>}
+				{visibleExpenses.length === 0 && <li className={styles.emptyState}>No matching expenses.</li>}
 
 				{visibleExpenses.map((expense) => {
 					const remaining = getExpenseRemaining(expense);
@@ -475,10 +444,93 @@ export function ExpenseDrawer({
 								<span className={styles.drawerRowOriginal}>{formatRupiah(expense.originalAmount)}</span>
 								<span className={styles.drawerRowRemaining}>{formatRupiah(remaining)} left</span>
 							</div>
+							<div className={styles.expenseEditAction}>
+								<Button
+									size="sm"
+									variant="primary"
+									type="button"
+									className={styles.expenseEditDelete}
+									onClick={() => setSubDrawerState({ type: "EDIT", expenseData: expense })}
+								>
+									<EditIcon />
+								</Button>
+								<Button size="sm" variant="danger" type="button" className={styles.expenseEditDelete}>
+									<TrashIcon />
+								</Button>
+							</div>
 						</li>
 					);
 				})}
 			</ul>
+		</Drawer>
+	);
+}
+
+function AddNewOrEditDrawer({
+	type,
+	eyebrow,
+	onCloseSubDrawer,
+	handleSubmit,
+	setForm,
+	form,
+	section
+}: {
+	type: "ADD" | "EDIT";
+	eyebrow?: string;
+	onCloseSubDrawer: () => void;
+	handleSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
+	setForm: (formVal: TExpenseForm) => void;
+	form: TExpenseForm;
+	section: TExpenseSection;
+}) {
+	return (
+		<Drawer
+			title={type === "ADD" ? "Tambah Pengeluaran" : "Edit biaya pengeluaran"}
+			eyebrow={eyebrow}
+			onClose={() => onCloseSubDrawer()}
+			onSubmit={handleSubmit}
+			footer={
+				<>
+					<Button type="button" variant="ghost" onClick={() => onCloseSubDrawer()}>
+						Kembali
+					</Button>
+					<Button type="submit">{type === "ADD" ? "Tambah & Pilih" : "Edit"} </Button>
+				</>
+			}
+		>
+			<label className={styles.field}>
+				<span>Deskripsi Pengeluaran</span>
+				<input
+					type="text"
+					value={form.description}
+					onChange={(event) => setForm({ ...form, description: event.target.value })}
+					placeholder="e.g. August electricity bill"
+					required
+				/>
+			</label>
+
+			<label className={styles.field}>
+				<span>Kategori Pengeluaran</span>
+				<select
+					value={form.category}
+					onChange={(event) => setForm({ ...form, category: event.target.value as BusinessExpenseCategory })}
+				>
+					{CATEGORY_OPTIONS_BY_SECTION[section].map((category) => (
+						<option key={category} value={category}>
+							{category}
+						</option>
+					))}
+				</select>
+			</label>
+
+			<label className={styles.field}>
+				<span>Jumlah Pengeluaran</span>
+				<RupiahInput
+					value={form.amount}
+					onChange={(event) => setForm({ ...form, amount: event.currentTarget.value })}
+					placeholder="0"
+				/>
+			</label>
 		</Drawer>
 	);
 }

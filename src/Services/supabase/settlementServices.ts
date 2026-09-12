@@ -118,6 +118,8 @@ type createBusinessSettlementParam = Omit<TBusinessSettlementEssential, "settlem
 	idToAdds: number[];
 	idToExclude: number[];
 	selectionMode: "ALL" | "MANUAL" | "CLEAR";
+	productCategory?: string[];
+	productName?: string[];
 };
 
 /**
@@ -129,6 +131,8 @@ export async function createBusinessSettlement({
 	selectionMode,
 	idToAdds,
 	idToExclude,
+	productCategory,
+	productName,
 	settlementStart,
 	settlementEnd,
 	settlementFilter
@@ -140,6 +144,8 @@ export async function createBusinessSettlement({
 		p_exclude_ids: idToExclude,
 		p_settlement_start: getLocalTimestamp(settlementStart!),
 		p_settlement_end: getLocalTimestamp(settlementEnd!),
+		p_product_category: productCategory,
+		p_product_name: productName,
 		p_settlement_additional_selector: settlementFilter
 	});
 
@@ -190,12 +196,13 @@ export const updateBusinessSettlement = async ({ settlementId, changes }: update
 // -----------------------------------------------------------------------------
 // UPDATE SALES SELECTION
 // -----------------------------------------------------------------------------
-
 type UpdateBusinessSettlementSelectionParam = {
 	businessSettlementId: number;
 	selectionMode: "ALL" | "MANUAL" | "CLEAR";
 	idToAdds: number[];
 	idToRemoves: number[];
+	productCategory?: string[];
+	productName?: string[];
 	settlementStart: Date | null;
 	settlementEnd: Date | null;
 	settlementAdditionalSelector?: Json | undefined;
@@ -208,6 +215,8 @@ export async function updateBusinessSettlementSelection({
 	idToRemoves,
 	settlementStart,
 	settlementEnd,
+	productCategory,
+	productName,
 	settlementAdditionalSelector
 }: UpdateBusinessSettlementSelectionParam): Promise<BusinessSettlement> {
 	const { data, error } = await supabase.rpc("update_business_settlement_selection", {
@@ -217,6 +226,8 @@ export async function updateBusinessSettlementSelection({
 		p_remove_ids: idToRemoves,
 		p_settlement_start: getLocalTimestamp(settlementStart!),
 		p_settlement_end: getLocalTimestamp(settlementEnd!),
+		p_product_category: productCategory,
+		p_product_name: productName,
 		p_settlement_additional_selector: settlementAdditionalSelector ?? null
 	});
 
@@ -339,6 +350,8 @@ type GetTransactionItemsSettlementReportParam = {
 	idToRemoves: number[];
 	settlementStart: Date | null;
 	settlementEnd: Date | null;
+	productCategories?: string[];
+	productNames?: string[];
 };
 
 export async function getTransactionItemsSettlementBreakdown({
@@ -348,7 +361,9 @@ export async function getTransactionItemsSettlementBreakdown({
 	idToRemoves,
 	settlementStart,
 	settlementEnd,
-	breakdownType
+	breakdownType,
+	productCategories,
+	productNames
 }: GetTransactionItemsSettlementReportParam & { breakdownType: "PRODUCT" | "CATEGORY" }): Promise<TProductBreakdown[]> {
 	const { data, error } = await supabase.rpc("get_transaction_items_settlement_breakdown", {
 		p_business_settlement_id: businessSettlementId || undefined,
@@ -357,7 +372,9 @@ export async function getTransactionItemsSettlementBreakdown({
 		p_remove_ids: idToRemoves,
 		p_settlement_start: getLocalTimestamp(settlementStart!),
 		p_settlement_end: getLocalTimestamp(settlementEnd!),
-		p_group_by: breakdownType
+		p_group_by: breakdownType,
+		p_product_category: productCategories,
+		p_product_name: productNames
 	});
 
 	if (error) {
@@ -386,7 +403,9 @@ export async function getTransactionItemsSettlementSummary({
 	idToAdds,
 	idToRemoves,
 	settlementStart,
-	settlementEnd
+	settlementEnd,
+	productCategories,
+	productNames
 }: GetTransactionItemsSettlementReportParam): Promise<TQSalesSummary> {
 	const { data, error } = await supabase
 		.rpc("get_transaction_items_settlement_summary", {
@@ -395,7 +414,9 @@ export async function getTransactionItemsSettlementSummary({
 			p_add_ids: idToAdds,
 			p_remove_ids: idToRemoves,
 			p_settlement_start: getLocalTimestamp(settlementStart!),
-			p_settlement_end: getLocalTimestamp(settlementEnd!)
+			p_settlement_end: getLocalTimestamp(settlementEnd!),
+			p_product_category: productCategories,
+			p_product_name: productNames
 		})
 		.single();
 

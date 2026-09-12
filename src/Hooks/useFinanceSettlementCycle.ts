@@ -263,9 +263,6 @@ export const useFinanceSettlementCycle = (setIsEditMade: (edit: boolean) => void
 		let data;
 
 		if (lastSettlementState.settlementId === null) {
-			console.log("TEST CREATION");
-			console.log("mutate prep start: ", lastSettlementState.settlementStart);
-			console.log("mutate prep end: ", lastSettlementState.settlementEnd);
 			const newBusinessSettlement = await createNewSettlementMutation.mutateAsync({
 				settlementName: lastSettlementState.settlementName,
 				settlementStart: lastSettlementState.settlementStart,
@@ -273,7 +270,9 @@ export const useFinanceSettlementCycle = (setIsEditMade: (edit: boolean) => void
 				settlementFilter: null,
 				idToAdds: idToSave,
 				idToExclude: idToDelete,
-				selectionMode: selectionMode
+				selectionMode: selectionMode,
+				productCategory: salesFilter.category,
+				productName: salesFilter.productName
 			});
 			data = newBusinessSettlement.business_settlement_id;
 		} else {
@@ -284,7 +283,9 @@ export const useFinanceSettlementCycle = (setIsEditMade: (edit: boolean) => void
 				idToRemoves: idToDelete,
 				settlementStart: lastSettlementState.settlementStart,
 				settlementEnd: lastSettlementState.settlementEnd,
-				settlementAdditionalSelector: null
+				settlementAdditionalSelector: null,
+				productCategory: salesFilter.category,
+				productName: salesFilter.productName
 			});
 			data = updateBusinessSettlement.business_settlement_id;
 		}

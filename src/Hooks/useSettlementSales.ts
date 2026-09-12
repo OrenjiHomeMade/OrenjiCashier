@@ -197,7 +197,12 @@ export const useSettlementSales = (
 
 	const [breakdownGroupBy, setBreakdownGroupBy] = useState<"PRODUCT" | "CATEGORY">("PRODUCT");
 
+	console.log(selectedTransactionId, liveAdds.length, liveRemoves.length, bulkIntent);
+
 	const { data: productBreakdown, isLoading: isLoadingBreakdown } = useQuery({
+		enabled:
+			enabled &&
+			(selectedTransactionId !== null || liveAdds.length > 0 || liveRemoves.length > 0 || bulkIntent === "ALL"),
 		queryKey: [
 			"settlementBreakdown",
 			breakdownGroupBy,
@@ -206,7 +211,9 @@ export const useSettlementSales = (
 			liveAdds,
 			liveRemoves,
 			salesFilter.startDate,
-			salesFilter.endDate
+			salesFilter.endDate,
+			salesFilter.category,
+			salesFilter.productName
 		],
 		queryFn: () =>
 			getTransactionItemsSettlementBreakdown({
@@ -216,11 +223,16 @@ export const useSettlementSales = (
 				idToRemoves: liveRemoves,
 				settlementStart: breakdownStart!,
 				settlementEnd: breakdownEnd!,
-				breakdownType: breakdownGroupBy
+				breakdownType: breakdownGroupBy,
+				productCategories: salesFilter.category,
+				productNames: salesFilter.productName
 			})
 	});
 
 	const { data: settlementSummary, isLoading: isLoadingSettlementSummary } = useQuery({
+		enabled:
+			enabled &&
+			(selectedTransactionId !== null || liveAdds.length > 0 || liveRemoves.length > 0 || bulkIntent === "ALL"),
 		queryKey: [
 			"settlementSummary",
 			selectedTransactionId,
@@ -228,7 +240,9 @@ export const useSettlementSales = (
 			liveAdds,
 			liveRemoves,
 			salesFilter.startDate,
-			salesFilter.endDate
+			salesFilter.endDate,
+			salesFilter.category,
+			salesFilter.productName
 		],
 		queryFn: () =>
 			getTransactionItemsSettlementSummary({
@@ -237,9 +251,10 @@ export const useSettlementSales = (
 				idToAdds: liveAdds,
 				idToRemoves: liveRemoves,
 				settlementStart: breakdownStart!,
-				settlementEnd: breakdownEnd!
-			}),
-		enabled: enabled
+				settlementEnd: breakdownEnd!,
+				productCategories: salesFilter.category,
+				productNames: salesFilter.productName
+			})
 	});
 
 	const _getLoadingState = () => {

@@ -15,8 +15,6 @@ export const CATEGORY_OPTIONS_BY_SECTION: Record<TExpenseSection, BusinessExpens
 	ADDITIONAL: ["TEAM", "OTHER"]
 };
 
-// type BusinessExpense = Database["public"]["Tables"]["business_expense"]["Row"];
-
 type BusinessExpenseInsert = Database["public"]["Tables"]["business_expense"]["Insert"];
 
 type BusinessExpenseUpdate = Database["public"]["Tables"]["business_expense"]["Update"];

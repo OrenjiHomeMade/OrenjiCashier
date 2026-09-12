@@ -7,7 +7,11 @@
 	border-radius: var(--radius-md);
 	font-weight: 600;
 	white-space: nowrap;
-	transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease,
+		color 0.15s ease,
+		opacity 0.15s ease;
 }
 
 .md {
@@ -39,7 +43,7 @@
 }
 
 .ghost {
-	background: transparent;
+	background: var(--cream);
 	color: var(--text-muted);
 }
 .ghost:hover:not(:disabled) {
