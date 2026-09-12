@@ -214,7 +214,13 @@ export default function FinancePage() {
 								: expenses.selectedAdditionalIds
 						}
 						onToggleExpense={(id) => expenses.toggleExpense(expensesDrawerSection, id)}
+						onEditExpense={(data) => {
+							console.log(data);
+							// await
+							// expenses.editExpense(expensesDrawerSection, data)
+						}}
 						onAddExpense={(data) => expenses.addExpense(expensesDrawerSection, data)}
+						onDeleteExpense={(id) => console.log(id)}
 						onClose={drawers.closeDrawer}
 					/>
 				)}

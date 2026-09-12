@@ -303,7 +303,7 @@ function getExpenseStatus(expense: TBusinessExpense): TExpenseStatus {
 	return "UNSETTLED";
 }
 
-type ExpenseSubDrawer = { type: "ADD" } | { type: "EDIT"; expenseData: TBusinessExpense } | null;
+type ExpenseSubDrawer = { type: "ADD" | "EDIT"; expenseData?: TBusinessExpense } | null;
 
 export type ExpenseDrawerProps = {
 	section: TExpenseSection;
@@ -311,6 +311,8 @@ export type ExpenseDrawerProps = {
 	selectedIds: string[];
 	onToggleExpense: (id: string) => void;
 	onAddExpense: (expense: Omit<TBusinessExpense, "id" | "section" | "settledAmount">) => Promise<unknown>;
+	onEditExpense: (expense: Omit<TBusinessExpense, "section" | "settledAmount">) => void;
+	onDeleteExpense: (id: string) => void;
 	onClose: () => void;
 };
 
@@ -320,6 +322,8 @@ export function ExpenseDrawer({
 	selectedIds,
 	onToggleExpense,
 	onAddExpense,
+	onEditExpense,
+	onDeleteExpense,
 	onClose
 }: ExpenseDrawerProps) {
 	const [search, setSearch] = useState("");
@@ -338,18 +342,28 @@ export function ExpenseDrawer({
 		return true;
 	});
 
-	async function handleAddSubmit(event: SubmitEvent<HTMLFormElement>) {
+	async function handleAddOrEditSubmit(event: SubmitEvent<HTMLFormElement>, expenseId?: string) {
 		event.preventDefault();
 		const amount = Number(form.amount);
 		if (!form.description.trim() || !amount) return;
 
 		try {
-			await onAddExpense({
-				description: form.description.trim(),
-				category: form.category.trim() || "Other",
-				originalAmount: amount
-			});
-			setForm(buildEmptyExpenseForm(section));
+			if (expenseId) {
+				// EDIT
+				await onEditExpense({
+					id: expenseId,
+					description: form.description.trim(),
+					category: form.category.trim() || "Other",
+					originalAmount: amount
+				});
+			} else {
+				await onAddExpense({
+					description: form.description.trim(),
+					category: form.category.trim() || "Other",
+					originalAmount: amount
+				});
+				setForm(buildEmptyExpenseForm(section));
+			}
 			onClose();
 		} catch {
 			// error already toasted in the mutation's onError — keep the drawer open so the user can retry
@@ -362,8 +376,9 @@ export function ExpenseDrawer({
 				type={subDrawerState.type}
 				eyebrow={eyebrow}
 				onCloseSubDrawer={() => setSubDrawerState(null)}
-				handleSubmit={handleAddSubmit}
+				handleSubmit={handleAddOrEditSubmit}
 				setForm={setForm}
+				expense={subDrawerState.expenseData}
 				form={form}
 				section={section}
 			/>
@@ -450,11 +465,24 @@ export function ExpenseDrawer({
 									variant="primary"
 									type="button"
 									className={styles.expenseEditDelete}
-									onClick={() => setSubDrawerState({ type: "EDIT", expenseData: expense })}
+									onClick={() => {
+										setForm({
+											description: expense.description,
+											amount: expense.originalAmount.toString(),
+											category: expense.category
+										});
+										setSubDrawerState({ type: "EDIT", expenseData: expense });
+									}}
 								>
 									<EditIcon />
 								</Button>
-								<Button size="sm" variant="danger" type="button" className={styles.expenseEditDelete}>
+								<Button
+									size="sm"
+									variant="danger"
+									type="button"
+									className={styles.expenseEditDelete}
+									onClick={() => onDeleteExpense(expense.id)}
+								>
 									<TrashIcon />
 								</Button>
 							</div>
@@ -472,14 +500,16 @@ function AddNewOrEditDrawer({
 	onCloseSubDrawer,
 	handleSubmit,
 	setForm,
+	expense,
 	form,
 	section
 }: {
 	type: "ADD" | "EDIT";
 	eyebrow?: string;
 	onCloseSubDrawer: () => void;
-	handleSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
+	handleSubmit: (event: SubmitEvent<HTMLFormElement>, expenseId?: string) => void;
 	setForm: (formVal: TExpenseForm) => void;
+	expense: TBusinessExpense | undefined;
 	form: TExpenseForm;
 	section: TExpenseSection;
 }) {
@@ -488,7 +518,7 @@ function AddNewOrEditDrawer({
 			title={type === "ADD" ? "Tambah Pengeluaran" : "Edit biaya pengeluaran"}
 			eyebrow={eyebrow}
 			onClose={() => onCloseSubDrawer()}
-			onSubmit={handleSubmit}
+			onSubmit={(event) => handleSubmit(event, expense?.id)}
 			footer={
 				<>
 					<Button type="button" variant="ghost" onClick={() => onCloseSubDrawer()}>

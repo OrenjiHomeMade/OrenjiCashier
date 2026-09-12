@@ -158,6 +158,10 @@ export const useSettlementExpenses = (
 		}
 	});
 
+	// const editExpenseMutation = useMutation({});
+
+	// const deleteExpenseMutation = useMutation({})
+
 	function addExpense(section: TExpenseSection, data: Omit<TBusinessExpense, "id" | "section" | "settledAmount">) {
 		return addExpenseMutation.mutateAsync({ section, ...data });
 	}
