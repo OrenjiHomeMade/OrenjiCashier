@@ -1427,6 +1427,40 @@ $$;
 ALTER FUNCTION "public"."get_product_categories"("p_is_active" boolean) OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."get_product_categories_by_time_range"("p_start_time" timestamp without time zone DEFAULT NULL::timestamp without time zone, "p_end_time" timestamp without time zone DEFAULT NULL::timestamp without time zone) RETURNS TABLE("product_category" "text")
+    LANGUAGE "plpgsql"
+    AS $$
+DECLARE
+	v_start_time timestamp WITHOUT time zone;
+	v_end_time timestamp WITHOUT time zone;
+BEGIN
+	IF p_start_time IS NULL 
+		THEN v_start_time := '2026-01-01 00:00:00';
+	ELSE
+		v_start_time := p_start_time;
+	END IF;
+
+	IF p_end_time IS NULL 
+		THEN v_end_time := '9999-12-31 23:59:59';
+	ELSE 
+		v_end_time := p_end_time;
+	END IF;
+
+	RETURN QUERY
+    SELECT DISTINCT p.product_category 
+		FROM public.transaction_items ti 
+	LEFT JOIN public.products p 
+		ON ti.product_id = p.product_id
+	WHERE ti.deleted_at IS NULL
+		AND ti.created_at >= v_start_time
+		AND ti.created_at <= v_end_time;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_product_categories_by_time_range"("p_start_time" timestamp without time zone, "p_end_time" timestamp without time zone) OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_product_demand_overview"() RETURNS TABLE("product_id" bigint, "product_name" "text", "stock_quantity" integer, "total_demand" bigint, "nearest_due_date" "date", "shortfall" bigint)
     LANGUAGE "sql"
     AS $$
@@ -1470,6 +1504,42 @@ $$;
 
 
 ALTER FUNCTION "public"."get_product_demand_overview"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."get_products_from_transaction_item"("p_start_time" timestamp without time zone DEFAULT NULL::timestamp without time zone, "p_end_time" timestamp without time zone DEFAULT NULL::timestamp without time zone, "p_product_category" "text"[] DEFAULT NULL::"text"[]) RETURNS TABLE("product_name" "text")
+    LANGUAGE "plpgsql"
+    AS $$
+DECLARE
+	v_start_time timestamp WITHOUT time zone;
+	v_end_time timestamp WITHOUT time zone;
+BEGIN
+	IF p_start_time IS NULL 
+		THEN v_start_time := '2026-01-01 00:00:00';
+	ELSE
+		v_start_time := p_start_time;
+	END IF;
+
+	IF p_end_time IS NULL 
+		THEN v_end_time := '9999-12-31 23:59:59';
+	ELSE 
+		v_end_time := p_end_time;
+	END IF;
+
+	RETURN QUERY
+    SELECT DISTINCT p.product_name 
+		FROM public.transaction_items ti 
+	LEFT JOIN public.products p 
+		ON ti.product_id = p.product_id
+	WHERE ti.deleted_at IS NULL
+		AND ti.created_at >= v_start_time
+		AND ti.created_at <= v_end_time
+		AND (p_product_category IS NULL OR p.product_category = any(p_product_category))
+	;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_products_from_transaction_item"("p_start_time" timestamp without time zone, "p_end_time" timestamp without time zone, "p_product_category" "text"[]) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_sales_summary"("report_date" "date") RETURNS "jsonb"
@@ -3776,9 +3846,21 @@ GRANT ALL ON FUNCTION "public"."get_product_categories"("p_is_active" boolean) T
 
 
 
+GRANT ALL ON FUNCTION "public"."get_product_categories_by_time_range"("p_start_time" timestamp without time zone, "p_end_time" timestamp without time zone) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_product_categories_by_time_range"("p_start_time" timestamp without time zone, "p_end_time" timestamp without time zone) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_product_categories_by_time_range"("p_start_time" timestamp without time zone, "p_end_time" timestamp without time zone) TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."get_product_demand_overview"() TO "anon";
 GRANT ALL ON FUNCTION "public"."get_product_demand_overview"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_product_demand_overview"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_products_from_transaction_item"("p_start_time" timestamp without time zone, "p_end_time" timestamp without time zone, "p_product_category" "text"[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_products_from_transaction_item"("p_start_time" timestamp without time zone, "p_end_time" timestamp without time zone, "p_product_category" "text"[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_products_from_transaction_item"("p_start_time" timestamp without time zone, "p_end_time" timestamp without time zone, "p_product_category" "text"[]) TO "service_role";
 
 
 

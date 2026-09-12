@@ -15,6 +15,7 @@ import CartItem from "../../../Component/CartItem/CartItem";
 import { generateTransactionCode, getLocalTimestamp, rupiahFormater } from "../../../Utilities/NumberFormater";
 import type { TCreateTransactionInput } from "../../../Types/transaction";
 import AuthContext from "../../../Component/Context/AuthProvider";
+import OrderingIcon from "../../../Component/MediaComponent/OrderingIcon";
 
 // PROPERTY DEFINITION
 export type CartProps = {
@@ -167,19 +168,17 @@ const CartSection = ({ onExecutePayment, onConvertToOrder, onCartHeaderClick, ca
 						<span>Proses Pembayaran</span>
 					</button>
 
-
 					<button type="button" className={style.clearButton} onClick={() => emptyCart()}>
 						<TrashIcon />
 						<span>Kosongkan Keranjang</span>
 					</button>
 
-{onConvertToOrder && (
+					{onConvertToOrder && (
 						<button type="button" className={style.convertButton} onClick={onConvertToOrder}>
-							<CartIcon />
 							<span>Jadikan Pesanan</span>
+							<OrderingIcon />
 						</button>
 					)}
-
 				</div>
 			</>
 		);
