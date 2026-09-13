@@ -24,8 +24,6 @@ import type { TOrderStatus, TOrderSummary } from "../../Types/order";
 // IMPORT ICONS (lucide-react is already a project dependency — see ProductItem.tsx)
 import { ChevronDown, ChevronRight, Plus, RotateCcw } from "lucide-react";
 
-// ASSUMPTION: adjust to wherever this screen actually gets mounted.
-// Ordering.tsx's back button targets this same constant.
 export const ORDER_MANAGEMENT_ROUTE = "/orders";
 const NEW_ORDER_ROUTE = "/ordering";
 
@@ -51,13 +49,7 @@ const statusLabel: Record<TStatusFilter, string> = {
    row is open — rather than up front for every row.
    ================================================== */
 
-const ExpandedOrderItems = ({
-	orderId,
-	onCancel
-}: {
-	orderId: number;
-	onCancel?: () => void;
-}) => {
+const ExpandedOrderItems = ({ orderId, onCancel }: { orderId: number; onCancel?: () => void }) => {
 	const { data: items = [], isLoading } = useOrderDetail(orderId);
 	const overrideMutation = useSetOrderItemReadyOverride(orderId);
 
@@ -231,47 +223,47 @@ const ByOrderView = () => {
 
 							return (
 								<article className={style.orderCard} key={order.orderId}>
-								<button
-									type="button"
-									className={style.orderSummary}
-									onClick={() => toggleExpand(order.orderId)}
-								>
-									<span className={style.expandCell}>
-										{isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-									</span>
-									<span className={style.orderMainInfo}>
-										<span className={style.customerName}>{order.customerName}</span>
-										<span className={style.orderMeta}>
-											<span>Due {formatShortDate(order.dueDate)}</span>
-											<span className={style.readyCount}>
-												Ready {order.readyCount} / {order.totalCount}
+									<button
+										type="button"
+										className={style.orderSummary}
+										onClick={() => toggleExpand(order.orderId)}
+									>
+										<span className={style.expandCell}>
+											{isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+										</span>
+										<span className={style.orderMainInfo}>
+											<span className={style.customerName}>{order.customerName}</span>
+											<span className={style.orderMeta}>
+												<span>Due {formatShortDate(order.dueDate)}</span>
+												<span className={style.readyCount}>
+													Ready {order.readyCount} / {order.totalCount}
+												</span>
 											</span>
 										</span>
-									</span>
-									<span className={`${style.statusBadge} ${style[`status_${order.status}`]}`}>
-										{order.status}
-									</span>
-								</button>
+										<span className={`${style.statusBadge} ${style[`status_${order.status}`]}`}>
+											{order.status}
+										</span>
+									</button>
 
-								<div className={style.summaryActions} onClick={(event) => event.stopPropagation()}>
-									<span className={style.productCount}>{order.totalCount} products</span>
-									{renderActions(order)}
-								</div>
+									<div className={style.summaryActions} onClick={(event) => event.stopPropagation()}>
+										<span className={style.productCount}>{order.totalCount} products</span>
+										{renderActions(order)}
+									</div>
 
-								{isExpanded && (
-									<ExpandedOrderItems
-										orderId={order.orderId}
-										onCancel={
-											order.status === "pending"
-												? () =>
-														updateStatusMutation.mutate({
-															orderId: order.orderId,
-															status: "cancelled"
-														})
-												: undefined
-										}
-									/>
-								)}
+									{isExpanded && (
+										<ExpandedOrderItems
+											orderId={order.orderId}
+											onCancel={
+												order.status === "pending"
+													? () =>
+															updateStatusMutation.mutate({
+																orderId: order.orderId,
+																status: "cancelled"
+															})
+													: undefined
+											}
+										/>
+									)}
 								</article>
 							);
 						})}

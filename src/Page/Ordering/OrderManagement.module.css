@@ -141,7 +141,7 @@
 	display: grid;
 	grid-template-columns: 25px minmax(180px, 2fr) 110px 100px 100px minmax(180px, auto);
 	column-gap: 8px;
-	padding: 0 12px 7px;
+	padding: 0 0 7px;
 	color: var(--text-muted, #756d67);
 	font-size: 0.76rem;
 }
@@ -253,6 +253,7 @@
 .itemSide .readyBadge,
 .itemSide .notReadyBadge {
 	white-space: nowrap;
+	width: 80%;
 }
 
 .itemSide .overrideToggleButton,
@@ -363,7 +364,7 @@
 	}
 
 	.itemRow {
-		grid-template-columns: minmax(180px, 1fr) auto;
+		grid-template-columns: minmax(0, 1fr) 85px minmax(180px, auto);
 		padding: 8px 0;
 	}
 
@@ -377,7 +378,25 @@
 	}
 
 	.itemSide {
-		grid-template-columns: auto 36px;
+		display: grid;
+		grid-column: 2 / -1;
+		grid-template-columns: 100px 36px minmax(0, 1fr);
+		align-items: center;
+		gap: 8px;
+	}
+
+	.itemSide .overrideToggleButton,
+	.itemSide .overrideResetButton {
+		grid-column: auto;
+		justify-self: end;
+		margin: 0;
+	}
+
+	.itemInfo {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+		min-width: 0;
 	}
 
 	.cancelButton {
